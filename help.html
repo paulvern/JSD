@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JSD Emulator Hub · Help</title>
+<style>
+:root{--bg:#07101a;--panel:#0d1825;--panel2:#111f30;--line:#25374d;--text:#eef6ff;--muted:#91a6bd;--cyan:#73e4ff;--green:#77efa5;--yellow:#ffd675;--red:#ff8191;--purple:#c9a6ff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 18% -8%,#173a61 0,transparent 40rem),linear-gradient(#07101a,#050a11);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{padding:24px}.wrap{max-width:1180px;margin:auto}.topbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:18px;position:sticky;top:0;z-index:10;padding:10px 0;background:linear-gradient(#07101af2,#07101aca,transparent)}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn,.langbox{border:1px solid var(--line);background:#0c1826;color:var(--text);padding:9px 12px;border-radius:10px;text-decoration:none;font-weight:750;font-size:13px}.btn:hover{border-color:#4c7097}.langbox select{margin-left:7px;background:#08131f;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:4px 7px}
+.hero{padding:26px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(145deg,#102239ee,#0a1522ee);box-shadow:0 20px 60px #0005}.hero h1{font-size:clamp(32px,5vw,58px);letter-spacing:-.045em;margin:0 0 8px}.hero p{max-width:900px;color:#c1d0df;line-height:1.65;font-size:15px}.lead{font-size:18px!important;color:var(--text)!important}.badge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:4px 5px 4px 0;font-size:11px;color:var(--muted);background:#091522}.badge.ok{color:var(--green)}.badge.warn{color:var(--yellow)}.badge.info{color:var(--cyan)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}.card{background:#0d1825e8;border:1px solid var(--line);border-radius:18px;padding:18px}.card h2{font-size:21px;margin:0 0 9px}.card h3{font-size:14px;color:var(--cyan);margin:17px 0 7px}.card p,.card li{color:#c0cfdf;line-height:1.58}.card ul{padding-left:20px;margin:8px 0}.card code,.kbd{font:11px ui-monospace,SFMono-Regular,Consolas,monospace;background:#07111c;border:1px solid #2d4259;border-radius:5px;padding:2px 5px;color:#dcf4ff}.kbd{white-space:nowrap}.warnbox{border-left:3px solid var(--yellow);background:#211c0c;padding:11px 13px;border-radius:8px;color:#e8d9a1}.infobox{border-left:3px solid var(--cyan);background:#0b1d27;padding:11px 13px;border-radius:8px;color:#bfeafa}.redbox{border-left:3px solid var(--red);background:#271017;padding:11px 13px;border-radius:8px;color:#f0bdc5}
+.toc{margin:18px 0;display:flex;flex-wrap:wrap;gap:7px}.toc a{border:1px solid var(--line);background:#0b1724;color:#cfe8ff;text-decoration:none;border-radius:999px;padding:7px 10px;font-size:12px}.toc a:hover{border-color:var(--cyan)}
+.sys{margin-top:18px;scroll-margin-top:80px}.syshead{display:flex;align-items:center;gap:12px}.sysicon{width:48px;height:48px;border-radius:13px;background:#08131f;border:1px solid var(--line);display:grid;place-items:center;font-size:25px}.sys h2{margin:0}.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}.section-title{margin:28px 0 10px;font-size:26px}.table{width:100%;border-collapse:collapse;margin-top:8px}.table th,.table td{text-align:left;vertical-align:top;border-bottom:1px solid #22364a;padding:8px 7px;color:#c5d3e1}.table th{color:#eef6ff;font-size:12px}.muted{color:var(--muted)}.footer{padding:24px 4px;color:var(--muted);font-size:12px;text-align:center}
+[data-lang]{display:none}body.lang-it [data-lang="it"],body.lang-en [data-lang="en"]{display:block}
+body.lang-it span[data-lang="it"],body.lang-en span[data-lang="en"]{display:inline}
+@media(max-width:850px){body{padding:13px}.grid,.cols{grid-template-columns:1fr}.topbar{position:static}.hero{padding:18px}.card{padding:15px}}
+</style>
+</head>
+<body class="lang-it">
+<div class="wrap">
+  <div class="topbar">
+    <div class="actions"><a class="btn" href="landing.html">← <span data-lang="it">Landing</span><span data-lang="en">Launcher</span></a></div>
+    <label class="langbox"><span data-lang="it">Lingua</span><span data-lang="en">Language</span>
+      <select id="lang"><option value="it">Italiano</option><option value="en">English</option></select>
+    </label>
+  </div>
+
+  <div class="hero" data-lang="it">
+    <h1>Guida a JSD Emulator Hub</h1>
+    <p class="lead">Questi emulatori non sono pensati soltanto per “far partire un gioco”. Il progetto è soprattutto un laboratorio di <strong>emulazione, reverse engineering e recupero di risorse</strong>: quando l’hardware e il formato lo permettono, l’obiettivo è osservare il funzionamento della macchina, disassemblare o ricostruire il codice, estrarre grafica e registrare o ricostruire i suoni.</p>
+    <p>Ogni core resta in un file HTML separato. La landing riconosce il sistema, può guardare dentro agli ZIP e passa ROM e BIOS soltanto quando il BIOS è realmente necessario e riconoscibile. I file rimangono nel browser.</p>
+    <span class="badge ok">✓ emulazione locale</span><span class="badge info">✓ disassembly / reverse engineering</span><span class="badge info">✓ estrazione grafica</span><span class="badge info">✓ cattura audio dove disponibile</span><span class="badge warn">sperimentale, non cycle-perfect</span>
+  </div>
+
+  <div class="hero" data-lang="en">
+    <h1>JSD Emulator Hub Guide</h1>
+    <p class="lead">These emulators are not intended only to “run a game”. The project is primarily an <strong>emulation, reverse-engineering and asset-recovery laboratory</strong>: when the hardware and file format allow it, the goal is to inspect the machine, disassemble or reconstruct code, extract graphics, and capture or reconstruct sound.</p>
+    <p>Each core remains in a separate HTML file. The launcher detects the system, can inspect ZIP archives, and passes ROMs and BIOS files only when a BIOS is genuinely required and positively identified. Files remain inside the browser.</p>
+    <span class="badge ok">✓ local emulation</span><span class="badge info">✓ disassembly / reverse engineering</span><span class="badge info">✓ graphics extraction</span><span class="badge info">✓ audio capture where available</span><span class="badge warn">experimental, not cycle-perfect</span>
+  </div>
+
+  <div class="toc">
+    <a href="#principi">01 · <span data-lang="it">Scopo e metodo</span><span data-lang="en">Purpose & method</span></a>
+    <a href="#launcher">02 · Launcher / ZIP</a>
+    <a href="#gameboy">Game Boy / GBC / GBA</a>
+    <a href="#sega">SEGA SMS / GG</a>
+    <a href="#coleco">ColecoVision</a>
+    <a href="#spectrum">ZX Spectrum 48K</a>
+    <a href="#msx">MSX1</a>
+    <a href="#vectrex">Vectrex</a>
+    <a href="#intellivision">Intellivision</a>
+  </div>
+
+  <section id="principi" class="card">
+    <div data-lang="it">
+      <h2>01 · Cosa significa “decompilare” una ROM</h2>
+      <p>Una ROM commerciale contiene codice macchina e dati, non il progetto originale. Per questo gli strumenti del progetto lavorano a più livelli:</p>
+      <ul>
+        <li><strong>Disassembler:</strong> traduce le istruzioni macchina in assembly leggibile (Z80, LR35902, ARM/Thumb, 6809, CP1610 a seconda del sistema).</li>
+        <li><strong>Analisi/decompilazione euristica:</strong> prova a distinguere codice raggiungibile e dati, segue salti e chiamate, individua punti d’ingresso e crea etichette artificiali.</li>
+        <li><strong>Memoria e trace:</strong> permette di osservare RAM/ROM/VRAM, registri CPU e istruzioni eseguite durante il gioco.</li>
+        <li><strong>Grafica:</strong> estrae tile, sprite, OAM, palette, VRAM, fotogrammi o segmenti vettoriali. Il tipo di risorsa dipende dalla macchina.</li>
+        <li><strong>Suono:</strong> quando possibile registra scritture ai chip audio, registri per fotogramma e/o genera un WAV dalla sequenza emulata.</li>
+      </ul>
+      <div class="warnbox"><strong>Limite fondamentale:</strong> il sorgente originale non può essere ricostruito fedelmente. Nomi delle variabili, commenti, macro, file sorgente, strumenti grafici e struttura originale del progetto non sono conservati nella ROM. Il risultato è una ricostruzione tecnica utile per capire il programma, non il codice sorgente originale.</div>
+      <h3>Grafica e suono: cosa viene davvero estratto</h3>
+      <p>Quando una console usa sprite e tile hardware possiamo esportare strutture vicine agli asset del gioco. Quando invece la grafica è una bitmap, come sullo Spectrum, possiamo catturare lo schermo o ritagliarlo ma non esiste uno “sprite hardware” da estrarre. Sul Vectrex la grafica è vettoriale: quindi si esportano segmenti e fotogrammi SVG/JSON. Per l’audio, un WAV ricostruito rappresenta ciò che il modello del chip sta producendo; non implica che nella ROM esistesse un file WAV originale.</p>
+    </div>
+    <div data-lang="en">
+      <h2>01 · What “decompiling” a ROM means</h2>
+      <p>A commercial ROM contains machine code and data, not the original project. The tools therefore work at several levels:</p>
+      <ul>
+        <li><strong>Disassembler:</strong> converts machine instructions to readable assembly (Z80, LR35902, ARM/Thumb, 6809, CP1610 depending on the system).</li>
+        <li><strong>Heuristic analysis/decompilation:</strong> tries to separate reachable code from data, follows jumps and calls, identifies entry points and creates synthetic labels.</li>
+        <li><strong>Memory and trace:</strong> exposes RAM/ROM/VRAM, CPU registers and executed instructions while the game runs.</li>
+        <li><strong>Graphics:</strong> extracts tiles, sprites, OAM, palettes, VRAM, frames or vector segments depending on the machine.</li>
+        <li><strong>Sound:</strong> where available, records sound-chip writes, per-frame registers and/or renders WAV audio from the emulated sequence.</li>
+      </ul>
+      <div class="warnbox"><strong>Fundamental limitation:</strong> the original source cannot be faithfully recovered. Variable names, comments, macros, source files, art tools and the original project structure are not preserved in the ROM. The output is a technical reconstruction useful for understanding the program, not the original source code.</div>
+      <h3>What graphics and sound extraction actually produce</h3>
+      <p>On machines with hardware sprites and tiles, exports can be close to the game’s underlying assets. On a bitmap machine such as the Spectrum there is no hardware sprite to extract, so the tool captures or crops the screen instead. Vectrex graphics are vectors, so the natural export is SVG/JSON vector data. A reconstructed WAV represents the sound generated by the emulated chip; it does not imply that the original ROM contained a WAV file.</p>
+    </div>
+  </section>
+
+  <section id="launcher" class="card sys">
+    <div data-lang="it">
+      <h2>02 · Landing, ZIP e BIOS</h2>
+      <p>La landing può analizzare una cartella intera e le entry interne degli archivi ZIP. Usa estensioni, dimensioni e firme note — per esempio logo Nintendo, header GBA, <code>TMR SEGA</code>, header Coleco, header MSX — per scegliere il core corretto.</p>
+      <ul>
+        <li><strong>ZIP:</strong> le ROM interessanti vengono estratte in memoria quando il browser supporta il metodo di compressione. ZIP cifrati, ZIP64 o metodi non supportati possono essere riconosciuti ma non estratti.</li>
+        <li><strong>BIOS:</strong> non viene scelto soltanto perché è un <code>.bin</code> o <code>.rom</code>. Deve corrispondere a sistema, dimensione attesa e nome/firma coerente.</li>
+        <li><strong>Sega e Game Boy:</strong> il launcher non carica automaticamente un BIOS perché non è necessario per l’uso normale della versione inclusa.</li>
+        <li><strong>Fullscreen:</strong> puoi usare quello interno del singolo emulatore oppure il pulsante fullscreen della barra della landing. <span class="kbd">Esc</span> esce dalla modalità a schermo intero.</li>
+      </ul>
+    </div>
+    <div data-lang="en">
+      <h2>02 · Launcher, ZIP archives and BIOS handling</h2>
+      <p>The launcher can inspect a whole folder and the entries inside ZIP archives. It uses extensions, sizes and known signatures — for example the Nintendo logo, GBA header, <code>TMR SEGA</code>, Coleco headers and MSX headers — to choose the appropriate core.</p>
+      <ul>
+        <li><strong>ZIP:</strong> interesting ROM entries are extracted in memory when the browser supports the compression method. Encrypted ZIPs, ZIP64 and unsupported methods may be detected but cannot necessarily be extracted.</li>
+        <li><strong>BIOS:</strong> a file is not selected merely because it is a <code>.bin</code> or <code>.rom</code>. It must match the system, expected size and a coherent name/signature.</li>
+        <li><strong>Sega and Game Boy:</strong> the launcher does not automatically load a BIOS because the included builds do not require one for normal use.</li>
+        <li><strong>Fullscreen:</strong> use either the emulator’s own fullscreen button or the launcher player fullscreen. Press <span class="kbd">Esc</span> to leave fullscreen.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="gameboy" class="card sys">
+    <div class="syshead"><div class="sysicon">🟩</div><div><h2>Game Boy · Game Boy Color · Game Boy Advance</h2><div class="muted">GBxJSD / GBC / GBA tools</div></div></div>
+    <div class="cols">
+      <div data-lang="it">
+        <h3>File e avvio</h3><p>ROM <code>.gb</code>, <code>.gbc</code>, <code>.gba</code> e, quando appropriato, <code>.bin</code>. Nessun BIOS esterno è richiesto dalla landing. GB/GBC usano il core interno; GBA usa un core separato caricato solo quando serve.</p>
+        <h3>Comandi</h3>
+        <ul><li><span class="kbd">Frecce</span> o <span class="kbd">WASD</span>: D-pad</li><li><span class="kbd">Z</span>: A · <span class="kbd">X</span>: B</li><li><span class="kbd">Invio</span>: Start · <span class="kbd">Shift</span>: Select</li><li>GBA: <span class="kbd">Q</span>: L · <span class="kbd">E</span>: R</li></ul>
+        <h3>Reverse engineering</h3><p>Dump della memoria con mappa CPU e ROM fisica; disassembler LR35902 bank-aware per GB/GBC; disassembler ARM7TDMI ARM/Thumb per GBA con branch, load/store, ALU, stack e SWI. Esportazione ASM.</p>
+      </div>
+      <div data-lang="it">
+        <h3>Grafica e audio</h3><p>GB/GBC: tile 2bpp, tilemap e OAM. GBA: tile BG/OBJ 4bpp/8bpp, palette e 128 oggetti OAM. Export PNG/JSON e screenshot. Per GB/GBC il monitor audio espone l’APU a 4 canali e il relativo stato.</p>
+        <h3>Stato / salvataggi</h3><p>Export/import dello stato e della RAM dove supportato dalla modalità corrente.</p>
+        <h3>Limitazioni</h3><div class="warnbox">Il core GBA è separato e usa un BIOS HLE sperimentale. Il progetto resta sperimentale. Per GB/GBC l’audio modella molti dettagli, ma non tutte le anomalie analogiche e i casi limite cycle-perfect. La qualità del disassembly GBA è statica: non sostituisce un decompiler ad alto livello né ricostruisce C/C++ originale.</div>
+      </div>
+      <div data-lang="en">
+        <h3>Files and boot</h3><p>ROMs: <code>.gb</code>, <code>.gbc</code>, <code>.gba</code> and, where appropriate, <code>.bin</code>. The launcher requires no external BIOS. GB/GBC use the internal core; GBA uses a separate core loaded on demand.</p>
+        <h3>Controls</h3><ul><li><span class="kbd">Arrows</span> or <span class="kbd">WASD</span>: D-pad</li><li><span class="kbd">Z</span>: A · <span class="kbd">X</span>: B</li><li><span class="kbd">Enter</span>: Start · <span class="kbd">Shift</span>: Select</li><li>GBA: <span class="kbd">Q</span>: L · <span class="kbd">E</span>: R</li></ul>
+        <h3>Reverse engineering</h3><p>CPU-mapped and physical-ROM memory views; bank-aware LR35902 disassembly for GB/GBC; ARM7TDMI ARM/Thumb disassembly for GBA including branches, load/store, ALU, stack and SWI. ASM export.</p>
+      </div>
+      <div data-lang="en">
+        <h3>Graphics and audio</h3><p>GB/GBC: 2bpp tiles, tilemaps and OAM. GBA: 4bpp/8bpp BG/OBJ tiles, palettes and 128 OAM objects. PNG/JSON export and screenshots. For GB/GBC the audio monitor exposes the four-channel APU and its state.</p>
+        <h3>State / save data</h3><p>State and RAM export/import where supported by the active mode.</p>
+        <h3>Limitations</h3><div class="warnbox">The GBA core is separate and uses an experimental HLE BIOS. The project remains experimental. GB/GBC audio models many details but not every analogue quirk or cycle-perfect edge case. GBA disassembly is static and does not reconstruct the original C/C++ source.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sega" class="card sys">
+    <div class="syshead"><div class="sysicon">🔵</div><div><h2>SEGA Master System · Game Gear</h2><div class="muted">SEGAJSD · Z80 / VDP / SN76489</div></div></div>
+    <div class="cols">
+      <div data-lang="it">
+        <h3>File e BIOS</h3><p>ROM <code>.sms</code>, <code>.gg</code> e ZIP che contengono questi formati. Il BIOS è opzionale e <strong>non viene precaricato dalla landing</strong>.</p>
+        <h3>Comandi</h3><ul><li><span class="kbd">Frecce</span> / <span class="kbd">WASD</span>: D-pad</li><li><span class="kbd">Z</span>: pulsante 1 · <span class="kbd">X</span>: pulsante 2</li><li><span class="kbd">Invio</span>: Start su Game Gear / Pause-NMI su Master System</li></ul>
+        <h3>Strumenti</h3><p>Memoria CPU/ROM/RAM/SRAM, trace Z80, listing statico Z80 con export ASM, screenshot PNG, export VRAM/CRAM, atlante live dei tile 4bpp con palette SMS o GG.</p>
+      </div>
+      <div data-lang="it">
+        <h3>Opzioni</h3><p>NTSC/PAL, mapper SEGA o Codemasters, effetti video pixel/scanlines/CRT, velocità emulazione, stato macchina.</p>
+        <h3>Limitazioni</h3><div class="warnbox"><strong>Non è un emulatore Mega Drive/Genesis.</strong> Questa build copre Master System e Game Gear. I mapper esposti sono SEGA + SRAM e Codemasters; titoli con hardware o mapper differenti possono non funzionare. Il disassembler analizza lo spazio Z80 correntemente mappato. Il supporto ZIP interno non copre archivi cifrati, ZIP64 o ogni metodo di compressione possibile.</div>
+      </div>
+      <div data-lang="en">
+        <h3>Files and BIOS</h3><p>ROMs: <code>.sms</code>, <code>.gg</code>, plus ZIP archives containing those formats. BIOS is optional and is <strong>not auto-loaded by the launcher</strong>.</p>
+        <h3>Controls</h3><ul><li><span class="kbd">Arrows</span> / <span class="kbd">WASD</span>: D-pad</li><li><span class="kbd">Z</span>: Button 1 · <span class="kbd">X</span>: Button 2</li><li><span class="kbd">Enter</span>: Game Gear Start / Master System Pause NMI</li></ul>
+        <h3>Tools</h3><p>CPU/ROM/RAM/SRAM memory, Z80 trace, static Z80 listing with ASM export, PNG screenshot, VRAM/CRAM export, and a live 4bpp tile atlas using SMS or GG palettes.</p>
+      </div>
+      <div data-lang="en">
+        <h3>Options</h3><p>NTSC/PAL, SEGA or Codemasters mapper, pixel/scanline/CRT effects, emulation speed and machine state.</p>
+        <h3>Limitations</h3><div class="warnbox"><strong>This is not a Mega Drive/Genesis emulator.</strong> The build covers Master System and Game Gear. Exposed mapper support is SEGA + SRAM and Codemasters; titles requiring other hardware or mappers may fail. The disassembler sees the currently mapped Z80 address space. Internal ZIP support does not cover encrypted archives, ZIP64 or every compression method.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="coleco" class="card sys">
+    <div class="syshead"><div class="sysicon">🕹️</div><div><h2>ColecoVision</h2><div class="muted">Colecojsd · Z80 / TMS9918A / SN76489A</div></div></div>
+    <div class="cols">
+      <div data-lang="it">
+        <h3>File e BIOS</h3><p>BIOS ColecoVision da 8 KiB richiesto. Cartucce <code>.col</code>, <code>.cv</code>, <code>.rom</code> o <code>.bin</code> quando valide.</p>
+        <h3>Comandi</h3><ul><li>P1: mouse oppure <span class="kbd">Frecce/WASD</span>; <span class="kbd">Z/X</span> = pulsanti</li><li>P2: <span class="kbd">I J K L</span>; <span class="kbd">N/M</span> = pulsanti</li><li>Tastierino P1: <span class="kbd">0–9</span>, <span class="kbd">*</span>, <span class="kbd">#</span></li><li>Mouse: clic sullo schermo per catturarlo; <span class="kbd">Esc</span> lo libera. Sono disponibili sensibilità e inversione asse Y.</li></ul>
+        <h3>Reverse engineering</h3><p>Registri Z80, memoria, VRAM e registri VDP, trace I/O, decompiler/analizzatore euristico Z80 con entry point da header, da <code>$8000</code> o manuale, export ASM e report diagnostico.</p>
+      </div>
+      <div data-lang="it">
+        <h3>Grafica e audio</h3><p>Cattura fino a circa 600 VBlank (~10 s): sprite TMS9918A, Sprite PNG/JSON, stato e scritture SN76489A, Sound JSON e WAV. È possibile esportare anche la VRAM.</p>
+        <h3>Limitazioni</h3><div class="warnbox">La ricostruzione Z80 è euristica e non è il sorgente originale. Questa build espone l’hardware base ColecoVision; non presenta supporto specifico per espansioni come ADAM/SGM. La compatibilità con cartucce che dipendono da periferiche o hardware aggiuntivo non è garantita.</div>
+      </div>
+      <div data-lang="en">
+        <h3>Files and BIOS</h3><p>An 8 KiB ColecoVision BIOS is required. Cartridges may be <code>.col</code>, <code>.cv</code>, <code>.rom</code> or <code>.bin</code> when valid.</p>
+        <h3>Controls</h3><ul><li>P1: mouse or <span class="kbd">Arrows/WASD</span>; <span class="kbd">Z/X</span> = buttons</li><li>P2: <span class="kbd">I J K L</span>; <span class="kbd">N/M</span> = buttons</li><li>P1 keypad: <span class="kbd">0–9</span>, <span class="kbd">*</span>, <span class="kbd">#</span></li><li>Mouse: click the screen to capture it; <span class="kbd">Esc</span> releases it. Sensitivity and vertical inversion are available.</li></ul>
+        <h3>Reverse engineering</h3><p>Z80 registers, memory, VRAM and VDP registers, I/O trace, heuristic Z80 decompiler/analyser with header, <code>$8000</code> or manual entry point, ASM export and diagnostic report.</p>
+      </div>
+      <div data-lang="en">
+        <h3>Graphics and audio</h3><p>Capture up to roughly 600 VBlanks (~10 s): TMS9918A sprites, Sprite PNG/JSON, SN76489A state/writes, Sound JSON and WAV. VRAM can also be exported.</p>
+        <h3>Limitations</h3><div class="warnbox">Z80 reconstruction is heuristic and is not the original source. This build exposes base ColecoVision hardware and does not advertise dedicated support for ADAM/SGM-style expansions. Compatibility with cartridges requiring extra peripherals or hardware is not guaranteed.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="spectrum" class="card sys">
+    <div class="syshead"><div class="sysicon">🌈</div><div><h2>ZX Spectrum 48K</h2><div class="muted">zx48jsd · Z80 / ULA / beeper</div></div></div>
+    <div class="cols">
+      <div data-lang="it">
+        <h3>File</h3><p>ROM di sistema 48K esattamente 16.384 byte (<code>.rom</code>/<code>.bin</code>). Giochi/schermate: snapshot <code>.sna</code>, <code>.z80</code> 48K, cassette <code>.tap</code>, schermate <code>.scr</code>.</p>
+        <h3>Tastiera e joystick</h3><ul><li>Tastiera fisica: lettere e numeri originali</li><li><span class="kbd">Shift</span> = CAPS SHIFT · <span class="kbd">Ctrl</span> = SYMBOL SHIFT · <span class="kbd">Backspace</span> = delete</li><li>Joystick: <span class="kbd">Frecce</span> = direzione · <span class="kbd">Alt</span> = fuoco</li><li>Mouse joystick opzionale: centro neutro, clic sinistro = fuoco</li><li>Modalità: Kempston, Sinclair 2, Cursor, QAOP + Space, disattivato</li></ul>
+        <h3>Cassette</h3><p>Con TAP: dal BASIC usa <code>LOAD ""</code>. Sono disponibili Play, Stop, Rewind e caricamento rapido con la routine ROM standard.</p>
+      </div>
+      <div data-lang="it">
+        <h3>Reverse engineering / estrazione</h3><p>Registri e step Z80, step frame, trace delle ultime 160 istruzioni, dump memoria, disassembler e export listing/RAM. Lo Spectrum non ha sprite hardware: la sezione grafica cattura lo schermo e permette il ritaglio PNG. Il beeper 1-bit può essere registrato fino a 30 secondi ed esportato in WAV/JSON.</p>
+        <h3>Limitazioni</h3><div class="redbox">Solo Spectrum 48K: niente 128K, AY, floppy o TZX. La contesa RAM/ULA, floating bus e le temporizzazioni interne del bus non sono riprodotte con precisione. Effetti raster, loader particolari e alcuni giochi possono quindi richiedere correzioni. La demo interna verifica il percorso CPU/video/audio, non l’intero catalogo.</div>
+      </div>
+      <div data-lang="en">
+        <h3>Files</h3><p>48K system ROM exactly 16,384 bytes (<code>.rom</code>/<code>.bin</code>). Games/screens: 48K <code>.sna</code> or <code>.z80</code> snapshots, <code>.tap</code> tapes and <code>.scr</code> screens.</p>
+        <h3>Keyboard and joystick</h3><ul><li>Physical keyboard: original letters and digits</li><li><span class="kbd">Shift</span> = CAPS SHIFT · <span class="kbd">Ctrl</span> = SYMBOL SHIFT · <span class="kbd">Backspace</span> = delete</li><li>Joystick: <span class="kbd">Arrows</span> = directions · <span class="kbd">Alt</span> = fire</li><li>Optional mouse joystick: centre neutral, left click = fire</li><li>Modes: Kempston, Sinclair 2, Cursor, QAOP + Space, disabled</li></ul>
+        <h3>Tape</h3><p>For TAP files use <code>LOAD ""</code> from BASIC. Play, Stop, Rewind and fast loading through the standard ROM routine are available.</p>
+      </div>
+      <div data-lang="en">
+        <h3>Reverse engineering / extraction</h3><p>Z80 registers and stepping, frame step, last-160-instruction trace, memory dump, disassembler and listing/RAM export. Spectrum has no hardware sprites: the graphics section captures the screen and supports PNG cropping. The 1-bit beeper can be recorded for up to 30 seconds and exported as WAV/JSON.</p>
+        <h3>Limitations</h3><div class="redbox">Spectrum 48K only: no 128K, AY, floppy or TZX. RAM/ULA contention, floating bus and internal bus timings are not reproduced precisely. Raster effects, unusual loaders and some games may therefore require fixes. The built-in demo checks the CPU/video/audio path, not the complete catalogue.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="msx" class="card sys">
+    <div class="syshead"><div class="sysicon">🔷</div><div><h2>MSX1</h2><div class="muted">MSX1JSD · Z80 / TMS9918A / AY-3-8910</div></div></div>
+    <div class="cols">
+      <div data-lang="it">
+        <h3>File e BIOS</h3><p>Main BIOS MSX1 da 32 KiB. Cartucce <code>.mx1</code>, <code>.rom</code> o <code>.bin</code>. RAM emulata: 64 KiB. Mapper standard, ASCII e Konami.</p>
+        <h3>Comandi</h3><ul><li>Tastiera MSX attiva tramite la tastiera fisica</li><li>Joystick P1: <span class="kbd">Frecce/WASD</span>, <span class="kbd">Z/X</span></li><li>Joystick P2: <span class="kbd">I J K L</span>, <span class="kbd">N/M</span></li><li>Mouse sullo schermo come joystick P1: centro neutro, clic = pulsanti</li></ul>
+        <h3>Reverse engineering</h3><p>Registri Z80, memoria, VDP, trace, analisi euristica della cartuccia con punto d’ingresso esplicito e byte originali, export ASM.</p>
+      </div>
+      <div data-lang="it">
+        <h3>Grafica e audio</h3><p>Cattura fino a circa 600 VBlank (~10 s): sprite TMS9918A e registri AY-3-8910. Export sprite PNG/JSON, suoni JSON e WAV dove previsto.</p>
+        <h3>Limitazioni</h3><div class="redbox">Questa build è MSX1 base. Cassette, floppy, subslot e audio SCC non sono emulati. Non è un MSX2: niente V9938, Sub-ROM, RAM mapper MSX2 o modalità video MSX2.</div>
+      </div>
+      <div data-lang="en">
+        <h3>Files and BIOS</h3><p>A 32 KiB MSX1 Main BIOS is required. Cartridges: <code>.mx1</code>, <code>.rom</code> or <code>.bin</code>. Emulated RAM: 64 KiB. Standard, ASCII and Konami mappers.</p>
+        <h3>Controls</h3><ul><li>The physical keyboard drives the MSX keyboard matrix</li><li>Joystick P1: <span class="kbd">Arrows/WASD</span>, <span class="kbd">Z/X</span></li><li>Joystick P2: <span class="kbd">I J K L</span>, <span class="kbd">N/M</span></li><li>Mouse over the screen can drive P1: centre neutral, clicks = buttons</li></ul>
+        <h3>Reverse engineering</h3><p>Z80 registers, memory, VDP, trace, heuristic cartridge analysis with explicit entry point and original bytes, ASM export.</p>
+      </div>
+      <div data-lang="en">
+        <h3>Graphics and audio</h3><p>Capture up to roughly 600 VBlanks (~10 s): TMS9918A sprites and AY-3-8910 registers. Sprite PNG/JSON, sound JSON and WAV export where implemented.</p>
+        <h3>Limitations</h3><div class="redbox">This is a base MSX1 build. Cassettes, floppy disks, subslots and SCC audio are not emulated. It is not MSX2: there is no V9938, Sub-ROM, MSX2 RAM mapper or MSX2 video mode support.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="vectrex" class="card sys">
+    <div class="syshead"><div class="sysicon">✳️</div><div><h2>Vectrex</h2><div class="muted">VecX WebAssembly · 6809 / VIA 6522 / AY-3-8912</div></div></div>
+    <div class="cols">
+      <div data-lang="it">
+        <h3>File e BIOS</h3><p>Cartucce <code>.vec</code>, <code>.rom</code> o <code>.bin</code>. Per le cartucce commerciali servono ROM e BIOS originale; senza ROM resta disponibile la demo vettoriale interna.</p>
+        <h3>Comandi</h3><ul><li><span class="kbd">Frecce/WASD</span>: joystick</li><li><span class="kbd">Z</span>, <span class="kbd">X</span>, <span class="kbd">C</span>: pulsanti 1–3</li><li><span class="kbd">Spazio</span>: ulteriore comando fuoco/pulsante gestito dal core</li><li><span class="kbd">Invio</span>: Start · <span class="kbd">R</span>: Reset · <span class="kbd">P</span>: Pausa/Riprendi</li></ul>
+        <h3>Reverse engineering</h3><p>Stato CPU Motorola 6809, memoria, trace, disassembler 6809 da indirizzo o dal PC corrente, export ASM.</p>
+      </div>
+      <div data-lang="it">
+        <h3>Forme e suoni</h3><p>Il Vectrex costruisce le immagini durante l’esecuzione. La cattura registra fino a 300 campioni (~10 s a 1×) e permette di esportare fotogramma SVG, sequenza vettoriale JSON, registri AY JSON e WAV ricostruito dai tre canali tonali.</p>
+        <h3>Stato implementazione / limiti</h3><p>La build dichiara core VecX completo, reset dal vettore <code>$FFFE</code>, timer/shift register VIA, DAC/integratori e registri/audio AY. Il limite principale è che BIOS e ROM commerciali non sono inclusi e devono essere forniti dall’utente. L’export WAV deriva dal modello audio corrente e non ricostruisce eventuali sorgenti musicali originali.</p>
+      </div>
+      <div data-lang="en">
+        <h3>Files and BIOS</h3><p>Cartridges: <code>.vec</code>, <code>.rom</code> or <code>.bin</code>. Commercial cartridges require both ROM and original BIOS; without a ROM the built-in vector demo remains available.</p>
+        <h3>Controls</h3><ul><li><span class="kbd">Arrows/WASD</span>: joystick</li><li><span class="kbd">Z</span>, <span class="kbd">X</span>, <span class="kbd">C</span>: buttons 1–3</li><li><span class="kbd">Space</span>: additional fire/button input handled by the core</li><li><span class="kbd">Enter</span>: Start · <span class="kbd">R</span>: Reset · <span class="kbd">P</span>: Pause/Resume</li></ul>
+        <h3>Reverse engineering</h3><p>Motorola 6809 CPU state, memory, trace, 6809 disassembler from an address or current PC, ASM export.</p>
+      </div>
+      <div data-lang="en">
+        <h3>Shapes and sound</h3><p>Vectrex builds its image while running. Capture records up to 300 samples (~10 s at 1×) and can export an SVG frame, vector sequence JSON, AY register JSON and a WAV reconstructed from the three tone channels.</p>
+        <h3>Implementation / limits</h3><p>The build reports a complete VecX core, reset through vector <code>$FFFE</code>, VIA timers/shift register, DAC/integrators and AY registers/audio. The main practical limit is that commercial BIOS and ROM files are not included. WAV export comes from the current audio model and does not reconstruct original music source files.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="intellivision" class="card sys">
+    <div class="syshead"><div class="sysicon">🔴</div><div><h2>Intellivision</h2><div class="muted">Intellijsd M5.0 · CP1610 / STIC / AY-3-8914</div></div></div>
+    <div class="cols">
+      <div data-lang="it">
+        <h3>File</h3><p>Executive ROM: 4K parole / 8 KiB, mappata a <code>$1000</code>. GROM: 2 KiB, mappata a <code>$3000</code>. La landing riconosce come cartucce di gioco i file <code>.int</code>. I file <code>.bin</code>/<code>.rom</code> vengono considerati Intellivision soltanto quando corrispondono a EXEC o GROM per nome e dimensione.</p>
+        <h3>Comandi principali</h3><ul><li><span class="kbd">WASD</span>: disco direzionale</li><li><span class="kbd">0–9</span>: tastierino numerico</li><li><span class="kbd">Z</span>, <span class="kbd">X</span>, <span class="kbd">C</span>: azioni laterali</li><li>I controlli virtuali nell’emulatore espongono disco, tastierino, CLR/ENT e pulsanti laterali.</li></ul>
+        <h3>Analisi</h3><p>La versione M5.0 espone stato CP1610, memoria, eventi, informazioni sul PSG AY-3-8914 e strumenti di reverse engineering. Le immagini Intellicart possono contenere segmenti, attributi RAM/ROM e bankswitch.</p>
+      </div>
+      <div data-lang="it">
+        <h3>Integrazione nel pacchetto</h3><div class="infobox"><code>intellijsd.html</code> contiene ora il core standalone M5.0 completo: non apre più il sito deployato e può funzionare localmente/offline. La landing passa automaticamente EXEC e GROM solo se identificati per nome e dimensione, e passa come gioco soltanto una cartuccia <code>.int</code>.</div>
+        <h3>Reverse engineering</h3><p>Anche qui “decompilare” significa produrre una ricostruzione CP1610 e individuare codice/dati/entry point quando possibile; non significa recuperare il sorgente originale.</p>
+      </div>
+      <div data-lang="en">
+        <h3>Files</h3><p>Executive ROM: 4K words / 8 KiB, mapped at <code>$1000</code>. GROM: 2 KiB, mapped at <code>$3000</code>. The launcher recognises <code>.int</code> files as game cartridges. <code>.bin</code>/<code>.rom</code> files are treated as Intellivision only when they match EXEC or GROM by name and exact size.</p>
+        <h3>Main controls</h3><ul><li><span class="kbd">WASD</span>: directional disc</li><li><span class="kbd">0–9</span>: numeric keypad</li><li><span class="kbd">Z</span>, <span class="kbd">X</span>, <span class="kbd">C</span>: side actions</li><li>Virtual controls expose the disc, keypad, CLR/ENT and side buttons.</li></ul>
+        <h3>Analysis</h3><p>M5.0 exposes CP1610 state, memory, events, AY-3-8914 PSG information and reverse-engineering tools. Intellicart images may contain segments, RAM/ROM attributes and bank switching.</p>
+      </div>
+      <div data-lang="en">
+        <h3>Package integration</h3><div class="infobox"><code>intellijsd.html</code> now contains the complete standalone M5.0 core: it no longer opens the deployed site and can run locally/offline. The launcher passes EXEC and GROM only when they match the expected name and size, and passes only a <code>.int</code> cartridge as the game ROM.</div>
+        <h3>Reverse engineering</h3><p>Here too, “decompiling” means reconstructing CP1610 assembly and identifying code/data/entry points where possible; it does not recover the original source.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card sys">
+    <div data-lang="it">
+      <h2>Comandi comuni dell’interfaccia</h2>
+      <table class="table">
+        <tr><th>Comando</th><th>Significato</th></tr>
+        <tr><td>Power / Accendi</td><td>Avvia o spegne la macchina emulata quando il core lo prevede.</td></tr>
+        <tr><td>Reset</td><td>Riporta CPU e periferiche allo stato di reset; non ricarica necessariamente i file.</td></tr>
+        <tr><td>Pausa / Riprendi</td><td>Ferma l’avanzamento dell’emulazione conservando lo stato corrente.</td></tr>
+        <tr><td>Step / Passo</td><td>Esegue una singola istruzione o un singolo frame, a seconda del core.</td></tr>
+        <tr><td>Audio</td><td>Web Audio richiede in genere un gesto dell’utente prima di essere attivato dal browser.</td></tr>
+        <tr><td>Fullscreen</td><td>Il fullscreen interno ingrandisce lo schermo del core; quello della landing ingrandisce l’intero emulatore.</td></tr>
+        <tr><td>State</td><td>I salvataggi di stato sono specifici del singolo emulatore/versione e non sono intercambiabili.</td></tr>
+      </table>
+    </div>
+    <div data-lang="en">
+      <h2>Common interface commands</h2>
+      <table class="table">
+        <tr><th>Command</th><th>Meaning</th></tr>
+        <tr><td>Power</td><td>Starts or stops the emulated machine where the core exposes power control.</td></tr>
+        <tr><td>Reset</td><td>Resets CPU and peripherals; it does not necessarily reload files.</td></tr>
+        <tr><td>Pause / Resume</td><td>Stops emulation progress while preserving current state.</td></tr>
+        <tr><td>Step</td><td>Runs one instruction or one frame depending on the core.</td></tr>
+        <tr><td>Audio</td><td>Web Audio normally requires an explicit user gesture before a browser allows playback.</td></tr>
+        <tr><td>Fullscreen</td><td>Core fullscreen enlarges the emulator screen; launcher fullscreen enlarges the whole emulator.</td></tr>
+        <tr><td>State</td><td>Save states are specific to each emulator/version and are not interchangeable.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <div class="footer" data-lang="it">JSD Emulator Hub · guida della build corrente · emulatori sperimentali indipendenti · nessun BIOS o gioco commerciale incluso</div>
+  <div class="footer" data-lang="en">JSD Emulator Hub · current-build guide · independent experimental emulators · no commercial BIOS or game included</div>
+</div>
+<script>
+const sel=document.getElementById('lang');
+function setLang(v){
+  const lang=v==='en'?'en':'it';
+  document.body.classList.toggle('lang-it',lang==='it');
+  document.body.classList.toggle('lang-en',lang==='en');
+  document.documentElement.lang=lang;
+  sel.value=lang;
+  try{localStorage.setItem('jsd-help-lang',lang)}catch(_){}
+}
+sel.onchange=()=>setLang(sel.value);
+let initial='it';
+try{initial=localStorage.getItem('jsd-help-lang')||localStorage.getItem('jsd-hub-lang')||'it'}catch(_){}
+setLang(initial);
+</script>
+</body>
+</html>
