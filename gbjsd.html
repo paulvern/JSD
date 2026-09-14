@@ -6,7 +6,7 @@
 <title>GBxJSD · GB / GBC / GBA</title>
 <style>
 :root{--bg:#071014;--panel:#0d1b20;--panel2:#10252c;--line:#24434c;--text:#d8f2ed;--muted:#7fa39d;--mint:#67f5bd;--amber:#ffcc66;--red:#ff6b76;--blue:#5cc8ff;--shadow:0 18px 48px #0008}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 45% -10%,#17404a 0,#071014 42%,#03080a 100%);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}button,select,input{font:inherit}button{border:1px solid var(--line);background:#13292f;color:var(--text);border-radius:9px;padding:8px 11px;cursor:pointer;transition:.15s}button:hover{border-color:#4b7d87;background:#18363e}button:disabled{opacity:.38;cursor:not-allowed}.primary{background:var(--mint);color:#052017;border-color:var(--mint);font-weight:800}.danger{color:#ffd8dc}.tiny{font-size:11px;padding:5px 8px}.app{max-width:1540px;margin:auto;padding:18px}.top{display:flex;align-items:center;gap:14px;margin-bottom:15px}.brand{font-size:27px;font-weight:900;letter-spacing:-1px}.brand i{color:var(--mint);font-style:normal}.version{font:11px ui-monospace,monospace;color:var(--muted)}.statuses{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}.badge{padding:5px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font:700 10px ui-monospace,monospace;letter-spacing:.3px}.badge.ok{color:var(--mint);border-color:#2a805f}.badge.warn{color:var(--amber);border-color:#806b2a}.badge.on{color:#081a15;background:var(--mint);border-color:var(--mint)}.layout{display:grid;grid-template-columns:minmax(560px,1.38fr) minmax(440px,.95fr);gap:15px}.card{background:linear-gradient(150deg,#102128f2,#0a171cf2);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.screen-card{padding:14px}.screen-shell{position:relative;border-radius:18px;padding:22px;background:linear-gradient(145deg,#373d37,#111512);border:1px solid #53605a;box-shadow:inset 0 0 45px #000b,0 14px 34px #0008;overflow:hidden}.screen-bezel{max-width:680px;margin:auto;padding:18px 18px 34px;border-radius:18px 18px 48px 18px;background:linear-gradient(135deg,#545b54,#292f2b);box-shadow:inset 0 1px 0 #ffffff20,0 6px 20px #0008}.screen-wrap{position:relative;margin:auto;max-width:560px;border-radius:10px;padding:15px;background:#222;border:1px solid #686d68}.screen{display:block;width:100%;aspect-ratio:160/144;background:#9bbc0f;image-rendering:pixelated;border-radius:3px;box-shadow:0 0 32px #9bbc0f22}.scanlines,.phosphor-mask,.crt-glass{pointer-events:none;position:absolute;inset:15px;border-radius:3px;opacity:0}.screen-shell.crt .screen{filter:saturate(.85) contrast(1.08) brightness(.96)}.screen-shell.crt .scanlines{opacity:.42;background:repeating-linear-gradient(0deg,#0000 0,#0000 2px,#0006 3px,#0002 4px);background-size:100% 4px}.screen-shell.crt .phosphor-mask{opacity:.12;background:repeating-linear-gradient(90deg,#0002 0,#0002 1px,#fff1 1px,#fff1 2px,#0002 2px,#0002 3px);background-size:3px 100%}.screen-shell.crt .crt-glass{opacity:1;background:radial-gradient(ellipse at center,#fff0 58%,#00110a25 78%,#0009 100%),linear-gradient(118deg,#fff6 0,#fff0 18%,#fff0 78%,#9f91 100%);box-shadow:inset 0 0 35px #0009}.screen-shell.soft .screen{image-rendering:auto}.power-led{width:8px;height:8px;border-radius:50%;background:#4a201f;box-shadow:0 0 5px #000;display:inline-block}.power-led.on{background:#ff5656;box-shadow:0 0 9px #ff5656}.bezel-mark{display:flex;align-items:center;gap:8px;color:#bcc8be;font:11px ui-monospace;margin:8px 5px -8px}.osd{position:absolute;top:25px;left:27px;color:#fff;background:#000b;padding:5px 8px;border-radius:6px;font:12px ui-monospace;opacity:0;transition:.2s;z-index:8}.osd.show{opacity:1}.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.grow{flex:1}.control-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.field label,.section-label{display:block;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}.field select,.field input,.memrow select,.memrow input{width:100%;background:#09171c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px}.side{display:flex;flex-direction:column;min-height:0}.tabs{display:flex;overflow:auto;border-bottom:1px solid var(--line);padding:8px 8px 0}.tabbtn{border:0;background:transparent;color:var(--muted);border-radius:8px 8px 0 0;padding:9px 10px;white-space:nowrap}.tabbtn.active{color:var(--mint);background:#173039}.pages{padding:14px;min-height:665px}.page{display:none}.page.active{display:block}.drop{border:1px dashed #3c6570;border-radius:12px;padding:14px;margin-bottom:10px;background:#07161b}.drop.loaded{border-style:solid;border-color:#2f8465}.drop-title{display:flex;align-items:center;justify-content:space-between;font-weight:800}.drop p{margin:5px 0 10px;color:var(--muted);font-size:12px}.filebtn{display:inline-block;border:1px solid var(--line);background:#142d34;padding:7px 10px;border-radius:8px;cursor:pointer}.filebtn input{display:none}.notice{border-left:3px solid var(--amber);background:#261f0d;padding:9px 11px;border-radius:6px;color:#dbc68b;font-size:12px;margin:12px 0}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#08171b;border:1px solid #1d3941;border-radius:9px;padding:9px}.stat b{display:block;font:800 14px ui-monospace,monospace;color:#c9fff0;overflow:hidden;text-overflow:ellipsis}.stat small{color:var(--muted)}.regs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.reg{background:#071418;border:1px solid #18353d;border-radius:7px;padding:6px;text-align:center}.reg span{display:block;color:var(--muted);font:9px ui-monospace}.reg b{font:12px ui-monospace;color:var(--mint)}.flags{display:flex;gap:4px;margin:9px 0}.flag{width:25px;height:25px;display:grid;place-items:center;border:1px solid var(--line);border-radius:5px;color:#516f70;font:700 10px ui-monospace}.flag.on{color:#061811;background:var(--mint);border-color:var(--mint)}.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.trace{height:240px;overflow:auto;background:#03090b;border:1px solid #173039;border-radius:9px;padding:8px;color:#8fb7ae;font:11px/1.55 ui-monospace,monospace;white-space:pre}.memrow{display:flex;gap:7px;margin-bottom:8px}.memrow input{width:110px}.dump{height:360px;overflow:auto;background:#03090b;border:1px solid #173039;border-radius:9px;padding:9px;font:11px/1.5 ui-monospace,monospace;white-space:pre;color:#a6c8c1}.controller{display:grid;grid-template-columns:170px 1fr;gap:18px;align-items:start}.dpad{width:150px;height:150px;position:relative;margin:12px auto}.dkey{position:absolute;width:50px;height:50px;padding:0}.dkey.up{left:50px;top:0}.dkey.down{left:50px;bottom:0}.dkey.left{left:0;top:50px}.dkey.right{right:0;top:50px}.dkey.center{left:50px;top:50px;background:#0c181b}.ab{display:flex;gap:12px;align-items:center;justify-content:center;padding-top:25px}.ab button{width:62px;height:62px;border-radius:50%;font-size:19px;font-weight:900;background:#572335;border-color:#9a4760}.meta-buttons{display:flex;gap:10px;justify-content:center;margin-top:16px}.meta-buttons button{transform:rotate(-12deg);min-width:70px}.held{background:var(--mint)!important;color:#051812!important}.help{color:var(--muted);font-size:12px}.footer{color:#52716c;text-align:center;padding:16px;font-size:11px}.logline{padding:7px 0;border-bottom:1px solid #173039;font:11px ui-monospace;color:#8fb5ad}.lang{display:flex;gap:4px}.lang button.active{color:#061811;background:var(--mint)}.canvas-box{background:#020708;border:1px solid #173039;border-radius:10px;padding:8px;overflow:auto;margin:8px 0}.asset-canvas{display:block;image-rendering:pixelated;background:#9bbc0f;max-width:100%;margin:auto}.asset-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sprite-gallery{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;max-height:230px;overflow:auto}.sprite-item{display:grid;place-items:center;background:#03090b;border:1px solid #173039;border-radius:8px;padding:5px}.sprite-item canvas{width:40px;height:40px;image-rendering:pixelated}.sprite-item small{font:9px ui-monospace;color:var(--muted)}.decomp{width:100%;height:410px;resize:vertical;background:#03090b;border:1px solid #173039;border-radius:9px;padding:9px;color:#a6c8c1;font:11px/1.5 ui-monospace,monospace;white-space:pre;tab-size:4}.checkrow{display:flex;align-items:center;gap:8px;margin:8px 0;color:var(--text);font-size:12px}.checkrow input{accent-color:var(--mint)}.audioch{display:grid;grid-template-columns:74px 1fr 90px;gap:8px;align-items:center;margin:9px 0}.meter{height:7px;background:#061013;border-radius:10px;overflow:hidden}.meter i{display:block;height:100%;background:var(--mint);width:0}.kbd{display:inline-block;padding:1px 5px;border:1px solid #3f5b61;border-bottom-width:2px;border-radius:4px;background:#0d1b20;font:10px ui-monospace;color:#b9d0cb}.sep{height:1px;background:#173039;margin:12px 0}.capture-status{padding:9px;border:1px solid var(--line);border-radius:9px;background:#071418;margin:10px 0;font:11px ui-monospace;color:var(--mint)}
+*{box-sizing:border-box}html{color-scheme:dark}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 45% -10%,#17404a 0,#071014 42%,#03080a 100%);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}button,select,input{font:inherit}select,option{background:#09171c;color:#e6f4ef}select{color-scheme:dark}button{border:1px solid var(--line);background:#13292f;color:var(--text);border-radius:9px;padding:8px 11px;cursor:pointer;transition:.15s}button:hover{border-color:#4b7d87;background:#18363e}button:disabled{opacity:.38;cursor:not-allowed}.primary{background:var(--mint);color:#052017;border-color:var(--mint);font-weight:800}.danger{color:#ffd8dc}.tiny{font-size:11px;padding:5px 8px}.app{max-width:1540px;margin:auto;padding:18px}.top{display:flex;align-items:center;gap:14px;margin-bottom:15px}.brand{font-size:27px;font-weight:900;letter-spacing:-1px}.brand i{color:var(--mint);font-style:normal}.version{font:11px ui-monospace,monospace;color:var(--muted)}.statuses{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}.badge{padding:5px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font:700 10px ui-monospace,monospace;letter-spacing:.3px}.badge.ok{color:var(--mint);border-color:#2a805f}.badge.warn{color:var(--amber);border-color:#806b2a}.badge.on{color:#081a15;background:var(--mint);border-color:var(--mint)}.layout{display:grid;grid-template-columns:minmax(560px,1.38fr) minmax(440px,.95fr);gap:15px}.card{background:linear-gradient(150deg,#102128f2,#0a171cf2);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.screen-card{padding:14px}.screen-shell{position:relative;border-radius:18px;padding:22px;background:linear-gradient(145deg,#373d37,#111512);border:1px solid #53605a;box-shadow:inset 0 0 45px #000b,0 14px 34px #0008;overflow:hidden}.screen-bezel{max-width:680px;margin:auto;padding:18px 18px 34px;border-radius:18px 18px 48px 18px;background:linear-gradient(135deg,#545b54,#292f2b);box-shadow:inset 0 1px 0 #ffffff20,0 6px 20px #0008}.screen-wrap{position:relative;margin:auto;max-width:560px;border-radius:10px;padding:15px;background:#222;border:1px solid #686d68}.screen{display:block;width:100%;aspect-ratio:160/144;background:#9bbc0f;image-rendering:pixelated;border-radius:3px;box-shadow:0 0 32px #9bbc0f22}.scanlines,.phosphor-mask,.crt-glass{pointer-events:none;position:absolute;inset:15px;border-radius:3px;opacity:0}.screen-shell.crt .screen{filter:saturate(.85) contrast(1.08) brightness(.96)}.screen-shell.crt .scanlines{opacity:.42;background:repeating-linear-gradient(0deg,#0000 0,#0000 2px,#0006 3px,#0002 4px);background-size:100% 4px}.screen-shell.crt .phosphor-mask{opacity:.12;background:repeating-linear-gradient(90deg,#0002 0,#0002 1px,#fff1 1px,#fff1 2px,#0002 2px,#0002 3px);background-size:3px 100%}.screen-shell.crt .crt-glass{opacity:1;background:radial-gradient(ellipse at center,#fff0 58%,#00110a25 78%,#0009 100%),linear-gradient(118deg,#fff6 0,#fff0 18%,#fff0 78%,#9f91 100%);box-shadow:inset 0 0 35px #0009}.screen-shell.soft .screen{image-rendering:auto}.power-led{width:8px;height:8px;border-radius:50%;background:#4a201f;box-shadow:0 0 5px #000;display:inline-block}.power-led.on{background:#ff5656;box-shadow:0 0 9px #ff5656}.bezel-mark{display:flex;align-items:center;gap:8px;color:#bcc8be;font:11px ui-monospace;margin:8px 5px -8px}.osd{position:absolute;top:25px;left:27px;color:#fff;background:#000b;padding:5px 8px;border-radius:6px;font:12px ui-monospace;opacity:0;transition:.2s;z-index:8}.osd.show{opacity:1}.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.grow{flex:1}.control-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.field label,.section-label{display:block;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}.field select,.field input,.memrow select,.memrow input{width:100%;background:#09171c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px}.side{display:flex;flex-direction:column;min-height:0}.tabs{display:flex;overflow:auto;border-bottom:1px solid var(--line);padding:8px 8px 0}.tabbtn{border:0;background:transparent;color:var(--muted);border-radius:8px 8px 0 0;padding:9px 10px;white-space:nowrap}.tabbtn.active{color:var(--mint);background:#173039}.pages{padding:14px;min-height:665px}.page{display:none}.page.active{display:block}.drop{border:1px dashed #3c6570;border-radius:12px;padding:14px;margin-bottom:10px;background:#07161b}.drop.loaded{border-style:solid;border-color:#2f8465}.drop-title{display:flex;align-items:center;justify-content:space-between;font-weight:800}.drop p{margin:5px 0 10px;color:var(--muted);font-size:12px}.filebtn{display:inline-block;border:1px solid var(--line);background:#142d34;padding:7px 10px;border-radius:8px;cursor:pointer}.filebtn input{display:none}.notice{border-left:3px solid var(--amber);background:#261f0d;padding:9px 11px;border-radius:6px;color:#dbc68b;font-size:12px;margin:12px 0}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#08171b;border:1px solid #1d3941;border-radius:9px;padding:9px}.stat b{display:block;font:800 14px ui-monospace,monospace;color:#c9fff0;overflow:hidden;text-overflow:ellipsis}.stat small{color:var(--muted)}.regs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.reg{background:#071418;border:1px solid #18353d;border-radius:7px;padding:6px;text-align:center}.reg span{display:block;color:var(--muted);font:9px ui-monospace}.reg b{font:12px ui-monospace;color:var(--mint)}.flags{display:flex;gap:4px;margin:9px 0}.flag{width:25px;height:25px;display:grid;place-items:center;border:1px solid var(--line);border-radius:5px;color:#516f70;font:700 10px ui-monospace}.flag.on{color:#061811;background:var(--mint);border-color:var(--mint)}.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.trace{height:240px;overflow:auto;background:#03090b;border:1px solid #173039;border-radius:9px;padding:8px;color:#8fb7ae;font:11px/1.55 ui-monospace,monospace;white-space:pre}.memrow{display:flex;gap:7px;margin-bottom:8px}.memrow input{width:110px}.dump{height:360px;overflow:auto;background:#03090b;border:1px solid #173039;border-radius:9px;padding:9px;font:11px/1.5 ui-monospace,monospace;white-space:pre;color:#a6c8c1}.controller{display:grid;grid-template-columns:170px 1fr;gap:18px;align-items:start}.dpad{width:150px;height:150px;position:relative;margin:12px auto}.dkey{position:absolute;width:50px;height:50px;padding:0}.dkey.up{left:50px;top:0}.dkey.down{left:50px;bottom:0}.dkey.left{left:0;top:50px}.dkey.right{right:0;top:50px}.dkey.center{left:50px;top:50px;background:#0c181b}.ab{display:flex;gap:12px;align-items:center;justify-content:center;padding-top:25px}.ab button{width:62px;height:62px;border-radius:50%;font-size:19px;font-weight:900;background:#572335;border-color:#9a4760}.meta-buttons{display:flex;gap:10px;justify-content:center;margin-top:16px}.meta-buttons button{transform:rotate(-12deg);min-width:70px}.held{background:var(--mint)!important;color:#051812!important}.help{color:var(--muted);font-size:12px}.footer{color:#52716c;text-align:center;padding:16px;font-size:11px}.logline{padding:7px 0;border-bottom:1px solid #173039;font:11px ui-monospace;color:#8fb5ad}.lang{display:flex;gap:4px}.lang button.active{color:#061811;background:var(--mint)}.canvas-box{background:#020708;border:1px solid #173039;border-radius:10px;padding:8px;overflow:auto;margin:8px 0}.asset-canvas{display:block;image-rendering:pixelated;background:#9bbc0f;max-width:100%;margin:auto}.asset-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sprite-gallery{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;max-height:230px;overflow:auto}.sprite-item{display:grid;place-items:center;background:#03090b;border:1px solid #173039;border-radius:8px;padding:5px}.sprite-item canvas{width:40px;height:40px;image-rendering:pixelated}.sprite-item small{font:9px ui-monospace;color:var(--muted)}.decomp{width:100%;height:410px;resize:vertical;background:#03090b;border:1px solid #173039;border-radius:9px;padding:9px;color:#a6c8c1;font:11px/1.5 ui-monospace,monospace;white-space:pre;tab-size:4}.checkrow{display:flex;align-items:center;gap:8px;margin:8px 0;color:var(--text);font-size:12px}.checkrow input{accent-color:var(--mint)}.audioch{display:grid;grid-template-columns:74px 1fr 90px;gap:8px;align-items:center;margin:9px 0}.meter{height:7px;background:#061013;border-radius:10px;overflow:hidden}.meter i{display:block;height:100%;background:var(--mint);width:0}.kbd{display:inline-block;padding:1px 5px;border:1px solid #3f5b61;border-bottom-width:2px;border-radius:4px;background:#0d1b20;font:10px ui-monospace;color:#b9d0cb}.sep{height:1px;background:#173039;margin:12px 0}.capture-status{padding:9px;border:1px solid var(--line);border-radius:9px;background:#071418;margin:10px 0;font:11px ui-monospace;color:var(--mint)}
 .gba-only{display:none}.gba-active .gba-only{display:flex}.gba-active .gb-only{display:none!important}.gba-shoulders button{min-width:82px;font-weight:900;background:#21353b}.screen-shell.gba .screen-bezel{max-width:760px;border-radius:24px 24px 44px 44px}.screen-shell.gba .screen-wrap{max-width:650px}.screen-shell.gba .screen{background:#c9d6cf;aspect-ratio:3/2}.gba-note a{color:var(--mint)}
 @media(max-width:1050px){.layout{grid-template-columns:1fr}.pages{min-height:0}.asset-grid{grid-template-columns:1fr}}@media(max-width:620px){.app{padding:8px}.top{align-items:flex-start;flex-wrap:wrap}.statuses{margin-left:0}.control-row,.grid3{grid-template-columns:1fr}.controller{grid-template-columns:1fr}.asset-grid{grid-template-columns:1fr}}
 </style>
@@ -67,7 +67,7 @@
             <label class="filebtn"><span data-i18n="selectRom">Seleziona ROM</span><input id="romFile" type="file" accept=".gb,.gbc,.gba,.bin,application/octet-stream"></label>
           </div>
           <div class="notice" data-i18n="legal">I file restano nel browser. Nessun BIOS o gioco è incluso.</div>
-          <div id="gbaNotice" class="notice gba-note" style="display:none">GBA: core separato IodineGBAEnhanced caricato su richiesta; BIOS HLE sperimentale incluso nel core open-source. I core GB/GBC interni non vengono modificati.</div>
+          <div id="gbaNotice" class="notice gba-note" style="display:none">GBA: core JSD clean-room locale, scritto in JavaScript per questo progetto; nessun core esterno o CDN. BIOS HLE sperimentale. I core GB/GBC interni non vengono modificati.</div>
           <div class="grid2">
             <div class="stat"><b id="gameTitle">—</b><small data-i18n="title">Titolo</small></div><div class="stat"><b id="cartType">—</b><small data-i18n="cartType">Mapper</small></div><div class="stat"><b id="systemType">—</b><small>Sistema</small></div><div class="stat"><b id="speedMode">1×</b><small>CPU mode</small></div><div class="stat"><b id="romSize">—</b><small>ROM</small></div><div class="stat"><b id="ramSize">—</b><small>RAM</small></div>
           </div>
@@ -115,8 +115,385 @@
       </div>
     </section>
   </div>
-  <div class="footer" data-i18n="footer">Progetto sperimentale indipendente · GB/GBC core interno · GBA core separato caricato on-demand · nessuna ROM inclusa</div>
+  <div class="footer" data-i18n="footer">Progetto sperimentale indipendente · GB/GBC core interno · GBA core interno single-file · nessuna ROM inclusa</div>
 </div>
+<script>
+/*
+ * JSD GBA Clean Core
+ * ------------------
+ * Independent Game Boy Advance emulator core written for JSD Emulator Hub.
+ * This implementation contains no third-party emulator core. Hardware behaviour is implemented from
+ * public ARM7TDMI and Game Boy Advance hardware documentation.
+ *
+ * Scope of this experimental core:
+ *  - ARM7TDMI ARM + THUMB interpreter
+ *  - GBA memory map, keypad, IRQ, timers and common DMA modes
+ *  - HLE implementations of commonly used BIOS SWIs
+ *  - PPU modes 0-5, text BGs, basic affine BGs and non-affine OBJ rendering
+ *  - SRAM/Flash-style persistent save buffer
+ *  - basic PSG monitor/playback and sound-register logging
+ *
+ * Accuracy is intentionally conservative: this is a clean implementation and
+ * not cycle-perfect. Timing-sensitive games, affine OBJ, complex windows,
+ * serial I/O, EEPROM and unusual cartridge peripherals may need more work.
+ */
+(() => {
+'use strict';
+const U32 = x => x >>> 0;
+const S32 = x => x | 0;
+const sign8 = x => (x << 24) >> 24;
+const sign16 = x => (x << 16) >> 16;
+const ror = (v, n) => { n &= 31; return n ? U32((v >>> n) | (v << (32 - n))) : U32(v); };
+const rol = (v, n) => ror(v, 32 - (n & 31));
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const popcnt16 = v => { v &= 0xffff; let n=0; while(v){v&=v-1;n++;} return n; };
+
+class GBAAudioClean {
+  constructor(core){
+    this.core=core;this.ctx=null;this.master=null;this.osc=[];this.enabled=false;this.events=[];
+  }
+  async enable(){
+    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error('Web Audio unavailable');
+    if(!this.ctx){
+      this.ctx=new AC({latencyHint:'interactive'});this.master=this.ctx.createGain();this.master.gain.value=.18;this.master.connect(this.ctx.destination);
+      for(let i=0;i<2;i++){const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='square';g.gain.value=0;o.connect(g).connect(this.master);o.start();this.osc.push({o,g});}
+    }
+    await this.ctx.resume();this.enabled=true;this.refresh();return true;
+  }
+  disable(){this.enabled=false;if(this.ctx&&this.master)this.master.gain.setTargetAtTime(0,this.ctx.currentTime,.01);return false;}
+  log(addr,value,size=2){
+    if(addr>=0x04000060&&addr<=0x040000A7){this.events.push({cycle:this.core.cycles,address:U32(addr),value:U32(value),size});if(this.events.length>30000)this.events.shift();this.refresh();}
+  }
+  refresh(){
+    if(!this.enabled||!this.ctx||this.osc.length<2)return;const io=this.core.bus.io, now=this.ctx.currentTime;
+    // SOUND1CNT_X / SOUND2CNT_H frequency fields. This intentionally models
+    // the two square generators only; wave/noise/direct sound remain logged.
+    const sq=(lo)=>{
+      const nrx2=io[lo]|(io[lo+1]<<8),nrx4=io[lo+4]|(io[lo+5]<<8);let f=nrx4&0x7ff;const hz=131072/Math.max(1,2048-f);const duty=(nrx2>>6)&3;const vol=(nrx2>>12)&15;return{hz,duty,vol};
+    };
+    const a=sq(0x62),b=sq(0x68);[a,b].forEach((q,i)=>{this.osc[i].o.frequency.setTargetAtTime(clamp(q.hz,20,12000),now,.006);this.osc[i].g.gain.setTargetAtTime(q.vol/15*.06,now,.006)});
+    this.master.gain.setTargetAtTime(.18,now,.01);
+  }
+}
+
+class GBABusClean {
+  constructor(core){
+    this.core=core;this.bios=new Uint8Array(0x4000);this.ewram=new Uint8Array(0x40000);this.iwram=new Uint8Array(0x8000);this.io=new Uint8Array(0x400);this.pal=new Uint8Array(0x400);this.vram=new Uint8Array(0x18000);this.oam=new Uint8Array(0x400);this.rom=new Uint8Array();this.romMask=-1;this.save=new Uint8Array(0x10000);this.saveType='SRAM';
+    this.frameCycles=0;this.lineCycles=0;this.hblank=false;this.scanline=0;this.frame=0;this.timerAccum=new Uint32Array(4);this.timerReload=new Uint16Array(4);this.timerCounter=new Uint16Array(4);this.timerCtrl=new Uint16Array(4);this.timerDiv=new Uint16Array([1,64,256,1024]);this.timerActiveMask=0;this.halted=false;
+  }
+  reset(){
+    this.ewram.fill(0);this.iwram.fill(0);this.io.fill(0);this.pal.fill(0);this.vram.fill(0);this.oam.fill(0);this.frameCycles=0;this.lineCycles=0;this.hblank=false;this.scanline=0;this.frame=0;this.timerAccum.fill(0);this.timerReload.fill(0);this.timerCounter.fill(0);this.timerCtrl.fill(0);this.timerActiveMask=0;this.halted=false;
+    // KEYINPUT = all released, VCOUNT = 0.
+    this.io[0x130]=0xff;this.io[0x131]=0x03;this.io[0x006]=0;this.io[0x007]=0;
+  }
+  attachROM(bytes){
+    this.rom=new Uint8Array(bytes);this.romMask=(this.rom.length&&!(this.rom.length&(this.rom.length-1)))?this.rom.length-1:-1;const ascii=new TextDecoder('ascii').decode(this.rom.subarray(0,Math.min(this.rom.length,0x200000)));
+    if(ascii.includes('FLASH1M_V')){this.saveType='FLASH1M';this.save=new Uint8Array(0x20000)}
+    else if(ascii.includes('FLASH_V')||ascii.includes('FLASH512_V')){this.saveType='FLASH';this.save=new Uint8Array(0x10000)}
+    else if(ascii.includes('EEPROM_V')){this.saveType='EEPROM';this.save=new Uint8Array(0x2000)}
+    else{this.saveType='SRAM';this.save=new Uint8Array(0x8000)}
+    this.save.fill(0xff);
+  }
+  region(addr){return addr>>>24;}
+  read8(addr){
+    addr=U32(addr);const r=addr>>>24;
+    if(r===0x00)return addr<0x4000?this.bios[addr]:0;
+    if(r===0x02)return this.ewram[addr&0x3ffff];
+    if(r===0x03)return this.iwram[addr&0x7fff];
+    if(r===0x04){const o=addr&0x3ff;if(o===0x004){const dot=this.lineCycles,cmp=this.io[0x005];let st=this.io[0x004]&0xf8;if(this.scanline>=160)st|=1;if(dot>=960)st|=2;if(this.scanline===cmp)st|=4;return st}if(o===0x005)return this.io[0x005];if(o===0x006)return this.scanline&255;if(o===0x007)return(this.scanline>>8)&1;if(o>=0x100&&o<=0x10d&&((o-0x100)&3)<2){const t=((o-0x100)>>2)&3,v=this.timerCounter[t];return ((o-0x100)&1)?(v>>>8):(v&255)}return this.io[o];}
+    if(r===0x05)return this.pal[addr&0x3ff];
+    if(r===0x06){let o=addr&0x1ffff;if(o>=0x18000)o=0x10000+(o&0x7fff);return this.vram[o];}
+    if(r===0x07)return this.oam[addr&0x3ff];
+    if(r>=0x08&&r<=0x0d){if(!this.rom.length)return 0xff;return this.rom[(addr-0x08000000)%this.rom.length];}
+    if(r===0x0e||r===0x0f)return this.save[addr&(this.save.length-1)];
+    return 0;
+  }
+  read16(addr){
+    addr=U32(addr)&~1;const r=addr>>>24;let o;
+    if(r===0x00){o=addr&0x3fff;return o<0x3fff?this.bios[o]|(this.bios[o+1]<<8):this.bios[o]}
+    if(r===0x02){o=addr&0x3ffff;return this.ewram[o]|(this.ewram[(o+1)&0x3ffff]<<8)}
+    if(r===0x03){o=addr&0x7fff;return this.iwram[o]|(this.iwram[(o+1)&0x7fff]<<8)}
+    if(r===0x04){o=addr&0x3fe;if(o===0x004||o===0x006||(o>=0x100&&o<=0x10c&&((o-0x100)&3)===0))return this.read8(addr)|(this.read8(addr+1)<<8);return this.io[o]|(this.io[o+1]<<8)}
+    if(r===0x05){o=addr&0x3fe;return this.pal[o]|(this.pal[o+1]<<8)}
+    if(r===0x06){o=addr&0x1ffff;if(o>=0x18000)o=0x10000+(o&0x7fff);o&=0x1fffe;return this.vram[o]|(this.vram[o+1]<<8)}
+    if(r===0x07){o=addr&0x3fe;return this.oam[o]|(this.oam[o+1]<<8)}
+    if(r>=0x08&&r<=0x0d){const n=this.rom.length;if(!n)return 0xffff;o=(addr-0x08000000)>>>0;o=this.romMask>=0?(o&this.romMask):(o%n);const o1=o+1<n?o+1:0;return this.rom[o]|(this.rom[o1]<<8)}
+    if(r===0x0e||r===0x0f){o=addr&(this.save.length-1);return this.save[o]|(this.save[(o+1)&(this.save.length-1)]<<8)}
+    return 0;
+  }
+  read32(addr){
+    addr=U32(addr)&~3;const r=addr>>>24;let o,a;
+    if(r===0x02){o=addr&0x3ffff;a=this.ewram;return U32(a[o]|(a[(o+1)&0x3ffff]<<8)|(a[(o+2)&0x3ffff]<<16)|(a[(o+3)&0x3ffff]<<24))}
+    if(r===0x03){o=addr&0x7fff;a=this.iwram;return U32(a[o]|(a[(o+1)&0x7fff]<<8)|(a[(o+2)&0x7fff]<<16)|(a[(o+3)&0x7fff]<<24))}
+    if(r>=0x08&&r<=0x0d){const n=this.rom.length;if(!n)return 0xffffffff;o=(addr-0x08000000)>>>0;o=this.romMask>=0?(o&this.romMask):(o%n);if(o+3<n){a=this.rom;return U32(a[o]|(a[o+1]<<8)|(a[o+2]<<16)|(a[o+3]<<24))}}
+    return U32(this.read16(addr)|(this.read16(addr+2)<<16));
+  }
+  fetch16(addr){
+    addr=addr>>>0;const r=addr>>>24;let o,a;
+    if(r>=0x08&&r<=0x0d){const n=this.rom.length;if(!n)return 0xffff;o=(addr-0x08000000)>>>0;o=this.romMask>=0?(o&this.romMask):(o%n);a=this.rom;return a[o]|(a[o+1<n?o+1:0]<<8)}
+    if(r===0x03){o=addr&0x7ffe;a=this.iwram;return a[o]|(a[o+1]<<8)}
+    if(r===0x02){o=addr&0x3fffe;a=this.ewram;return a[o]|(a[o+1]<<8)}
+    return this.read16(addr);
+  }
+  fetch32(addr){
+    addr=addr>>>0;const r=addr>>>24;let o,a;
+    if(r>=0x08&&r<=0x0d){const n=this.rom.length;if(!n)return 0xffffffff;o=(addr-0x08000000)>>>0;o=this.romMask>=0?(o&this.romMask):(o%n);if(o+3<n){a=this.rom;return (a[o]|(a[o+1]<<8)|(a[o+2]<<16)|(a[o+3]<<24))>>>0}}
+    if(r===0x03){o=addr&0x7ffc;a=this.iwram;return (a[o]|(a[o+1]<<8)|(a[o+2]<<16)|(a[o+3]<<24))>>>0}
+    if(r===0x02){o=addr&0x3fffc;a=this.ewram;return (a[o]|(a[o+1]<<8)|(a[o+2]<<16)|(a[o+3]<<24))>>>0}
+    return this.read32(addr);
+  }
+  write8(addr,v){
+    addr=U32(addr);v&=255;const r=addr>>>24;
+    if(r===0x02){this.ewram[addr&0x3ffff]=v;return}
+    if(r===0x03){this.iwram[addr&0x7fff]=v;return}
+    if(r===0x04){const o=addr&0x3ff;this.core.audio.log(addr,v,1);if(o===0x202||o===0x203){this.io[o]&=~v;return}if(o===0x004){this.io[o]=v&0xf8;return}if(o===0x005){this.io[o]=v;return}if(o===0x006||o===0x007)return;this.io[o]=v;this.ioSideEffect(o,1);return}
+    if(r===0x05){const o=addr&0x3fe;this.pal[o]=v;this.pal[o+1]=v;return}
+    if(r===0x06){let o=addr&0x1ffff;if(o>=0x18000)o=0x10000+(o&0x7fff);this.vram[o&~1]=v;this.vram[(o&~1)+1]=v;return}
+    if(r===0x07)return; // byte writes ignored by OAM
+    if(r===0x0e||r===0x0f){this.save[addr&(this.save.length-1)]=v;this.core.saveDirty=true;return}
+  }
+  write16(addr,v){
+    addr&=~1;v&=0xffff;const r=addr>>>24;
+    if(r===0x04){const o=addr&0x3fe;this.core.audio.log(addr,v,2);if(o===0x004){this.io[0x004]=v&0xf8;this.io[0x005]=(v>>>8)&0xff;return}if(o===0x006)return;if(o===0x202){const cur=this.io[0x202]|(this.io[0x203]<<8),next=cur&~v;this.io[0x202]=next&255;this.io[0x203]=next>>>8;return}if(o>=0x100&&o<=0x10c&&((o-0x100)&3)===0){const t=((o-0x100)>>2)&3;this.timerReload[t]=v;if(!(this.timerCtrl[t]&0x80))this.timerCounter[t]=v;this.io[o]=v&255;this.io[o+1]=v>>8;return}if(o>=0x102&&o<=0x10e&&((o-0x102)&3)===0){const t=((o-0x102)>>2)&3,old=this.timerCtrl[t];this.io[o]=v&255;this.io[o+1]=v>>8;this.timerCtrl[t]=v;if(v&0x80)this.timerActiveMask|=1<<t;else this.timerActiveMask&=~(1<<t);if(!(old&0x80)&&(v&0x80)){this.timerCounter[t]=this.timerReload[t];this.timerAccum[t]=0}return}this.io[o]=v&255;this.io[o+1]=v>>8;this.ioSideEffect(o,2);return}
+    if(r===0x05){const o=addr&0x3fe;this.pal[o]=v&255;this.pal[o+1]=v>>8;return}
+    if(r===0x06){let o=addr&0x1fffe;if(o>=0x18000)o=0x10000+(o&0x7ffe);this.vram[o]=v&255;this.vram[o+1]=v>>8;return}
+    if(r===0x07){const o=addr&0x3fe;this.oam[o]=v&255;this.oam[o+1]=v>>8;return}
+    this.write8(addr,v);this.write8(addr+1,v>>8);
+  }
+  write32(addr,v){addr&=~3;this.write16(addr,v&0xffff);this.write16(addr+2,v>>>16);}
+  ioSideEffect(o,size){
+    if(o>=0x0ba&&o<=0x0de&&((o-0xba)%12===0||o===0xc6||o===0xd2||o===0xde)){
+      const ch=Math.floor((o-0xba)/12);this.dmaMaybeStart(ch);
+    }
+    if(o===0x301){if(this.io[0x301]&0x80)this.halted=true;else this.halted=true;}
+  }
+  setIF(mask){const v=this.read16(0x04000202)|mask;this.io[0x202]=v&255;this.io[0x203]=v>>8;}
+  irqPending(){return !!((this.read16(0x04000200)&this.read16(0x04000202))&&this.io[0x208]);}
+  dmaRegs(ch){const b=0xb0+ch*12;return{b,src:this.read32(0x04000000+b),dst:this.read32(0x04000000+b+4),count:this.read16(0x04000000+b+8),ctrl:this.read16(0x04000000+b+10)}}
+  dmaMaybeStart(ch){const d=this.dmaRegs(ch);if(!(d.ctrl&0x8000))return;const timing=(d.ctrl>>12)&3;if(timing===0)this.runDMA(ch);}
+  runDMA(ch,reason=0){
+    const d=this.dmaRegs(ch);if(!(d.ctrl&0x8000))return;if(((d.ctrl>>12)&3)!==reason&&reason!==0)return;
+    let count=d.count|| (ch===3?0x10000:0x4000),src=d.src>>>0,dst=d.dst>>>0,wide=!!(d.ctrl&0x400),unit=wide?4:2;
+    const dstMode=(d.ctrl>>5)&3,srcMode=(d.ctrl>>7)&3;
+    const srcStep=srcMode===1?-unit:srcMode===2?0:unit,dstStep=dstMode===1?-unit:dstMode===2?0:unit;
+    count=Math.min(count,0x10000);
+    for(let i=0;i<count;i++){if(wide)this.write32(dst,this.read32(src));else this.write16(dst,this.read16(src));src=U32(src+srcStep);dst=U32(dst+dstStep)}
+    if(d.ctrl&0x4000)this.setIF(1<<(8+ch));
+    const repeat=!!(d.ctrl&0x200),timing=(d.ctrl>>12)&3;if(!(repeat&&timing!==0)){const c=d.ctrl&~0x8000;this.writeRaw16(d.b+10,c)}
+    else{this.writeRaw32(d.b,src);if(dstMode!==3)this.writeRaw32(d.b+4,dst)}
+  }
+  writeRaw16(o,v){this.io[o&0x3ff]=v&255;this.io[(o+1)&0x3ff]=v>>8;}
+  writeRaw32(o,v){this.writeRaw16(o,v&0xffff);this.writeRaw16(o+2,v>>>16);}
+  tickTimers(cycles){
+    let mask=this.timerActiveMask;if(!mask)return;let prevOverflow=0;
+    for(let t=0;t<4;t++){
+      const bit=1<<t;if(!(mask&bit)){prevOverflow=0;continue}const ctrl=this.timerCtrl[t];let inc=0;
+      if((ctrl&4)&&t>0)inc=prevOverflow;
+      else{const div=this.timerDiv[ctrl&3],acc=this.timerAccum[t]+cycles;inc=(acc/div)|0;this.timerAccum[t]=acc-inc*div}
+      if(!inc){prevOverflow=0;continue}const cur=this.timerCounter[t],toFirst=0x10000-cur;
+      if(inc<toFirst){this.timerCounter[t]=(cur+inc)&0xffff;prevOverflow=0;continue}
+      const remain=inc-toFirst,period=(0x10000-this.timerReload[t])||0x10000,over=1+((remain/period)|0);this.timerCounter[t]=(this.timerReload[t]+remain%period)&0xffff;if(ctrl&0x40)this.setIF(1<<(3+t));prevOverflow=over;
+    }
+  }
+  tick(cycles){
+    if(this.timerActiveMask)this.tickTimers(cycles);
+    this.frameCycles+=cycles;this.lineCycles+=cycles;
+    // Most instructions do not cross a video boundary: keep the hot path tiny.
+    if(this.scanline<160&&!this.hblank&&this.lineCycles>=960){
+      this.hblank=true;const disp=this.io[0x004]|(this.io[0x005]<<8);if(disp&0x10)this.setIF(2);for(let ch=0;ch<4;ch++)this.runDMA(ch,2);
+    }
+    if(this.lineCycles<1232)return;
+    do{
+      this.lineCycles-=1232;this.scanline++;this.hblank=false;
+      if(this.scanline>=228){this.scanline=0;this.frame++;this.frameCycles-=280896;if(this.frameCycles<0)this.frameCycles=0}
+      const disp=this.io[0x004]|(this.io[0x005]<<8);
+      if(this.scanline===160){this.core.ppu.render();if(disp&0x08)this.setIF(1);for(let ch=0;ch<4;ch++)this.runDMA(ch,1)}
+      const cmp=this.io[0x005];if(this.scanline===cmp&&(disp&0x20))this.setIF(4);
+      if(this.scanline<160&&this.lineCycles>=960){this.hblank=true;if(disp&0x10)this.setIF(2);for(let ch=0;ch<4;ch++)this.runDMA(ch,2)}
+    }while(this.lineCycles>=1232)
+  }
+}
+
+class ARM7Clean {
+  constructor(core){this.core=core;this.bus=core.bus;this.r=new Uint32Array(16);this.cpsr=0x1f;this.cycles=0;this.thumbBL=0;this.halted=false;this.trace=[];this.traceEnabled=false;this.banked={};this.spsr={};this.irqActive=false;this.irqResumePC=0;this.irqSentinel=0x00003ff0;this.irqSavedRegs=null;this.pendingTicks=0;}
+  modeKey(m){m&=0x1f;return m===0x1f?0x10:m}
+  bank(m){const k=this.modeKey(m);return this.banked[k]||(this.banked[k]=new Uint32Array(2))}
+  switchMode(newMode){const old=this.cpsr&0x1f,nm=newMode&0x1f,ok=this.modeKey(old),nk=this.modeKey(nm);if(ok===nk)return;let ob=this.bank(old);ob[0]=this.r[13];ob[1]=this.r[14];let nb=this.bank(nm);this.r[13]=nb[0];this.r[14]=nb[1]}
+  setCPSRValue(v,mask=0xffffffff){v=U32(v);mask=U32(mask);const next=U32((this.cpsr&~mask)|(v&mask));if((next&0x1f)!==(this.cpsr&0x1f))this.switchMode(next&0x1f);this.cpsr=next}
+  currentSPSR(){return this.spsr[this.cpsr&0x1f]??this.cpsr}
+  setCurrentSPSR(v,mask=0xffffffff){const m=this.cpsr&0x1f;if(m===0x10||m===0x1f)return;const old=this.spsr[m]??0;this.spsr[m]=U32((old&~mask)|(v&mask))}
+  reset(){this.r.fill(0);this.banked={};this.spsr={};this.cpsr=0x1f;this.bank(0x10)[0]=0x03007f00;this.bank(0x12)[0]=0x03007fa0;this.bank(0x13)[0]=0x03007fe0;this.r[13]=this.bank(0x10)[0];this.r[15]=0x08000000;this.cycles=0;this.thumbBL=0;this.halted=false;this.trace.length=0;this.irqActive=false;this.irqSavedRegs=null;this.pendingTicks=0;}
+  get N(){return(this.cpsr>>>31)&1} get Z(){return(this.cpsr>>>30)&1} get C(){return(this.cpsr>>>29)&1} get V(){return(this.cpsr>>>28)&1} get thumb(){return!!(this.cpsr&0x20)}
+  setNZ(v){v=U32(v);this.cpsr=(this.cpsr&0x3fffffff)|(v&0x80000000)|(v===0?0x40000000:0);}
+  setC(v){this.cpsr=(this.cpsr&~0x20000000)|(v?0x20000000:0)} setV(v){this.cpsr=(this.cpsr&~0x10000000)|(v?0x10000000:0)}
+  add(a,b,c=0,flags=true){a=U32(a);b=U32(b);const wide=a+b+c,out=U32(wide);if(flags){this.setNZ(out);this.setC(wide>0xffffffff);this.setV((((a^out)&(b^out))>>>31)&1)}return out}
+  sub(a,b,c=0,flags=true){a=U32(a);b=U32(b);const subtr=U32(b+c),out=U32(a-subtr);if(flags){this.setNZ(out);this.setC(a>=subtr);this.setV((((a^b)&(a^out))>>>31)&1)}return out}
+  reg(n,pc){return n===15?U32(pc+(this.thumb?4:8)):this.r[n]>>>0}
+  condition(c){const N=this.N,Z=this.Z,C=this.C,V=this.V;return [Z===1,Z===0,C===1,C===0,N===1,N===0,V===1,V===0,C===1&&Z===0,C===0||Z===1,N===V,N!==V,Z===0&&N===V,Z===1||N!==V,true,false][c]}
+  shift(value,type,amount,carryIn=this.C,byReg=false){value=U32(value);let carry=carryIn,out=value;if(!byReg&&amount===0){if(type===0)return{v:value,c:carry};if(type===1){amount=32}else if(type===2){amount=32}else{out=U32((carry<<31)|(value>>>1));carry=value&1;return{v:out,c:carry}}}amount&=255;if(amount===0)return{v:value,c:carry};if(type===0){if(amount<32){carry=(value>>>(32-amount))&1;out=U32(value<<amount)}else if(amount===32){carry=value&1;out=0}else{carry=0;out=0}}else if(type===1){if(amount<32){carry=(value>>>(amount-1))&1;out=value>>>amount}else if(amount===32){carry=(value>>>31)&1;out=0}else{carry=0;out=0}}else if(type===2){if(amount<32){carry=(value>>>(amount-1))&1;out=U32(S32(value)>>amount)}else{carry=(value>>>31)&1;out=carry?0xffffffff:0}}else{amount&=31;if(amount===0){carry=(value>>>31)&1;out=value}else{carry=(value>>>(amount-1))&1;out=ror(value,amount)}}return{v:U32(out),c:carry}}
+  operand2(op,pc){if(op&0x02000000){const imm=op&255,rot=((op>>>8)&15)*2,v=ror(imm,rot);return{v,c:rot?((v>>>31)&1):this.C}}const rm=op&15,val=this.reg(rm,pc),type=(op>>>5)&3;if(op&0x10){const rs=(op>>>8)&15,amt=this.reg(rs,pc)&255;return this.shift(val,type,amt,this.C,true)}return this.shift(val,type,(op>>>7)&31,this.C,false)}
+  branchTo(addr,thumb=null){if(thumb!==null){if(thumb)this.cpsr|=0x20;else this.cpsr&=~0x20}this.r[15]=U32(addr&~(this.thumb?1:3));}
+  traceLine(pc,op){if(!this.traceEnabled)return;this.trace.push(`${pc.toString(16).padStart(8,'0').toUpperCase()} ${op.toString(16).padStart(this.thumb?4:8,'0').toUpperCase()}`);if(this.trace.length>64)this.trace.shift();}
+  flushBus(){if(this.pendingTicks){const n=this.pendingTicks;this.pendingTicks=0;this.bus.tick(n)}}
+  step(){
+    if(this.irqActive&&(this.r[15]>>>0)===this.irqSentinel&&(this.cpsr&0x1f)===0x12){const restored=this.currentSPSR();this.setCPSRValue(restored);if(this.irqSavedRegs){this.r[0]=this.irqSavedRegs[0];this.r[1]=this.irqSavedRegs[1];this.r[2]=this.irqSavedRegs[2];this.r[3]=this.irqSavedRegs[3];this.r[12]=this.irqSavedRegs[4]}this.r[15]=(this.irqResumePC&~(this.thumb?1:3))>>>0;this.irqActive=false;this.irqSavedRegs=null;}
+    if(this.bus.halted){this.flushBus();this.bus.tick(32);this.cycles+=32;if(this.bus.irqPending()&&!(this.cpsr&0x80)){this.bus.halted=false;this.serviceIRQ()}return 32}
+    const pc=this.r[15]>>>0;let c=this.thumb?this.stepThumb(pc):this.stepARM(pc);this.cycles+=c;this.pendingTicks+=c;
+    // Synchronise hardware in short batches. This removes a very expensive bus/video update per opcode
+    // while keeping IRQ/video timing error below a handful of ARM7 cycles.
+    if(this.pendingTicks>=16){this.flushBus();if(this.bus.irqPending()&&!(this.cpsr&0x80)&&!this.irqActive)this.serviceIRQ()}
+    return c;
+  }
+  serviceIRQ(){
+    const handler=this.bus.read32(0x03007ffc)>>>0;if(handler>=0x02000000&&handler<0x0e000000){const old=this.cpsr>>>0,resume=this.r[15]>>>0;this.irqSavedRegs=[this.r[0]>>>0,this.r[1]>>>0,this.r[2]>>>0,this.r[3]>>>0,this.r[12]>>>0];this.switchMode(0x12);this.cpsr=U32((old&~0x3f)|0x12|0x80);this.spsr[0x12]=old;this.r[14]=this.irqSentinel;this.r[15]=handler&~3;this.irqResumePC=resume;this.irqActive=true;}
+    else{this.bus.write16(0x04000202,this.bus.read16(0x04000202));}
+  }
+  stepARM(pc){
+    const op=this.bus.fetch32(pc);this.r[15]=(pc+4)>>>0;if(this.traceEnabled)this.traceLine(pc,op);if(!this.condition(op>>>28))return 1;
+    if((op&0x0ffffff0)===0x012fff10){const t=this.reg(op&15,pc);this.branchTo(t&~1,!!(t&1));return 3}
+    if((op&0x0f000000)===0x0f000000){this.core.hleSWI(op&0xffffff);return 3}
+    if((op&0x0e000000)===0x0a000000){let off=op&0xffffff;if(off&0x800000)off|=0xff000000;off=S32(off<<2);if(op&0x01000000)this.r[14]=U32(pc+4);this.r[15]=U32(pc+8+off);return 3}
+    if((op&0x0fc000f0)===0x00000090){const A=!!(op&0x200000),S=!!(op&0x100000),rd=(op>>>16)&15,rn=(op>>>12)&15,rs=(op>>>8)&15,rm=op&15;let v=Math.imul(this.r[rm],this.r[rs])>>>0;if(A)v=U32(v+this.r[rn]);this.r[rd]=v;if(S)this.setNZ(v);return 2}
+    if((op&0x0f8000f0)===0x00800090){const signed=!!(op&0x00400000),acc=!!(op&0x00200000),set=!!(op&0x00100000),rdHi=(op>>>16)&15,rdLo=(op>>>12)&15,rs=(op>>>8)&15,rm=op&15;let a=BigInt(signed?S32(this.r[rm]):this.r[rm]),b=BigInt(signed?S32(this.r[rs]):this.r[rs]),v=a*b;if(acc)v+=BigInt(this.r[rdLo])|(BigInt(this.r[rdHi])<<32n);this.r[rdLo]=Number(v&0xffffffffn)>>>0;this.r[rdHi]=Number((v>>32n)&0xffffffffn)>>>0;if(set){this.setNZ(this.r[rdHi]||this.r[rdLo]);}return 3}
+    if((op&0x0fb00ff0)===0x01000090){const b=!!(op&0x00400000),rn=(op>>>16)&15,rd=(op>>>12)&15,rm=op&15,addr=this.r[rn],old=b?this.bus.read8(addr):this.bus.read32(addr);if(b)this.bus.write8(addr,this.r[rm]);else this.bus.write32(addr,this.r[rm]);this.r[rd]=old;return 3}
+    // MRS / MSR (minimal CPSR support)
+    if((op&0x0fbf0fff)===0x010f0000){this.r[(op>>>12)&15]=(op&0x00400000)?this.currentSPSR():this.cpsr>>>0;return 1}
+    if((op&0x0db0f000)===0x0120f000){let v=(op&0x02000000)?ror(op&255,((op>>>8)&15)*2):this.r[op&15],mask=0;if(op&0x00010000)mask|=0xff;if(op&0x00020000)mask|=0xff00;if(op&0x00040000)mask|=0xff0000;if(op&0x00080000)mask|=0xff000000;if(op&0x00400000)this.setCurrentSPSR(v,mask);else this.setCPSRValue(v,mask);return 1}
+    if((op&0x0e000090)===0x00000090){return this.armHalfTransfer(op,pc)}
+    if((op&0x0c000000)===0x04000000){return this.armSingleTransfer(op,pc)}
+    if((op&0x0e000000)===0x08000000){return this.armBlockTransfer(op,pc)}
+    if((op&0x0c000000)===0x00000000){return this.armDataProcessing(op,pc)}
+    return 1;
+  }
+  armDataProcessing(op,pc){
+    const opcode=(op>>>21)&15,S=!!(op&0x00100000),rn=(op>>>16)&15,rd=(op>>>12)&15,o=this.operand2(op,pc),a=this.reg(rn,pc);let v=0,write=true,flags=S,carry=o.c;
+    switch(opcode){
+      case 0:v=a&o.v;break;case 1:v=a^o.v;break;case 2:v=this.sub(a,o.v,0,flags);flags=false;break;case 3:v=this.sub(o.v,a,0,flags);flags=false;break;case 4:v=this.add(a,o.v,0,flags);flags=false;break;case 5:v=this.add(a,o.v,this.C,flags);flags=false;break;case 6:v=this.sub(a,o.v,this.C?0:1,flags);flags=false;break;case 7:v=this.sub(o.v,a,this.C?0:1,flags);flags=false;break;
+      case 8:v=a&o.v;write=false;flags=true;break;case 9:v=a^o.v;write=false;flags=true;break;case 10:this.sub(a,o.v,0,true);return 1;case 11:this.add(a,o.v,0,true);return 1;case 12:v=a|o.v;break;case 13:v=o.v;break;case 14:v=a&~o.v;break;case 15:v=~o.v;break;
+    }
+    v=U32(v);if(flags){this.setNZ(v);if([0,1,8,9,12,13,14,15].includes(opcode))this.setC(carry)}if(write){if(rd===15)this.branchTo(v,null);else this.r[rd]=v}return 1;
+  }
+  armSingleTransfer(op,pc){
+    const I=!!(op&0x02000000),P=!!(op&0x01000000),U=!!(op&0x00800000),B=!!(op&0x00400000),W=!!(op&0x00200000),L=!!(op&0x00100000),rn=(op>>>16)&15,rd=(op>>>12)&15;let base=this.reg(rn,pc),off;if(I){const rm=op&15,type=(op>>>5)&3,amt=(op>>>7)&31;off=this.shift(this.reg(rm,pc),type,amt).v}else off=op&0xfff;let addr=P?U32(base+(U?off:-off)):base;
+    if(L){let v=B?this.bus.read8(addr):this.bus.read32(addr&~3);if(!B&&(addr&3))v=ror(v,(addr&3)*8);if(rd===15)this.branchTo(v&~1,!!(v&1));else this.r[rd]=v>>>0}else{const v=rd===15?U32(pc+12):this.r[rd];if(B)this.bus.write8(addr,v);else this.bus.write32(addr,v)}
+    if(!P||W)this.r[rn]=P?addr:U32(base+(U?off:-off));return 2;
+  }
+  armHalfTransfer(op,pc){
+    const P=!!(op&0x01000000),U=!!(op&0x00800000),I=!!(op&0x00400000),W=!!(op&0x00200000),L=!!(op&0x00100000),rn=(op>>>16)&15,rd=(op>>>12)&15;let off=I?(((op>>>4)&0xf0)|(op&15)):this.r[op&15],base=this.reg(rn,pc),addr=P?U32(base+(U?off:-off)):base,sh=(op>>>5)&3;
+    if(L){let v=0;if(sh===1)v=this.bus.read16(addr);else if(sh===2)v=sign8(this.bus.read8(addr))>>>0;else if(sh===3)v=(addr&1)?(sign8(this.bus.read8(addr))>>>0):(sign16(this.bus.read16(addr))>>>0);this.r[rd]=v>>>0}else if(sh===1)this.bus.write16(addr,this.r[rd]);
+    if(!P||W)this.r[rn]=P?addr:U32(base+(U?off:-off));return 2;
+  }
+  armBlockTransfer(op,pc){
+    const P=!!(op&0x01000000),U=!!(op&0x00800000),W=!!(op&0x00200000),L=!!(op&0x00100000),rn=(op>>>16)&15,list=op&0xffff;let count=popcnt16(list)||16,base=this.r[rn],addr;
+    if(U)addr=U32(base+(P?4:0));else addr=U32(base-count*4+(P?0:4));
+    for(let i=0;i<16;i++)if(list&(1<<i)){if(L){let v=this.bus.read32(addr);if(i===15)this.branchTo(v&~1,!!(v&1));else this.r[i]=v}else this.bus.write32(addr,i===15?pc+12:this.r[i]);addr=U32(addr+4)}
+    if(W)this.r[rn]=U?U32(base+count*4):U32(base-count*4);return Math.max(2,count);
+  }
+  stepThumb(pc){
+    const op=this.bus.fetch16(pc);this.r[15]=(pc+2)>>>0;if(this.traceEnabled)this.traceLine(pc,op);const top=op>>>13;
+    if((op&0xf800)===0x0000||(op&0xf800)===0x0800||(op&0xf800)===0x1000){const type=(op>>>11)&3,imm=(op>>>6)&31,rs=(op>>>3)&7,rd=op&7,s=this.shift(this.r[rs],type,imm);this.r[rd]=s.v;this.setNZ(s.v);this.setC(s.c);return 1}
+    if((op&0xf800)===0x1800){const imm=!!(op&0x400),sub=!!(op&0x200),rn=(op>>>6)&7,rs=(op>>>3)&7,rd=op&7,b=imm?rn:this.r[rn];this.r[rd]=sub?this.sub(this.r[rs],b,0,true):this.add(this.r[rs],b,0,true);return 1}
+    if((op&0xe000)===0x2000){const kind=(op>>>11)&3,rd=(op>>>8)&7,imm=op&255;if(kind===0){this.r[rd]=imm;this.setNZ(imm)}else if(kind===1)this.sub(this.r[rd],imm,0,true);else if(kind===2)this.r[rd]=this.add(this.r[rd],imm,0,true);else this.r[rd]=this.sub(this.r[rd],imm,0,true);return 1}
+    if((op&0xfc00)===0x4000){const alu=(op>>>6)&15,rs=(op>>>3)&7,rd=op&7,a=this.r[rd],b=this.r[rs];let v=a;switch(alu){case 0:v=a&b;this.setNZ(v);break;case 1:v=a^b;this.setNZ(v);break;case 2:{let s=this.shift(a,0,b&255);v=s.v;this.setNZ(v);this.setC(s.c);break}case 3:{let s=this.shift(a,1,b&255);v=s.v;this.setNZ(v);this.setC(s.c);break}case 4:{let s=this.shift(a,2,b&255);v=s.v;this.setNZ(v);this.setC(s.c);break}case 5:v=this.add(a,b,this.C,true);break;case 6:v=this.sub(a,b,this.C?0:1,true);break;case 7:{let s=this.shift(a,3,b&255);v=s.v;this.setNZ(v);this.setC(s.c);break}case 8:v=a&b;this.setNZ(v);return 1;case 9:v=this.sub(0,b,0,true);break;case 10:this.sub(a,b,0,true);return 1;case 11:this.add(a,b,0,true);return 1;case 12:v=a|b;this.setNZ(v);break;case 13:v=Math.imul(a,b)>>>0;this.setNZ(v);break;case 14:v=a&~b;this.setNZ(v);break;case 15:v=~b;this.setNZ(v);break}this.r[rd]=U32(v);return 1}
+    if((op&0xfc00)===0x4400){const kind=(op>>>8)&3,rs=((op>>>3)&15),rd=(op&7)|((op>>>4)&8),a=this.reg(rd,pc),b=this.reg(rs,pc);if(kind===0){const v=U32(a+b);if(rd===15)this.branchTo(v&~1,true);else this.r[rd]=v}else if(kind===1)this.sub(a,b,0,true);else if(kind===2){if(rd===15)this.branchTo(b&~1,true);else this.r[rd]=b}else{this.branchTo(b&~1,!!(b&1))}return 2}
+    if((op&0xf800)===0x4800){const rd=(op>>>8)&7,addr=((pc+4)&~3)+((op&255)<<2);this.r[rd]=this.bus.read32(addr);return 2}
+    if((op&0xf000)===0x5000){const L=!!(op&0x800),B=!!(op&0x400),ro=(op>>>6)&7,rb=(op>>>3)&7,rd=op&7,addr=U32(this.r[rb]+this.r[ro]);if(op&0x200){const sh=(op>>>10)&3;if(sh===0)this.bus.write16(addr,this.r[rd]);else if(sh===1)this.r[rd]=sign8(this.bus.read8(addr))>>>0;else if(sh===2)this.r[rd]=this.bus.read16(addr);else this.r[rd]=sign16(this.bus.read16(addr))>>>0}else if(L)this.r[rd]=B?this.bus.read8(addr):this.bus.read32(addr&~3);else if(B)this.bus.write8(addr,this.r[rd]);else this.bus.write32(addr,this.r[rd]);return 2}
+    if((op&0xe000)===0x6000){const B=!!(op&0x1000),L=!!(op&0x0800),imm=(op>>>6)&31,rb=(op>>>3)&7,rd=op&7,addr=U32(this.r[rb]+imm*(B?1:4));if(L)this.r[rd]=B?this.bus.read8(addr):this.bus.read32(addr);else if(B)this.bus.write8(addr,this.r[rd]);else this.bus.write32(addr,this.r[rd]);return 2}
+    if((op&0xf000)===0x8000){const L=!!(op&0x0800),imm=((op>>>6)&31)<<1,rb=(op>>>3)&7,rd=op&7,addr=U32(this.r[rb]+imm);if(L)this.r[rd]=this.bus.read16(addr);else this.bus.write16(addr,this.r[rd]);return 2}
+    if((op&0xf000)===0x9000){const L=!!(op&0x0800),rd=(op>>>8)&7,addr=U32(this.r[13]+((op&255)<<2));if(L)this.r[rd]=this.bus.read32(addr);else this.bus.write32(addr,this.r[rd]);return 2}
+    if((op&0xf000)===0xa000){const sp=!!(op&0x0800),rd=(op>>>8)&7;base: {this.r[rd]=U32((sp?this.r[13]:((pc+4)&~3))+((op&255)<<2));}return 1}
+    if((op&0xff00)===0xb000){const delta=(op&0x7f)<<2;this.r[13]=U32(this.r[13]+(op&0x80?-delta:delta));return 1}
+    if((op&0xf600)===0xb400){const pop=!!(op&0x0800),extra=!!(op&0x0100),list=op&255;if(!pop){if(extra){this.r[13]=U32(this.r[13]-4);this.bus.write32(this.r[13],this.r[14])}for(let i=7;i>=0;i--)if(list&(1<<i)){this.r[13]=U32(this.r[13]-4);this.bus.write32(this.r[13],this.r[i])}}else{for(let i=0;i<8;i++)if(list&(1<<i)){this.r[i]=this.bus.read32(this.r[13]);this.r[13]=U32(this.r[13]+4)}if(extra){const v=this.bus.read32(this.r[13]);this.r[13]=U32(this.r[13]+4);this.branchTo(v&~1,true)}}return 2+popcnt16(list)}
+    if((op&0xf000)===0xc000){const L=!!(op&0x0800),rb=(op>>>8)&7,list=op&255;let addr=this.r[rb];for(let i=0;i<8;i++)if(list&(1<<i)){if(L)this.r[i]=this.bus.read32(addr);else this.bus.write32(addr,this.r[i]);addr=U32(addr+4)}this.r[rb]=addr;return 2+popcnt16(list)}
+    if((op&0xff00)===0xdf00){this.core.hleSWI(op&255);return 3}
+    if((op&0xf000)===0xd000){const cond=(op>>>8)&15;if(cond<14&&this.condition(cond)){this.r[15]=U32(pc+4+(sign8(op&255)<<1));return 3}return 1}
+    if((op&0xf800)===0xe000){let off=op&0x7ff;if(off&0x400)off|=~0x7ff;this.r[15]=U32(pc+4+(off<<1));return 3}
+    if((op&0xf800)===0xf000){let off=op&0x7ff;if(off&0x400)off|=~0x7ff;this.thumbBL=U32(pc+4+(off<<12));this.r[14]=this.thumbBL;return 1}
+    if((op&0xf800)===0xf800){const target=U32(this.r[14]+((op&0x7ff)<<1)),lr=U32((pc+2)|1);this.r[14]=lr;this.r[15]=target&~1;return 3}
+    return 1;
+  }
+}
+
+class GBAPPUClean {
+  constructor(core,canvas){this.core=core;this.bus=core.bus;this.canvas=canvas;this.ctx=canvas.getContext('2d');this.image=this.ctx.createImageData(240,160);this.color=new Uint32Array(240*160);this.prio=new Int8Array(240*160);this.owner=new Int8Array(240*160);this.frames=0;}
+  read16(a,o){return(a[o]||0)|((a[o+1]||0)<<8)}
+  rgb555(v){const r=(v&31)*255/31,g=((v>>5)&31)*255/31,b=((v>>10)&31)*255/31;return (Math.round(r)<<16)|(Math.round(g)<<8)|Math.round(b)}
+  palColor(index,obj=false){const off=((obj?256:0)+(index&255))*2;return this.rgb555(this.read16(this.bus.pal,off&0x3fe))}
+  put(i,c,p,owner){if(p<this.prio[i]||(p===this.prio[i]&&owner>this.owner[i])){this.color[i]=c;this.prio[i]=p;this.owner[i]=owner}}
+  layerBit(owner){if(owner>=20)return 0x10;if(owner>=7&&owner<=10)return 1<<(10-owner);return 0x20}
+  alphaColor(a,b,eva,evb){eva=Math.min(16,eva);evb=Math.min(16,evb);const r=Math.min(255,(((a>>>16)&255)*eva+((b>>>16)&255)*evb)>>4),g=Math.min(255,(((a>>>8)&255)*eva+((b>>>8)&255)*evb)>>4),bl=Math.min(255,((a&255)*eva+(b&255)*evb)>>4);return(r<<16)|(g<<8)|bl}
+  putSemiObj(i,c,p,owner){if(!(p<this.prio[i]||(p===this.prio[i]&&owner>this.owner[i])))return;const io=this.bus.io,cnt=this.read16(io,0x50),target2=(cnt>>>8)&0x3f,underOwner=this.owner[i],under=this.color[i];if(target2&this.layerBit(underOwner)){const a=this.read16(io,0x52),eva=a&31,evb=(a>>>8)&31;c=this.alphaColor(c,under,eva,evb)}this.color[i]=c;this.prio[i]=p;this.owner[i]=owner}
+  applyBrightness(){const io=this.bus.io,cnt=this.read16(io,0x50),effect=(cnt>>>6)&3;if(effect!==2&&effect!==3)return;const first=cnt&0x3f,evy=Math.min(16,this.read16(io,0x54)&31);if(!evy)return;for(let i=0;i<this.color.length;i++){if(!(first&this.layerBit(this.owner[i])))continue;const c=this.color[i],r=(c>>>16)&255,g=(c>>>8)&255,b=c&255;if(effect===2)this.color[i]=(Math.min(255,r+(((255-r)*evy)>>4))<<16)|(Math.min(255,g+(((255-g)*evy)>>4))<<8)|Math.min(255,b+(((255-b)*evy)>>4));else this.color[i]=((r-((r*evy)>>4))<<16)|((g-((g*evy)>>4))<<8)|(b-((b*evy)>>4))}}
+  textBG(bg){
+    const io=this.bus.io,v=this.bus.vram,cnt=this.read16(io,8+bg*2),prio=cnt&3,charBase=((cnt>>2)&3)*0x4000,bpp8=!!(cnt&0x80),screenBase=((cnt>>8)&31)*0x800,size=(cnt>>14)&3,hofs=this.read16(io,0x10+bg*4)&0x1ff,vofs=this.read16(io,0x12+bg*4)&0x1ff;
+    const w=(size===1||size===3)?512:256,h=(size>=2)?512:256;
+    for(let y=0;y<160;y++){const sy=(y+vofs)&(h-1),ty=sy>>3,py=sy&7;for(let x=0;x<240;x++){const sx=(x+hofs)&(w-1),tx=sx>>3,px=sx&7;let block=0,localTx=tx,localTy=ty;if(w===512){block+=tx>>5;localTx&=31}if(h===512){block+=(ty>>5)*(w===512?2:1);localTy&=31}const mapOff=screenBase+block*0x800+(localTy*32+localTx)*2,e=this.read16(v,mapOff%v.length),tile=e&0x3ff,hf=!!(e&0x400),vf=!!(e&0x800),pal=(e>>12)&15,xx=hf?7-px:px,yy=vf?7-py:py;let ci;if(bpp8)ci=v[(charBase+tile*64+yy*8+xx)%v.length];else{const q=v[(charBase+tile*32+yy*4+(xx>>1))%v.length];ci=(xx&1)?q>>4:q&15}if(!ci)continue;const col=this.palColor(bpp8?ci:pal*16+ci,false);this.put(y*240+x,col,prio,10-bg)}}
+  }
+  affineBG(bg){
+    const io=this.bus.io,v=this.bus.vram,cnt=this.read16(io,8+bg*2),prio=cnt&3,charBase=((cnt>>2)&3)*0x4000,screenBase=((cnt>>8)&31)*0x800,wrap=!!(cnt&0x2000),size=128<<((cnt>>14)&3),base=0x20+(bg-2)*0x10;
+    const s16=o=>sign16(this.read16(io,o)),s28=o=>{let n=U32(this.read16(io,o)|(this.read16(io,o+2)<<16))&0x0fffffff;if(n&0x08000000)n|=0xf0000000;return S32(n)};const pa=s16(base)/256,pb=s16(base+2)/256,pc=s16(base+4)/256,pd=s16(base+6)/256,rx=s28(base+8)/256,ry=s28(base+12)/256;
+    for(let y=0;y<160;y++)for(let x=0;x<240;x++){let sx=Math.floor(rx+pa*x+pb*y),sy=Math.floor(ry+pc*x+pd*y);if(wrap){sx=((sx%size)+size)%size;sy=((sy%size)+size)%size}else if(sx<0||sy<0||sx>=size||sy>=size)continue;const mapW=size>>3,tile=v[(screenBase+(sy>>3)*mapW+(sx>>3))%v.length],ci=v[(charBase+tile*64+(sy&7)*8+(sx&7))%v.length];if(!ci)continue;this.put(y*240+x,this.palColor(ci,false),prio,10-bg)}
+  }
+  bitmap(mode){
+    const v=this.bus.vram,io=this.bus.io,frame=(this.read16(io,0)&0x10)?0xa000:0;
+    if(mode===3){for(let y=0;y<160;y++)for(let x=0;x<240;x++){const o=(y*240+x)*2;this.put(y*240+x,this.rgb555(this.read16(v,o)),2,8)}}
+    else if(mode===4){for(let y=0;y<160;y++)for(let x=0;x<240;x++){const ci=v[frame+y*240+x];this.put(y*240+x,this.palColor(ci,false),2,8)}}
+    else{for(let y=0;y<128;y++)for(let x=0;x<160;x++){const o=frame+(y*160+x)*2;this.put(y*240+x,this.rgb555(this.read16(v,o)),2,8)}}
+  }
+  objects(){
+    const o=this.bus.oam,v=this.bus.vram,dc=this.read16(this.bus.io,0),oneD=!!(dc&0x40),dims=[[[8,8],[16,16],[32,32],[64,64]],[[16,8],[32,8],[32,16],[64,32]],[[8,16],[8,32],[16,32],[32,64]]];
+    for(let n=127;n>=0;n--){const q=n*8,a0=this.read16(o,q),a1=this.read16(o,q+2),a2=this.read16(o,q+4),aff=!!(a0&0x100),objMode=(a0>>>10)&3;if(aff||(!aff&&(a0&0x200))||objMode===2)continue;const shape=(a0>>>14)&3,size=(a1>>>14)&3,d=dims[shape]?.[size];if(!d)continue;let x=a1&0x1ff,y=a0&255;if(x>=256)x-=512;if(y>=160)y-=256;const bpp8=!!(a0&0x2000),hf=!!(a1&0x1000),vf=!!(a1&0x2000),tile0=(a2&0x3ff)&(bpp8&&!oneD?0x3fe:0x3ff),pri=(a2>>>10)&3,pal=(a2>>>12)&15,tilesX=d[0]>>3,owner=200-n;
+      for(let py=0;py<d[1];py++){const sy=y+py;if(sy<0||sy>=160)continue;const yy=vf?d[1]-1-py:py,ty=yy>>3,iy=yy&7;for(let px=0;px<d[0];px++){const sx=x+px;if(sx<0||sx>=240)continue;const xx=hf?d[0]-1-px:px,tx=xx>>3,ix=xx&7;let unit;if(oneD)unit=tile0+ty*(bpp8?tilesX*2:tilesX)+tx*(bpp8?2:1);else unit=tile0+ty*32+tx*(bpp8?2:1);let off=0x10000+(unit&0x3ff)*32,ci;if(bpp8)ci=v[(off+iy*8+ix)%v.length];else{const b=v[(off+iy*4+(ix>>1))%v.length];ci=(ix&1)?b>>4:b&15}if(!ci)continue;const col=this.palColor(bpp8?ci:pal*16+ci,true),idx=sy*240+sx;if(objMode===1)this.putSemiObj(idx,col,pri,owner);else this.put(idx,col,pri,owner)}}
+    }
+  }
+  render(){
+    const dc=this.read16(this.bus.io,0),mode=dc&7,back=this.palColor(0,false);this.color.fill(back);this.prio.fill(4);this.owner.fill(0);
+    if(mode===0){for(let b=0;b<4;b++)if(dc&(0x100<<b))this.textBG(b)}
+    else if(mode===1){for(let b=0;b<2;b++)if(dc&(0x100<<b))this.textBG(b);if(dc&0x400)this.affineBG(2)}
+    else if(mode===2){if(dc&0x400)this.affineBG(2);if(dc&0x800)this.affineBG(3)}
+    else if(mode>=3&&mode<=5)this.bitmap(mode);
+    if(dc&0x1000)this.objects();
+    this.applyBrightness();
+    const d=this.image.data;for(let i=0,p=0;i<this.color.length;i++,p+=4){const c=this.color[i];d[p]=(c>>>16)&255;d[p+1]=(c>>>8)&255;d[p+2]=c&255;d[p+3]=255}this.ctx.putImageData(this.image,0,0);this.frames++;
+  }
+}
+
+class JSDGBAEmulator {
+  constructor(canvas){
+    this.canvas=canvas;this.bus=new GBABusClean(this);this.audio=new GBAAudioClean(this);this.cpu=new ARM7Clean(this);this.ppu=new GBAPPUClean(this,canvas);this.rom=null;this.meta=null;this.cycles=0;this.frames=0;this.saveDirty=false;this.keys=0x03ff;this.speed=1;
+  }
+  loadROM(bytes){this.rom=new Uint8Array(bytes);this.bus.attachROM(this.rom);this.reset();}
+  reset(){this.bus.reset();this.cpu.reset();this.cycles=0;this.frames=0;this.keys=0x03ff;this.updateKeys();this.ppu.render();}
+  read8(a){return this.bus.read8(a)} read16(a){return this.bus.read16(a)} read32(a){return this.bus.read32(a)} write8(a,v){this.bus.write8(a,v)} write16(a,v){this.bus.write16(a,v)} write32(a,v){this.bus.write32(a,v)}
+  updateKeys(){this.bus.io[0x130]=this.keys&255;this.bus.io[0x131]=(this.keys>>>8)&3;const ctl=this.bus.read16(0x04000132),mask=ctl&0x3ff;if(ctl&0x4000){const pressed=(~this.keys)&0x3ff,match=(ctl&0x8000)?((pressed&mask)===mask):!!(pressed&mask);if(match)this.bus.setIF(1<<12)}}
+  key(index,down){const bit=1<<index;if(down)this.keys&=~bit;else this.keys|=bit;this.updateKeys();}
+  runFrame(){this.cpu.flushBus();const start=this.bus.frame;let guard=0;while(this.bus.frame===start&&guard++<400000)this.cpu.step();this.cpu.flushBus();this.cycles=this.cpu.cycles;this.frames=this.ppu.frames;return 1;}
+  step(){const c=this.cpu.step();this.cycles=this.cpu.cycles;return c;}
+  hleSWI(n){
+    n&=0xff;const r=this.cpu.r,b=this.bus;
+    switch(n){
+      case 0x00:{const flag=b.read8(0x03007ffa);this.cpu.r[13]=0x03007f00;this.cpu.branchTo(flag?0x02000000:0x08000000,false);break}
+      case 0x01:{const m=r[0]&0xff;if(m&1)b.ewram.fill(0);if(m&2)b.iwram.fill(0);if(m&4)b.pal.fill(0);if(m&8)b.vram.fill(0);if(m&16)b.oam.fill(0);break}
+      case 0x02:case 0x03:b.halted=true;break;
+      case 0x04:case 0x05:b.halted=true;break;
+      case 0x06:{const a=S32(r[0]),d=S32(r[1])||1,q=(a/d)|0,rem=(a%d)|0;r[0]=q>>>0;r[1]=rem>>>0;r[3]=Math.abs(q)>>>0;break}
+      case 0x07:{const a=S32(r[1]),d=S32(r[0])||1,q=(a/d)|0,rem=(a%d)|0;r[0]=q>>>0;r[1]=rem>>>0;r[3]=Math.abs(q)>>>0;break}
+      case 0x08:r[0]=Math.floor(Math.sqrt(r[0]>>>0))>>>0;break;
+      case 0x0b:this.cpuSet(false);break;case 0x0c:this.cpuSet(true);break;
+      case 0x11:this.lz77(r[0],r[1],false);break;case 0x12:this.lz77(r[0],r[1],true);break;case 0x14:this.rle(r[0],r[1],false);break;case 0x15:this.rle(r[0],r[1],true);break;
+      default:break;
+    }
+  }
+  cpuSet(fast){const r=this.cpu.r,b=this.bus;let src=r[0]>>>0,dst=r[1]>>>0,c=r[2]>>>0,words=fast?((c&0x1fffff)*8):(c&0x1fffff),wide=fast||!!(c&0x04000000),fill=!!(c&0x01000000),unit=wide?4:2,constant=wide?b.read32(src):b.read16(src);for(let i=0;i<words;i++){const v=fill?constant:(wide?b.read32(src):b.read16(src));if(wide)b.write32(dst,v);else b.write16(dst,v);if(!fill)src+=unit;dst+=unit}}
+  lz77(src,dst,vram=false){const b=this.bus;if(b.read8(src)!==0x10)return;const len=b.read8(src+1)|(b.read8(src+2)<<8)|(b.read8(src+3)<<16);src+=4;const out=new Uint8Array(len);let pos=0;while(pos<len){const flags=b.read8(src++);for(let i=7;i>=0&&pos<len;i--){if(flags&(1<<i)){const a=b.read8(src++),q=b.read8(src++),n=(a>>>4)+3,disp=((a&15)<<8|q)+1;for(let k=0;k<n&&pos<len;k++){const from=pos-disp;out[pos++]=from>=0?out[from]:0}}else out[pos++]=b.read8(src++)}}if(vram){dst&=~1;for(let i=0;i<len;i+=2)b.write16(dst+i,out[i]|((i+1<len?out[i+1]:0)<<8))}else for(let i=0;i<len;i++)b.write8(dst+i,out[i])}
+  rle(src,dst,vram=false){const b=this.bus;if(b.read8(src)!==0x30)return;const len=b.read8(src+1)|(b.read8(src+2)<<8)|(b.read8(src+3)<<16);src+=4;const out=new Uint8Array(len);let n=0;while(n<len){const h=b.read8(src++);if(h&0x80){let c=(h&0x7f)+3,v=b.read8(src++);while(c--&&n<len)out[n++]=v}else{let c=(h&0x7f)+1;while(c--&&n<len)out[n++]=b.read8(src++)}}if(vram){dst&=~1;for(let i=0;i<len;i+=2)b.write16(dst+i,out[i]|((i+1<len?out[i+1]:0)<<8))}else for(let i=0;i<len;i++)b.write8(dst+i,out[i])}
+  setSpeed(v){this.speed=+v||1}
+  exportSave(){return new Uint8Array(this.bus.save)} importSave(bytes){this.bus.save.fill(0xff);this.bus.save.set(new Uint8Array(bytes).subarray(0,this.bus.save.length));}
+}
+window.JSDGBAEmulator=JSDGBAEmulator;
+})();
+
+</script>
 <script>
 (()=>{'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -131,7 +508,7 @@ function b64ToBytes(s){const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<
 function checksum32(a){let h=2166136261>>>0;for(let i=0;i<a.length;i++){h^=a[i];h=Math.imul(h,16777619)>>>0}return h>>>0}
 
 const I18N={
-it:{powerOn:'ACCENDI',powerOff:'SPEGNI',reset:'RESET',pause:'Pausa',resume:'Riprendi',singleStep:'Passo singolo ›',fullscreen:'Schermo intero ⛶',enableAudio:'Attiva audio ♪',disableAudio:'Disattiva audio',speed:'Velocità',graphics:'Grafica',lcd:'LCD · persistenza',sharp:'Frame nitidi',crt:'Scanlines',soft:'Antialias leggero',palette:'Palette DMG',dpad:'Direzioni',buttons:'Pulsanti',controllerHelp:'Frecce/WASD = D-pad · Z = A · X = B · Invio = Start · Shift = Select. GBA: Q = L · E = R.',machine:'Macchina',memory:'Memoria',resources:'Risorse',disasm:'Disassembler',audio:'Audio',events:'Eventi',cartridge:'CARTUCCIA GB / GBC / GBA',romDesc:'ROM .gb/.gbc/.gba/.bin. GB/GBC usano i core interni; GBA usa un core separato caricato solo quando serve.',selectRom:'Seleziona ROM',legal:'I file restano nel browser. Nessun BIOS o gioco è incluso.',title:'Titolo',cartType:'Mapper',cycles:'Cicli',exportState:'Esporta stato',importState:'Importa stato',exportRam:'Esporta RAM',importRam:'Importa RAM',show:'Mostra',memoryHelp:'Il dump CPU usa la mappa corrente del mapper; “ROM fisica” mostra invece gli offset reali del file.',resourceHelp:'Estrazione diretta delle risorse grafiche. GB/GBC: tile 2bpp, tilemap e OAM. GBA: tile BG/OBJ 4bpp/8bpp, palette e 128 oggetti OAM. PNG e JSON non modificano la ROM.',refresh:'Aggiorna',startCapture:'Avvia cattura',stopCapture:'Ferma',framePng:'Schermata PNG',disasmHelp:'Disassembler statico: LR35902 bank-aware per GB/GBC; ARM7TDMI ARM/Thumb per GBA con branch, load/store, ALU, stack e SWI.',reachable:'Codice raggiungibile',linear:'Lineare',analyze:'Analizza',fromPc:'Dal PC',copy:'Copia',exportAsm:'Esporta ASM',audioHelp:'APU DMG/CGB sincronizzata al master clock: 4 canali, frame sequencer 512 Hz, oversampling 2×, length, envelope, sweep CH1, wave RAM, noise LFSR e mixer stereo NR50/NR51.',clear:'Pulisci',audioNote:'APU generata dal clock Game Boy, indipendente dal double-speed CGB. Include oversampling 2×, envelope 64 Hz, length 256 Hz, sweep 128 Hz, CH3 con primo fetch ritardato, LFSR 15/7-bit e filtro passa-alto specifico DMG/CGB.',footer:'Progetto sperimentale indipendente · GB/GBC core interno · GBA core separato caricato on-demand · nessuna ROM inclusa',romMissing:'ROM ASSENTE',romLoaded:'ROM CARICATA',off:'SPENTO',on:'ACCESO',paused:'IN PAUSA',captureInactive:'INATTIVO',captureActive:'REGISTRAZIONE',needRom:'Carica prima una ROM GB / GBC / GBA',loaded:'ROM caricata',started:'Emulazione avviata',stopped:'Emulazione spenta',resetDone:'Reset completato',stateSaved:'Stato esportato',stateLoaded:'Stato importato',ramSaved:'RAM esportata',ramLoaded:'RAM importata',captureStarted:'Cattura risorse avviata',captureStopped:'Cattura risorse fermata',disDone:'Disassemblaggio completato'},
+it:{powerOn:'ACCENDI',powerOff:'SPEGNI',reset:'RESET',pause:'Pausa',resume:'Riprendi',singleStep:'Passo singolo ›',fullscreen:'Schermo intero ⛶',enableAudio:'Attiva audio ♪',disableAudio:'Disattiva audio',speed:'Velocità',graphics:'Grafica',lcd:'LCD · persistenza',sharp:'Frame nitidi',crt:'Scanlines',soft:'Antialias leggero',palette:'Palette DMG',dpad:'Direzioni',buttons:'Pulsanti',controllerHelp:'Frecce/WASD = D-pad · Z = A · X = B · Invio = Start · Shift = Select. GBA: Q = L · E = R.',machine:'Macchina',memory:'Memoria',resources:'Risorse',disasm:'Disassembler',audio:'Audio',events:'Eventi',cartridge:'CARTUCCIA GB / GBC / GBA',romDesc:'ROM .gb/.gbc/.gba/.bin. GB/GBC usano i core interni; GBA usa un core separato caricato solo quando serve.',selectRom:'Seleziona ROM',legal:'I file restano nel browser. Nessun BIOS o gioco è incluso.',title:'Titolo',cartType:'Mapper',cycles:'Cicli',exportState:'Esporta stato',importState:'Importa stato',exportRam:'Esporta RAM',importRam:'Importa RAM',show:'Mostra',memoryHelp:'Il dump CPU usa la mappa corrente del mapper; “ROM fisica” mostra invece gli offset reali del file.',resourceHelp:'Estrazione diretta delle risorse grafiche. GB/GBC: tile 2bpp, tilemap e OAM. GBA: tile BG/OBJ 4bpp/8bpp, palette e 128 oggetti OAM. PNG e JSON non modificano la ROM.',refresh:'Aggiorna',startCapture:'Avvia cattura',stopCapture:'Ferma',framePng:'Schermata PNG',disasmHelp:'Disassembler statico: LR35902 bank-aware per GB/GBC; ARM7TDMI ARM/Thumb per GBA con branch, load/store, ALU, stack e SWI.',reachable:'Codice raggiungibile',linear:'Lineare',analyze:'Analizza',fromPc:'Dal PC',copy:'Copia',exportAsm:'Esporta ASM',audioHelp:'APU DMG/CGB sincronizzata al master clock: 4 canali, frame sequencer 512 Hz, oversampling 2×, length, envelope, sweep CH1, wave RAM, noise LFSR e mixer stereo NR50/NR51.',clear:'Pulisci',audioNote:'APU generata dal clock Game Boy, indipendente dal double-speed CGB. Include oversampling 2×, envelope 64 Hz, length 256 Hz, sweep 128 Hz, CH3 con primo fetch ritardato, LFSR 15/7-bit e filtro passa-alto specifico DMG/CGB.',footer:'Progetto sperimentale indipendente · GB/GBC core interno · GBA core interno single-file · nessuna ROM inclusa',romMissing:'ROM ASSENTE',romLoaded:'ROM CARICATA',off:'SPENTO',on:'ACCESO',paused:'IN PAUSA',captureInactive:'INATTIVO',captureActive:'REGISTRAZIONE',needRom:'Carica prima una ROM GB / GBC / GBA',loaded:'ROM caricata',started:'Emulazione avviata',stopped:'Emulazione spenta',resetDone:'Reset completato',stateSaved:'Stato esportato',stateLoaded:'Stato importato',ramSaved:'RAM esportata',ramLoaded:'RAM importata',captureStarted:'Cattura risorse avviata',captureStopped:'Cattura risorse fermata',disDone:'Disassemblaggio completato'},
 en:{powerOn:'POWER ON',powerOff:'POWER OFF',reset:'RESET',pause:'Pause',resume:'Resume',singleStep:'Single step ›',fullscreen:'Fullscreen ⛶',enableAudio:'Enable audio ♪',disableAudio:'Disable audio',speed:'Speed',graphics:'Graphics',lcd:'LCD · persistence',sharp:'Sharp frames',crt:'Scanlines',soft:'Light antialiasing',palette:'DMG palette',dpad:'Directions',buttons:'Buttons',controllerHelp:'Arrows/WASD = D-pad · Z = A · X = B · Enter = Start · Shift = Select. GBA: Q = L · E = R.',machine:'Machine',memory:'Memory',resources:'Resources',disasm:'Disassembler',audio:'Audio',events:'Events',cartridge:'GB / GBC / GBA CARTRIDGE',romDesc:'ROM .gb/.gbc/.gba/.bin. GB/GBC use the internal cores; GBA uses a separate core loaded only when needed.',selectRom:'Select ROM',legal:'Files stay in your browser. No BIOS or game is included.',title:'Title',cartType:'Mapper',cycles:'Cycles',exportState:'Export state',importState:'Import state',exportRam:'Export RAM',importRam:'Import RAM',show:'Show',memoryHelp:'CPU dump uses the mapper’s current address map; “Physical ROM” shows actual file offsets.',resourceHelp:'Graphics extraction: GB/GBC 2bpp tiles, tilemaps and OAM; GBA BG/OBJ 4bpp/8bpp tiles, palettes and 128 OAM objects. PNG/JSON export does not modify the ROM.',refresh:'Refresh',startCapture:'Start capture',stopCapture:'Stop',framePng:'Frame PNG',disasmHelp:'Static disassembler: bank-aware LR35902 for GB/GBC; ARM7TDMI ARM/Thumb for GBA with branches, load/store, ALU, stack and SWI.',reachable:'Reachable code',linear:'Linear',analyze:'Analyse',fromPc:'From PC',copy:'Copy',exportAsm:'Export ASM',audioHelp:'Master-clock-synchronised DMG/CGB APU: 4 channels, 512 Hz frame sequencer, 2× oversampling, length, envelope, CH1 sweep, wave RAM, noise LFSR and NR50/NR51 stereo mixer.',clear:'Clear',audioNote:'Audio is generated from the Game Boy clock and stays independent of CGB double speed. Includes 2× oversampling, 64 Hz envelope, 256 Hz length, 128 Hz sweep, delayed CH3 first fetch, 15/7-bit LFSR and model-specific DMG/CGB high-pass filtering.',footer:'Independent experimental project · internal GB/GBC core · separate on-demand GBA core · no ROM included',romMissing:'ROM MISSING',romLoaded:'ROM LOADED',off:'OFF',on:'ON',paused:'PAUSED',captureInactive:'INACTIVE',captureActive:'RECORDING',needRom:'Load a GB / GBC / GBA ROM first',loaded:'ROM loaded',started:'Emulation started',stopped:'Emulation stopped',resetDone:'Reset complete',stateSaved:'State exported',stateLoaded:'State imported',ramSaved:'RAM exported',ramLoaded:'RAM imported',captureStarted:'Resource capture started',captureStopped:'Resource capture stopped',disDone:'Disassembly complete'}};
 let lang='it';const tr=k=>I18N[lang][k]||k;
 function setLang(v){lang=v;document.documentElement.lang=v;$$('[data-i18n]').forEach(e=>e.textContent=tr(e.dataset.i18n));$('#itBtn').classList.toggle('active',v==='it');$('#enBtn').classList.toggle('active',v==='en');refreshUI()}
@@ -468,58 +845,32 @@ function disassembleBank(cart,bank,start,mode){const get=bankAccessor(cart,bank)
 
 
 /* ============================================================
-   GAME BOY ADVANCE PLUG-IN
-   IMPORTANT: isolated from Cartridge/PPU/AudioEngine/CPU/GameBoy above.
-   The existing GB/GBC cores are intentionally left untouched.
-   Runtime core: IodineGBAEnhanced (Grant Galitz et al. / KittyPBoxx fork).
+   GAME BOY ADVANCE · JSD CLEAN CORE
+   Independent local implementation. No external emulator code or CDN.
    ============================================================ */
-const GBA_CORE_FILES=[
-'IodineGBA/includes/TypedArrayShim.js','IodineGBA/core/Cartridge.js','IodineGBA/core/DMA.js','IodineGBA/core/Emulator.js','IodineGBA/core/Graphics.js','IodineGBA/core/RunLoop.js','IodineGBA/core/Memory.js','IodineGBA/core/IRQ.js','IodineGBA/core/JoyPad.js','IodineGBA/core/Serial.js','IodineGBA/core/Sound.js','IodineGBA/core/Timer.js','IodineGBA/core/Wait.js','IodineGBA/core/CPU.js','IodineGBA/core/Saves.js','IodineGBA/core/SaveState.js','IodineGBA/core/sound/FIFO.js','IodineGBA/core/sound/Channel1.js','IodineGBA/core/sound/Channel2.js','IodineGBA/core/sound/Channel3.js','IodineGBA/core/sound/Channel4.js','IodineGBA/core/CPU/ARM.js','IodineGBA/core/CPU/THUMB.js','IodineGBA/core/CPU/CPSR.js','IodineGBA/core/CPU/SWI.js','IodineGBA/core/HLE-BIOS.js','IodineGBA/core/graphics/Renderer.js','IodineGBA/core/graphics/RendererShim.js','IodineGBA/core/graphics/RendererProxy.js','IodineGBA/core/graphics/BGTEXT.js','IodineGBA/core/graphics/BG2FrameBuffer.js','IodineGBA/core/graphics/BGMatrix.js','IodineGBA/core/graphics/AffineBG.js','IodineGBA/core/graphics/ColorEffects.js','IodineGBA/core/graphics/Mosaic.js','IodineGBA/core/graphics/OBJ.js','IodineGBA/core/graphics/OBJWindow.js','IodineGBA/core/graphics/Window.js','IodineGBA/core/graphics/Compositor.js','IodineGBA/core/memory/DMA0.js','IodineGBA/core/memory/DMA1.js','IodineGBA/core/memory/DMA2.js','IodineGBA/core/memory/DMA3.js','IodineGBA/core/cartridge/SaveDeterminer.js','IodineGBA/core/cartridge/SRAM.js','IodineGBA/core/cartridge/FLASH.js','IodineGBA/core/cartridge/EEPROM.js','IodineGBA/core/cartridge/GPIO.js','IodineGBA/core/cartridge/RTC.js'
-];
-const GBA_CDN_PREFIX='gh/KittyPBoxx/IodineGBAEnhanced@master/';
-const GBA_CDN='https://cdn.jsdelivr.net/combine/'+GBA_CORE_FILES.map(x=>GBA_CDN_PREFIX+x).join(',');
-let gbaCorePromise=null;
-function ensureGBACore(){
-  if(typeof window.GameBoyAdvanceEmulator==='function')return Promise.resolve();
-  if(gbaCorePromise)return gbaCorePromise;
-  $('#coreBadge').textContent='GBA CORE LOADING';$('#coreBadge').className='badge warn';
-  gbaCorePromise=new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src=GBA_CDN;sc.async=true;sc.crossOrigin='anonymous';sc.onload=()=>{if(typeof window.GameBoyAdvanceEmulator==='function'){ $('#coreBadge').textContent='CORE READY';$('#coreBadge').className='badge ok';resolve()}else reject(Error('GBA core did not initialize'))};sc.onerror=()=>reject(Error('Impossibile caricare il core GBA dalla CDN. Controlla la connessione Internet.'));document.head.appendChild(sc)}).catch(err=>{gbaCorePromise=null;$('#coreBadge').textContent='GBA CORE ERROR';$('#coreBadge').className='badge warn';throw err});
-  return gbaCorePromise;
-}
+function ensureGBACore(){if(typeof window.JSDGBAEmulator==='function')return Promise.resolve();return Promise.reject(Error('JSD GBA clean core not loaded'))}
 function gbaAscii(b,a,n){let s='';for(let i=0;i<n&&a+i<b.length;i++){let c=b[a+i];if(c>=32&&c<127)s+=String.fromCharCode(c)}return s.trim()}
 function gbaInfoFromROM(b,name=''){return{title:gbaAscii(b,0xA0,12)||name.replace(/\.[^.]+$/,'')||'UNTITLED',gameCode:gbaAscii(b,0xAC,4)||'----',maker:gbaAscii(b,0xB0,2)||'--',version:b[0xBC]||0,romBytes:b.length,headerFixed:b[0xB2]===0x96}}
 function looksLikeGBA(file,b){return /\.gba$/i.test(file?.name||'')||(b.length>=0xC0&&b[0xB2]===0x96&&b.length>0x8000)}
 let gbaFrameSerial=0;
-class GBACanvasSink{
-  constructor(canvas){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.img=null}
-  copyBuffer(buf){if(this.canvas.width!==240||this.canvas.height!==160){this.canvas.width=240;this.canvas.height=160;this.ctx=this.canvas.getContext('2d');this.img=null}if(!this.img)this.img=this.ctx.createImageData(240,160);const d=this.img.data;for(let s=0,p=0;s<115200;s+=3,p+=4){d[p]=buf[s];d[p+1]=buf[s+1];d[p+2]=buf[s+2];d[p+3]=255}this.ctx.putImageData(this.img,0,0);gbaFrameSerial++}
-}
-class GBAWebAudioSink{
-  constructor(){this.ctx=null;this.gain=null;this.rate=44100;this.active=false;this.l=[];this.r=[];this.nextTime=0;this.sources=new Set()}
-  initialize(channels,sampleRate,bufferAmount,heartbeat,postHeartbeat,error){this.rate=Math.max(8000,Math.min(96000,+sampleRate||44100));this.max=Math.max(512,bufferAmount|0);this.error=error}
-  async activate(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error('Web Audio unavailable');if(!this.ctx){this.ctx=new AC({latencyHint:'interactive'});this.gain=this.ctx.createGain();this.gain.gain.value=.72;this.gain.connect(this.ctx.destination)}await this.ctx.resume()}
-  register(){this.active=true;if(this.ctx&&this.gain)this.gain.gain.setValueAtTime(.72,this.ctx.currentTime)}
-  unregister(){this.active=false;if(this.gain&&this.ctx)this.gain.gain.setValueAtTime(0,this.ctx.currentTime);for(const s of this.sources){try{s.stop()}catch(_){}}this.sources.clear();this.l.length=this.r.length=0;this.nextTime=0}
-  push(buf,start,end){if(!this.active||!this.ctx)return;for(let i=start|0;(i+1)<(end|0);i+=2){this.l.push(buf[i]);this.r.push(buf[i+1])}this.flush()}
-  flush(){if(!this.ctx||!this.gain||!this.active)return;const chunk=1024;while(this.l.length>=chunk){const L=this.l.splice(0,chunk),R=this.r.splice(0,chunk),ab=this.ctx.createBuffer(2,chunk,this.rate);ab.copyToChannel(Float32Array.from(L),0);ab.copyToChannel(Float32Array.from(R),1);const src=this.ctx.createBufferSource();src.buffer=ab;src.connect(this.gain);const now=this.ctx.currentTime;if(!this.nextTime||this.nextTime<now+.006||this.nextTime>now+.18)this.nextTime=now+.022;src.start(this.nextTime);this.nextTime+=chunk/this.rate;this.sources.add(src);src.onended=()=>this.sources.delete(src);if(this.nextTime>now+.12)break}}
-  remainingBuffer(){if(!this.ctx)return 0;const scheduled=Math.max(0,this.nextTime-this.ctx.currentTime)*this.rate;return Math.max(0,((scheduled+this.l.length)*2)|0)}
-  setBufferSpace(amount){if(this.ctx){const sec=Math.min(.06,Math.max(.012,(amount|0)/(2*this.rate)));this.nextTime=Math.max(this.nextTime,this.ctx.currentTime+sec)}}
-}
 class GBAPlugIn{
-  constructor(canvas){this.canvas=canvas;this.engine=null;this.graphics=new GBACanvasSink(canvas);this.audio=new GBAWebAudioSink();this.rom=null;this.meta=null;this.fileName='';this.powered=false;this.paused=false;this.speedPct=0;this.cycles=0;this.lastFrames=0}
-  async load(bytes,fileName){await ensureGBACore();this.shutdown();this.rom=new Uint8Array(bytes);this.fileName=fileName||'game.gba';this.meta=gbaInfoFromROM(this.rom,this.fileName);const e=this.engine=new window.GameBoyAdvanceEmulator();e.attachPlayStatusHandler(()=>{});e.attachSpeedHandler(v=>this.speedPct=+v||0);e.attachGraphicsFrameHandler(this.graphics);e.attachAudioHandler(this.audio);e.attachSaveExportHandler((name,data)=>{try{localStorage.setItem('gbxjsd_gba_'+name,bytesToB64(Uint8Array.from(data)))}catch(_){}});e.attachSaveImportHandler((name,ok,fail)=>{try{const v=localStorage.getItem('gbxjsd_gba_'+name);if(v)ok(Array.from(b64ToBytes(v)));else fail()}catch(_){fail()}});e.toggleOffthreadGraphics(false);e.toggleSkipBootROM(true);e.setIntervalRate(16);e.setSpeed(+$('#speed').value||1);e.attachROM(this.rom);this.powered=false;this.paused=false;this.cycles=0;this.speedPct=0;this.lastFrames=gbaFrameSerial}
-  play(){if(!this.engine||!this.rom)return;this.engine.setSpeed(+$('#speed').value||1);this.engine.play();this.powered=true;this.paused=false}
-  pause(){if(!this.engine)return;this.engine.pause();this.paused=true}
-  resume(){if(!this.engine)return;this.engine.play();this.paused=false;this.powered=true}
-  powerOff(){if(this.engine){this.engine.pause();this.engine.exportSave()}this.powered=false;this.paused=false}
-  reset(){if(!this.engine)return;this.engine.restart();this.powered=true;this.paused=false}
-  tick(now){if(!this.engine||!this.powered||this.paused)return;const before=this.engine.clockCyclesSinceStart|0;this.engine.timerCallback(now>>>0);this.cycles+=Math.max(0,this.engine.CPUCyclesTotal|0);return (this.engine.clockCyclesSinceStart|0)-before}
-  key(index,down){if(!this.engine||!this.powered)return;(down?this.engine.keyDown:this.engine.keyUp).call(this.engine,index)}
-  async toggleAudio(on){if(!this.engine)return false;if(on){await this.audio.activate();this.engine.enableAudio();return true}else{this.engine.disableAudio();return false}}
-  saveRAM(){if(!this.engine?.IOCore?.saves)return null;const s=this.engine.IOCore.saves.exportSave();return s?Uint8Array.from(s):null}
-  importRAM(data){if(!this.engine?.IOCore?.saves)return false;this.engine.IOCore.saves.importSave(Uint8Array.from(data),0);this.engine.exportSave();return true}
-  read8(addr){addr>>>=0;const io=this.engine?.IOCore;if(!io)return null;try{const m=io.memory;if(m&&typeof m.memoryRead8==='function')return m.memoryRead8(addr|0)&255}catch(_){}if(addr>=0x08000000&&addr<0x0E000000&&this.rom?.length)return this.rom[(addr-0x08000000)%this.rom.length];return 0}
-  shutdown(){if(this.engine){try{this.engine.stop()}catch(_){}try{this.engine.disableAudio()}catch(_){}}this.powered=false;this.paused=false}
+  constructor(canvas){this.canvas=canvas;this.engine=null;this.graphics={img:null};this.rom=null;this.meta=null;this.fileName='';this.powered=false;this.paused=false;this.speedPct=100;this.cycles=0;this.lastFrames=0}
+  saveKey(){return 'gbxjsd_clean_gba_'+(this.meta?.gameCode||this.meta?.title||'game')}
+  persistSave(){if(!this.engine||!this.meta)return;try{localStorage.setItem(this.saveKey(),bytesToB64(this.engine.exportSave()))}catch(_){}}
+  async load(bytes,fileName){await ensureGBACore();this.shutdown();this.rom=new Uint8Array(bytes);this.fileName=fileName||'game.gba';this.meta=gbaInfoFromROM(this.rom,this.fileName);this.engine=new window.JSDGBAEmulator(this.canvas);this.engine.loadROM(this.rom);try{const v=localStorage.getItem(this.saveKey());if(v)this.engine.importSave(b64ToBytes(v))}catch(_){}this.powered=false;this.paused=false;this.cycles=0;this.speedPct=100;this.lastFrames=this.engine.ppu.frames}
+  play(){if(!this.engine||!this.rom)return;this.engine.setSpeed?.(+$('#speed').value||1);this.powered=true;this.paused=false}
+  pause(){if(!this.engine)return;this.paused=true}
+  resume(){if(!this.engine)return;this.paused=false;this.powered=true}
+  powerOff(){this.persistSave();this.powered=false;this.paused=false}
+  reset(){if(!this.engine)return;this.engine.reset();this.powered=true;this.paused=false;this.cycles=0}
+  tick(){if(!this.engine||!this.powered||this.paused)return 0;const before=this.engine.cycles;this.engine.runFrame();this.cycles=this.engine.cycles;gbaFrameSerial=this.engine.ppu.frames;return this.engine.cycles-before}
+  step(){if(!this.engine)return;this.engine.step();this.cycles=this.engine.cycles;this.engine.ppu.render();gbaFrameSerial=this.engine.ppu.frames}
+  key(index,down){if(this.engine)this.engine.key(index,down)}
+  async toggleAudio(on){if(!this.engine)return false;return on?await this.engine.audio.enable():this.engine.audio.disable()}
+  saveRAM(){return this.engine?this.engine.exportSave():null}
+  importRAM(data){if(!this.engine)return false;this.engine.importSave(data);this.persistSave();return true}
+  read8(addr){return this.engine?this.engine.read8(addr>>>0):0}
+  shutdown(){this.persistSave();this.powered=false;this.paused=false;this.engine=null}
 }
 const gba=new GBAPlugIn($('#screen'));
 let activeSystem='GB';
@@ -531,31 +882,17 @@ const GBA_MEM_OPTIONS='<option value="cpu">CPU address space</option><option val
 const GBA_ASSET_OPTIONS='<option value="gba-bg4">BG tiles · 4bpp</option><option value="gba-bg8">BG tiles · 8bpp</option><option value="gba-obj4">OBJ tiles · 4bpp</option><option value="gba-obj8">OBJ tiles · 8bpp</option><option value="gba-oam">OAM · 128 objects</option>';
 const GBA_DISMODE_OPTIONS='<option value="auto">AUTO · CPU state</option><option value="arm">ARM · 32 bit</option><option value="thumb">THUMB · 16 bit</option>';
 function setSystemUI(kind){
-  activeSystem=kind;const c=$('#screen');const sh=$('#screenShell');document.body.classList.toggle('gba-active',kind==='GBA');sh.classList.toggle('gba',kind==='GBA');$('#gbaNotice').style.display=kind==='GBA'?'block':'none';$('#palette').disabled=kind==='GBA'||machine.cgbMode;$('#stepBtn').disabled=kind==='GBA'||!machine.powered;$('#cpuLabel').textContent=kind==='GBA'?'ARM7TDMI · ARM / THUMB':'LR35902';
+  activeSystem=kind;const c=$('#screen');const sh=$('#screenShell');document.body.classList.toggle('gba-active',kind==='GBA');sh.classList.toggle('gba',kind==='GBA');$('#gbaNotice').style.display=kind==='GBA'?'block':'none';$('#palette').disabled=kind==='GBA'||machine.cgbMode;$('#stepBtn').disabled=kind==='GBA'?!gba.powered:!machine.powered;$('#cpuLabel').textContent=kind==='GBA'?'ARM7TDMI · ARM / THUMB':'LR35902';
   if(kind==='GBA'){c.width=240;c.height=160;c.style.aspectRatio='240 / 160';$('#memRegion').innerHTML=GBA_MEM_OPTIONS;$('#memAddr').value='08000000';$('#assetSource').innerHTML=GBA_ASSET_OPTIONS;$('#disMode').innerHTML=GBA_DISMODE_OPTIONS;$('#disStart').value='08000000';$('#disEntry').textContent='Entry $08000000';$('#controllerHelpText').textContent=lang==='it'?'Frecce/WASD = D-pad · Z = A · X = B · Invio = Start · Shift = Select · Q = L · E = R.':'Arrows/WASD = D-pad · Z = A · X = B · Enter = Start · Shift = Select · Q = L · E = R.'}
   else{c.width=160;c.height=144;c.style.aspectRatio='160 / 144';$('#memRegion').innerHTML=GB_MEM_OPTIONS;$('#memAddr').value='0100';$('#assetSource').innerHTML=GB_ASSET_OPTIONS;$('#disMode').innerHTML=GB_DISMODE_OPTIONS;$('#disEntry').textContent='Entry $0100';$('#controllerHelpText').textContent=tr('controllerHelp');machine.ppu.displayInit=false;machine.ppu.redraw()}
   fillAssetBanks();fillBanks();
 }
-function gbaPC(){const r=gba.engine?.IOCore?.cpu?.registers;return r&&r.length>15?(r[15]>>>0):0}
-function gbaScanline(){return gba.engine?.IOCore?.gfxState?.currentScanLine??0}
-function gbaCpuMode(){const cpu=gba.engine?.IOCore?.cpu;if(!cpu)return 'ARM';return (cpu.modeFlags&0x20)?'THUMB':'ARM'}
+function gbaPC(){return gba.engine?.cpu?.r?.[15]>>>0||0}
+function gbaScanline(){return gba.engine?.bus?.scanline??0}
+function gbaCpuMode(){return gba.engine?.cpu?.thumb?'THUMB':'ARM'}
 function gbaDump(){let region=$('#memRegion').value,a=parseInt($('#memAddr').value.replace(/^\$/,''),16);if(!Number.isFinite(a))a=0x08000000;const bases={ewram:0x02000000,iwram:0x03000000,io:0x04000000,pal:0x05000000,vram:0x06000000,oam:0x07000000,rom:0x08000000,sram:0x0E000000};if(region!=='cpu'&&bases[region]!==undefined&&a<0x01000000)a=(bases[region]+a)>>>0;let out='';for(let r=0;r<16;r++){let addr=(a+r*16)>>>0,bs=[];for(let i=0;i<16;i++)bs.push(gba.read8((addr+i)>>>0));out+=hex(addr,8)+'  '+bs.map(v=>(v??0).toString(16).padStart(2,'0').toUpperCase()).join(' ')+'  '+bs.map(v=>v>=32&&v<127?String.fromCharCode(v):'.').join('')+'\n'}$('#memDump').textContent=out}
-function gbaRenderer(){
-  // On-thread Iodine exposes the actual renderer directly as IOCore.gfxRenderer.
-  // Some wrappers/proxies expose it through .renderer, so support both layouts.
-  const g=gba.engine?.IOCore?.gfxRenderer||null;
-  return g?.renderer||g?.proxy?.renderer||g||null;
-}
-function gbaGfxMemory(){
-  const r=gbaRenderer();if(!r)return null;
-  // Direct renderer: OAM lives in objRenderer.OAMRAM. RendererShim: OAMRAM is on the shim itself.
-  const vram=r.VRAM||r.renderer?.VRAM||null;
-  const pal=r.paletteRAM||r.renderer?.paletteRAM||null;
-  const oam=r.OAMRAM||r.objRenderer?.OAMRAM||r.renderer?.OAMRAM||r.renderer?.objRenderer?.OAMRAM||null;
-  const dc=r.displayControl??r.renderer?.displayControl??0;
-  const dp=r.display??r.renderer?.display??0;
-  return{vram,pal,oam,dispcnt:(dc&0xFF)|((dp&0xFF)<<8),renderer:r};
-}
+function gbaRenderer(){return gba.engine?.ppu||null}
+function gbaGfxMemory(){const e=gba.engine;if(!e)return null;return{vram:e.bus.vram,pal:e.bus.pal,oam:e.bus.oam,dispcnt:e.bus.read16(0x04000000),renderer:e.ppu}}
 function gbaColor555(v){return[Math.round((v&31)*255/31),Math.round(((v>>5)&31)*255/31),Math.round(((v>>10)&31)*255/31)]}
 function gbaPaletteColor(obj,index,palBank=0){const m=gbaGfxMemory(),p=m?.pal;if(!p)return[0,0,0];let pi=(obj?256:0)+(palBank*16)+(index&15);if(index>15)pi=(obj?256:0)+(index&255);let o=(pi&511)*2,v=(p[o]||0)|((p[o+1]||0)<<8);return gbaColor555(v)}
 function gbaDrawTile(ctx,vram,off,dx,dy,bpp8,obj,palBank=0,scale=1,transparent0=false){const step=bpp8?64:32;off%=vram.length;for(let y=0;y<8;y++)for(let x=0;x<8;x++){let ci;if(bpp8)ci=vram[(off+y*8+x)%vram.length]||0;else{let q=vram[(off+y*4+(x>>1))%vram.length]||0;ci=(x&1)?(q>>4):(q&15)}if(transparent0&&ci===0){ctx.clearRect(dx+x*scale,dy+y*scale,scale,scale);continue}let col=bpp8?gbaPaletteColor(obj,ci,0):gbaPaletteColor(obj,ci,palBank);ctx.fillStyle=`rgb(${col[0]},${col[1]},${col[2]})`;ctx.fillRect(dx+x*scale,dy+y*scale,scale,scale)}}
@@ -619,9 +956,9 @@ const machine=new GameBoy($('#screen'));let raf=0,last=performance.now(),fpsCloc
 function refreshUI(){
   if(isGBA()){
     const has=!!gba.rom,powered=gba.powered,paused=gba.paused;
-    $('#romBadge').textContent=tr(has?'romLoaded':'romMissing');$('#romBadge').className='badge '+(has?'ok':'warn');$('#systemBadge').textContent='GBA';$('#systemBadge').className='badge on';$('#powerBadge').textContent=tr(!powered?'off':paused?'paused':'on');$('#powerBadge').className='badge '+(powered?(paused?'warn':'on'):'');$('#powerBtn').textContent=tr(powered?'powerOff':'powerOn');$('#pauseBtn').textContent=tr(paused?'resume':'pause');$('#pauseBtn').disabled=!powered;$('#stepBtn').disabled=true;$('#powerLed').classList.toggle('on',powered);$('#palette').disabled=true;
+    $('#romBadge').textContent=tr(has?'romLoaded':'romMissing');$('#romBadge').className='badge '+(has?'ok':'warn');$('#systemBadge').textContent='GBA';$('#systemBadge').className='badge on';$('#powerBadge').textContent=tr(!powered?'off':paused?'paused':'on');$('#powerBadge').className='badge '+(powered?(paused?'warn':'on'):'');$('#powerBtn').textContent=tr(powered?'powerOff':'powerOn');$('#pauseBtn').textContent=tr(paused?'resume':'pause');$('#pauseBtn').disabled=!powered;$('#stepBtn').disabled=!has;$('#powerLed').classList.toggle('on',powered);$('#palette').disabled=true;
     const requested=+$('#speed').value||1,perf=gba.speedPct||0;$('#fpsBadge').textContent=(powered?fps.toFixed(1):'0.0')+' FPS · '+(powered?(perf?perf.toFixed(0):'—'):'0')+'% core';$('#fpsBadge').className='badge '+(powered&&perf&&perf<90?'warn':'');$('#speedMode').textContent='ARM7TDMI · '+gbaCpuMode();
-    if($('#machine').classList.contains('active')){const r=gba.engine?.IOCore?.cpu?.registers||[];$('#regs').innerHTML=Array.from({length:16},(_,i)=>`<div class="reg"><span>R${i}${i===13?' SP':i===14?' LR':i===15?' PC':''}</span><b>${hex((r[i]||0)>>>0,8)}</b></div>`).join('');const cpu=gba.engine?.IOCore?.cpu;$('#flags').innerHTML=[['T',!!(cpu?.modeFlags&0x20)],['I',!!(cpu?.modeFlags&0x80)],['F',!!(cpu?.modeFlags&0x40)]].map(([n,on])=>`<div class="flag ${on?'on':''}">${n}</div>`).join('');$('#cycles').textContent=Math.floor(gba.cycles).toLocaleString();$('#pc').textContent=hex(gbaPC(),8);$('#ppuState').textContent=`VCOUNT ${gbaScanline()} · 240×160`;$('#trace').textContent='GBA core isolato · debugger ARM/Thumb non ancora collegato.\nGB/GBC LR35902 trace resta invariato.'}
+    if($('#machine').classList.contains('active')){const r=gba.engine?.cpu?.r||[];$('#regs').innerHTML=Array.from({length:16},(_,i)=>`<div class="reg"><span>R${i}${i===13?' SP':i===14?' LR':i===15?' PC':''}</span><b>${hex((r[i]||0)>>>0,8)}</b></div>`).join('');const cpu=gba.engine?.cpu,cpsr=cpu?.cpsr||0;$('#flags').innerHTML=[['T',!!(cpsr&0x20)],['I',!!(cpsr&0x80)],['F',!!(cpsr&0x40)]].map(([n,on])=>`<div class="flag ${on?'on':''}">${n}</div>`).join('');$('#cycles').textContent=Math.floor(gba.cycles).toLocaleString();$('#pc').textContent=hex(gbaPC(),8);$('#ppuState').textContent=`VCOUNT ${gbaScanline()} · 240×160`;$('#trace').textContent='GBA core isolato · debugger ARM/Thumb non ancora collegato.\nGB/GBC LR35902 trace resta invariato.'}
     if($('#audio').classList.contains('active')){$('#nr50').textContent='—';$('#nr51').textContent='—';$('#nr52').textContent=audioOn?'ON':'OFF';$('#apuEvents').textContent='GBA';updateAudioRows()}
     if($('#resources').classList.contains('active'))updateCaptureUI();
     return;
@@ -647,19 +984,28 @@ function refreshUI(){
   if($('#audio').classList.contains('active')){$('#nr50').textContent=hex(machine.audio.read(0x24));$('#nr51').textContent=hex(machine.audio.read(0x25));$('#nr52').textContent=hex(machine.audio.read(0x26));$('#apuEvents').textContent=machine.apuLog.length.toLocaleString();updateAudioRows()}
   if($('#resources').classList.contains('active'))updateCaptureUI();
 }
-function updateCartUI(){if(isGBA()){const i=gba.meta||{};$('#gameTitle').textContent=i.title||'—';$('#cartType').textContent=i.gameCode?`GAME PAK · ${i.gameCode}`:'GBA GAME PAK';$('#systemType').textContent='GAME BOY ADVANCE';$('#speedMode').textContent='ARM7TDMI';$('#romSize').textContent=i.romBytes?`${(i.romBytes/1024/1024).toFixed(i.romBytes>=1048576?1:2)} MiB`:'—';const sr=gba.saveRAM();$('#ramSize').textContent=sr?.length?`${(sr.length/1024).toFixed(0)} KiB save`:'auto';$('#romName').textContent=i.title||'—';$('#romDrop').classList.toggle('loaded',!!i.romBytes);$('#disOut').value='; GBA ARM7TDMI core attivo.\n; Scegli AUTO / ARM / THUMB, un indirizzo e premi Analizza.';return}let i=machine.cart.info();$('#gameTitle').textContent=i.title||'—';$('#cartType').textContent=i.romBytes?(CART_NAMES[i.type]||hex(i.type)):'—';$('#systemType').textContent=i.romBytes?(i.cgbOnly?'CGB ONLY':i.cgbSupport?'CGB + DMG':'DMG'):'—';$('#speedMode').textContent=machine.cpuSpeed+'×';$('#romSize').textContent=i.romBytes?`${(i.romBytes/1024).toFixed(0)} KiB · ${i.banks} banks`:'—';$('#ramSize').textContent=i.ramBytes?`${(i.ramBytes/1024).toFixed(i.ramBytes<1024?1:0)} KiB`:'0';$('#romName').textContent=i.title||'—';$('#romDrop').classList.toggle('loaded',!!i.romBytes);fillBanks();fillAssetBanks()}
+function updateCartUI(){if(isGBA()){const i=gba.meta||{};$('#gameTitle').textContent=i.title||'—';$('#cartType').textContent=i.gameCode?`GAME PAK · ${i.gameCode}`:'GBA GAME PAK';$('#systemType').textContent='GAME BOY ADVANCE';$('#speedMode').textContent='ARM7TDMI';$('#romSize').textContent=i.romBytes?`${(i.romBytes/1024/1024).toFixed(i.romBytes>=1048576?1:2)} MiB`:'—';const sr=gba.saveRAM();$('#ramSize').textContent=sr?.length?`${(sr.length/1024).toFixed(0)} KiB save`:'auto';$('#romName').textContent=i.title||'—';$('#romDrop').classList.toggle('loaded',!!i.romBytes);$('#disOut').value='; GBA JSD clean-room ARM7TDMI core attivo.\n; Scegli AUTO / ARM / THUMB, un indirizzo e premi Analizza.';return}let i=machine.cart.info();$('#gameTitle').textContent=i.title||'—';$('#cartType').textContent=i.romBytes?(CART_NAMES[i.type]||hex(i.type)):'—';$('#systemType').textContent=i.romBytes?(i.cgbOnly?'CGB ONLY':i.cgbSupport?'CGB + DMG':'DMG'):'—';$('#speedMode').textContent=machine.cpuSpeed+'×';$('#romSize').textContent=i.romBytes?`${(i.romBytes/1024).toFixed(0)} KiB · ${i.banks} banks`:'—';$('#ramSize').textContent=i.ramBytes?`${(i.ramBytes/1024).toFixed(i.ramBytes<1024?1:0)} KiB`:'0';$('#romName').textContent=i.title||'—';$('#romDrop').classList.toggle('loaded',!!i.romBytes);fillBanks();fillAssetBanks()}
 function fillBanks(){if(isGBA()){const e=$('#disBank');e.innerHTML='<option>GBA ADDRESS</option>';e.disabled=true;return}else $('#disBank').disabled=false;let n=machine.cart.banks()||1,e=$('#disBank'),cur=+e.value||0;e.innerHTML='';for(let i=0;i<n;i++){let o=document.createElement('option');o.value=i;o.textContent=`Bank ${i} · ${hex(i*0x4000,6)}`;e.appendChild(o)}e.value=Math.min(cur,n-1);$('#disStart').value=(+e.value===0?'0100':'4000')}
 function fillAssetBanks(){if(isGBA()){let src=$('#assetSource').value,e=$('#assetBank'),cur=+e.value||0;e.innerHTML='';if(src==='gba-bg4'||src==='gba-obj4'){for(let i=0;i<16;i++){let o=document.createElement('option');o.value=i;o.textContent=`Palette ${i} · colors ${i*16}–${i*16+15}`;e.appendChild(o)}e.value=Math.min(cur,15);e.disabled=false}else{e.innerHTML='<option value="0">256-color / auto</option>';e.disabled=true}return}let type=$('#assetSource').value,e=$('#assetBank'),cur=+e.value||0,n=1,step=0x2000,label='VRAM';if(type==='rom'){n=machine.cart.banks()||1;step=0x4000;label='ROM'}else if(type==='vram'){n=machine.cgbMode?2:1;step=0x2000;label='VRAM'}else{n=1;step=0;label='BG'}e.innerHTML='';for(let i=0;i<n;i++){let o=document.createElement('option');o.value=i;o.textContent=type==='bg'?'Tilemap attiva':`${label} bank ${i}${step?' · '+hex(i*step,6):''}`;e.appendChild(o)}e.value=Math.min(cur,n-1);e.disabled=type==='bg'}
 function frame(t){
   raf=requestAnimationFrame(frame);let dt=Math.min(.125,Math.max(0,(t-emuClock)/1000));emuClock=t;let speed=+$('#speed').value||1,ran=0;
   if(isGBA()){
     if(gba.engine)gba.engine.setSpeed(speed);
-    if(gba.powered&&!gba.paused){frameAccumulator+=dt*62.5;const cap=10;while(frameAccumulator>=1&&ran<cap){const f0=gbaFrameSerial;gba.tick(t);frameAccumulator-=1;ran++;if(gbaFrameSerial!==f0){} }if(frameAccumulator>cap*2)frameAccumulator=cap*2}else frameAccumulator=0;
+    if(gba.powered&&!gba.paused){
+      frameAccumulator+=dt*59.7275*speed;
+      // Do not enter a catch-up spiral. A slow frame must yield back to the browser instead
+      // of immediately emulating several more frames and starving menus/painting.
+      const budgetEnd=performance.now()+Math.min(12,7+4*Math.max(0,speed-1));
+      const hardCap=Math.max(1,Math.ceil(speed));
+      while(frameAccumulator>=1&&ran<hardCap){gba.tick(t);frameAccumulator-=1;ran++;if(performance.now()>=budgetEnd)break}
+      // At normal speed discard excessive backlog: real hardware time moves on, but the UI stays responsive.
+      const backlogCap=speed<=1?1.25:Math.max(2,hardCap+0.5);if(frameAccumulator>backlogCap)frameAccumulator=backlogCap;
+    }else frameAccumulator=0;
     const nowFrames=gbaFrameSerial;fpsFrames+=Math.max(0,nowFrames-gba.lastFrames);gba.lastFrames=nowFrames;
   }else{
     machine.audio.setSpeed(speed);if(machine.powered&&!machine.paused){frameAccumulator+=dt*GB_FPS*speed;const cap=Math.max(3,Math.ceil(GB_FPS*.125*speed));while(frameAccumulator>=1&&ran<cap){machine.runFrame();frameAccumulator-=1;ran++}if(frameAccumulator>cap*2)frameAccumulator=cap*2}else frameAccumulator=0;if(audioOn)machine.audio.update(machine.powered&&!machine.paused);if(machine.powered&&machine.cart.battery&&performance.now()-lastBattery>5000){machine.cart.saveBattery();lastBattery=performance.now()}fpsFrames+=ran;
   }
-  if(t-fpsClock>=500){fps=fpsFrames*1000/(t-fpsClock);fpsFrames=0;fpsClock=t}if(t-lastUiClock>=80){refreshUI();lastUiClock=t}
+  if(t-fpsClock>=500){fps=fpsFrames*1000/(t-fpsClock);fpsFrames=0;fpsClock=t}if(t-lastUiClock>=(isGBA()?140:80)){refreshUI();lastUiClock=t}
 }
 
 function memDump(){if(isGBA())return gbaDump();let region=$('#memRegion').value,a=parseInt($('#memAddr').value.replace(/^\$/,''),16)||0,get,base=a;if(region==='cpu'){get=x=>machine.read(x&0xFFFF)}else if(region==='vram'){base=clamp(a,0,machine.cgbMode?0x3FFF:0x1FFF);get=x=>machine.vram[x%(machine.cgbMode?0x4000:0x2000)]}else if(region==='wram'){base=clamp(a,0,machine.cgbMode?0x7FFF:0x1FFF);get=x=>machine.wram[x%(machine.cgbMode?0x8000:0x2000)]}else if(region==='oam'){base=clamp(a,0,0x9F);get=x=>machine.oam[x%0xA0]}else if(region==='hram'){base=clamp(a,0,0x7E);get=x=>machine.hram[x%0x7F]}else if(region==='io'){base=clamp(a,0,0x7F);get=x=>machine.read(0xFF00+(x&0x7F))}else if(region==='rom'){base=clamp(a,0,Math.max(0,(machine.cart.rom?.length||1)-1));get=x=>machine.cart.rom?.[x]??0xFF}else{base=clamp(a,0,Math.max(0,machine.cart.ram.length-1));get=x=>machine.cart.ram[x]??0xFF}let out='';for(let r=0;r<16;r++){let addr=base+r*16,bs=[];for(let i=0;i<16;i++)bs.push(get(addr+i));out+=hex(addr,region==='rom'?6:4)+'  '+bs.map(v=>v.toString(16).padStart(2,'0').toUpperCase()).join(' ')+'  '+bs.map(v=>v>=32&&v<127?String.fromCharCode(v):'.').join('')+'\n'}$('#memDump').textContent=out}
@@ -691,7 +1037,7 @@ $('#speed').onchange=()=>{frameAccumulator=0;emuClock=performance.now();if(isGBA
 $('#powerBtn').onclick=()=>{if(isGBA()){if(!gba.rom)return alert(tr('needRom'));if(gba.powered){gba.powerOff();log(tr('stopped'))}else{gba.play();log(tr('started'));$('#screen').focus()}refreshUI();return}if(!machine.cart.rom){alert(tr('needRom'));return}if(machine.powered){machine.powered=false;machine.cart.saveBattery();log(tr('stopped'))}else{machine.powered=true;machine.paused=false;log(tr('started'));$('#screen').focus()}refreshUI()};
 $('#resetBtn').onclick=()=>{if(isGBA()){if(!gba.rom)return alert(tr('needRom'));gba.reset();log(tr('resetDone'));refreshUI();return}if(!machine.cart.rom)return alert(tr('needRom'));machine.reset();machine.powered=true;log(tr('resetDone'));refreshUI()};
 $('#pauseBtn').onclick=()=>{if(isGBA()){gba.paused?gba.resume():gba.pause()}else machine.paused=!machine.paused;refreshUI()};
-$('#stepBtn').onclick=()=>{if(!isGBA()&&machine.powered){machine.paused=true;machine.cpu.step();refreshUI()}};
+$('#stepBtn').onclick=()=>{if(isGBA()){if(!gba.rom)return alert(tr('needRom'));gba.paused=true;gba.step();refreshUI();return}if(machine.powered){machine.paused=true;machine.cpu.step();refreshUI()}};
 $('#fullBtn').onclick=async()=>{if(document.fullscreenElement)await document.exitFullscreen();else await $('#screenShell').requestFullscreen()};
 $('#graphics').onchange=e=>{const mode=e.target.value;if(!isGBA())machine.ppu.setDisplayMode(mode);$('#screenShell').classList.toggle('crt',mode==='crt');$('#screenShell').classList.toggle('soft',mode==='soft')};
 $('#palette').onchange=e=>{if(!isGBA()){machine.ppu.setPalette(e.target.value);refreshAssets()}};
@@ -705,14 +1051,85 @@ $('#itBtn').onclick=()=>setLang('it');$('#enBtn').onclick=()=>setLang('en');$$('
   refreshUI();
 });
 $('#memShow').onclick=memDump;$('#memAddr').onkeydown=e=>{if(e.key==='Enter')memDump()};$('#exportVram').onclick=()=>{if(isGBA()){const v=gbaGfxMemory()?.vram;if(v)return download((gba.meta?.title||'game')+'_vram.bin',v);return alert('GBA VRAM non disponibile finché il core non è avviato')}download((machine.cart.title||'game')+'_vram.bin',machine.vram)};$('#exportOam').onclick=()=>{if(isGBA()){const o=gbaGfxMemory()?.oam;if(o)return download((gba.meta?.title||'game')+'_oam.bin',o);return alert('GBA OAM: esportazione diretta non disponibile')}download((machine.cart.title||'game')+'_oam.bin',machine.oam)};$('#exportIo').onclick=()=>{if(isGBA()){let o={};for(let i=0;i<0x400;i++)o[hex(0x04000000+i,8)]=gba.read8(0x04000000+i);download((gba.meta?.title||'game')+'_io.json',JSON.stringify(o,null,2),'application/json');return}let o={};for(let i=0;i<0x80;i++)o[hex(0xFF00+i,4)]=machine.io[i];download((machine.cart.title||'game')+'_io.json',JSON.stringify(o,null,2),'application/json')};
-$('#saveState').onclick=()=>{if(isGBA())return alert('Save state GBA non ancora collegato all’export JSON; i salvataggi cartuccia SRAM/FLASH/EEPROM sono supportati.');if(!machine.cart.rom)return alert(tr('needRom'));download((machine.cart.title||'game')+'.gbjsd-state.json',JSON.stringify(machine.state()),'application/json');log(tr('stateSaved'))};$('#stateFile').onchange=async e=>{let f=e.target.files[0];e.target.value='';if(!f)return;if(isGBA())return alert('Import save-state GBA non ancora collegato.');try{machine.loadState(JSON.parse(await f.text()));log(tr('stateLoaded'));refreshUI()}catch(err){alert(err.message)}};$('#saveRam').onclick=()=>{if(isGBA()){const r=gba.saveRAM();if(!r?.length)return alert('GBA save non ancora inizializzato');download((gba.meta?.title||'game')+'.sav',r);gba.engine?.exportSave();log(tr('ramSaved'));return}if(!machine.cart.ram.length)return alert('No cartridge RAM');download((machine.cart.title||'game')+'.sav',machine.cart.ram);log(tr('ramSaved'))};$('#ramFile').onchange=async e=>{let f=e.target.files[0];e.target.value='';if(!f)return;let b=new Uint8Array(await f.arrayBuffer());if(isGBA()){if(!gba.importRAM(b))return alert('Avvia prima il core GBA');log(tr('ramLoaded'));return}if(!machine.cart.ram.length)return;machine.cart.ram.set(b.subarray(0,machine.cart.ram.length));machine.cart.saveBattery();log(tr('ramLoaded'))};
+$('#saveState').onclick=()=>{if(isGBA())return alert('Save state GBA non ancora collegato all’export JSON; i salvataggi cartuccia SRAM/FLASH/EEPROM sono supportati.');if(!machine.cart.rom)return alert(tr('needRom'));download((machine.cart.title||'game')+'.gbjsd-state.json',JSON.stringify(machine.state()),'application/json');log(tr('stateSaved'))};$('#stateFile').onchange=async e=>{let f=e.target.files[0];e.target.value='';if(!f)return;if(isGBA())return alert('Import save-state GBA non ancora collegato.');try{machine.loadState(JSON.parse(await f.text()));log(tr('stateLoaded'));refreshUI()}catch(err){alert(err.message)}};$('#saveRam').onclick=()=>{if(isGBA()){const r=gba.saveRAM();if(!r?.length)return alert('GBA save non ancora inizializzato');download((gba.meta?.title||'game')+'.sav',r);gba.persistSave();log(tr('ramSaved'));return}if(!machine.cart.ram.length)return alert('No cartridge RAM');download((machine.cart.title||'game')+'.sav',machine.cart.ram);log(tr('ramSaved'))};$('#ramFile').onchange=async e=>{let f=e.target.files[0];e.target.value='';if(!f)return;let b=new Uint8Array(await f.arrayBuffer());if(isGBA()){if(!gba.importRAM(b))return alert('Avvia prima il core GBA');log(tr('ramLoaded'));return}if(!machine.cart.ram.length)return;machine.cart.ram.set(b.subarray(0,machine.cart.ram.length));machine.cart.saveBattery();log(tr('ramLoaded'))};
 $('#assetSource').onchange=()=>{fillAssetBanks();refreshAssets()};$('#assetBank').onchange=refreshAssets;$('#refreshAssets').onclick=refreshAssets;$('#assetPng').onclick=()=>canvasPng($('#assetCanvas'),isGBA()?`${gba.meta?.title||'game'}_${$('#assetSource').value}.png`:`${machine.cart.title||'game'}_${$('#assetSource').value}_bank${$('#assetBank').value}.png`);$('#assetJson').onclick=()=>{if(isGBA())return download(`${gba.meta?.title||'game'}_${$('#assetSource').value}.json`,JSON.stringify(gbaResourceJson(),null,2),'application/json');download(`${machine.cart.title||'game'}_${$('#assetSource').value}.json`,JSON.stringify(assetJson(),null,2),'application/json')};$('#spritesPng').onclick=()=>{if(isGBA())return canvasPng(gbaSpriteSheet(),`${gba.meta?.title||'game'}_gba_obj.png`);canvasPng(spriteSheet(),`${machine.cart.title||'game'}_sprites.png`)};$('#spritesJson').onclick=()=>{if(isGBA())return download(`${gba.meta?.title||'game'}_gba_oam.json`,JSON.stringify({game:gba.meta,dispcnt:gbaGfxMemory()?.dispcnt??0,objects:gbaOamData()},null,2),'application/json');download(`${machine.cart.title||'game'}_oam.json`,JSON.stringify(oamData(),null,2),'application/json')};$('#framePng').onclick=()=>canvasPng($('#screen'),isGBA()?`${gba.meta?.title||'game'}_gba_frame.png`:`${machine.cart.title||'game'}_frame.png`);$('#captureStart').onclick=()=>{if(!isGBA())startCapture()};$('#captureStop').onclick=()=>{if(!isGBA())stopCapture()};$('#captureJson').onclick=()=>{if(isGBA())return download(`${gba.meta?.title||'game'}_gba_resources.json`,JSON.stringify(gbaResourceJson(),null,2),'application/json');let c=machine.capture?{...machine.capture,spriteTiles:[...machine.capture.spriteTiles]}:machine.lastCapture;if(!c)return alert('No capture');download(`${machine.cart.title||'game'}_capture.json`,JSON.stringify(c,null,2),'application/json')};
 $('#disBank').onchange=e=>{if(!isGBA())$('#disStart').value=+e.target.value===0?'0100':'4000'};function runDis(){if(isGBA()){if(!gba.rom)return alert(tr('needRom'));let start=parseInt($('#disStart').value.replace(/^\$/,''),16);if(!Number.isFinite(start))start=0x08000000;$('#disOut').value=gbaDisassemble(start,$('#disMode').value,768);log('GBA ARM/Thumb disassembly complete');return}if(!machine.cart.rom)return alert(tr('needRom'));let bank=+$('#disBank').value||0,start=parseInt($('#disStart').value.replace(/^\$/,''),16);if(!Number.isFinite(start))start=bank?0x4000:0x100;let out=disassembleBank(machine.cart,bank,start,$('#disMode').value);$('#disOut').value=out;log(tr('disDone'))}$('#disRun').onclick=runDis;$('#disPc').onclick=()=>{if(isGBA()){let th=gbaCpuMode()==='THUMB',pc=(gbaPC()-(th?4:8))>>>0;$('#disMode').value=th?'thumb':'arm';$('#disStart').value=pc.toString(16).padStart(8,'0');runDis();return}let pc=machine.cpu.PC,bank=pc<0x4000?0:machine.cart.romBank%Math.max(1,machine.cart.banks());$('#disBank').value=bank;$('#disStart').value=pc.toString(16).padStart(4,'0');runDis()};$('#disEntry').onclick=()=>{if(isGBA()){$('#disMode').value='arm';$('#disStart').value='08000000';runDis();return}$('#disBank').value=0;$('#disStart').value='0100';runDis()};$('#disCopy').onclick=async()=>{await navigator.clipboard.writeText($('#disOut').value);osd(tr('copy'))};$('#disExport').onclick=()=>download(isGBA()?`${gba.meta?.title||'game'}_${$('#disMode').value}_disassembly.asm`:`${machine.cart.title||'game'}_bank${$('#disBank').value}.asm`,$('#disOut').value,'text/plain');
-$('#apuJson').onclick=()=>{if(isGBA())return download(`${gba.meta?.title||'game'}_audio_info.json`,JSON.stringify({system:'GBA',core:'IodineGBAEnhanced',audio:audioOn?'enabled':'disabled'},null,2),'application/json');download(`${machine.cart.title||'game'}_apu.json`,JSON.stringify({rom:machine.cart.info(),events:machine.apuLog},null,2),'application/json')};$('#apuClear').onclick=()=>{if(!isGBA())machine.apuLog=[];refreshUI()};$('#clearEvents').onclick=()=>$('#eventList').innerHTML='';
-window.addEventListener('beforeunload',()=>{machine.cart.saveBattery();try{gba.engine?.exportSave()}catch(_){}});
+$('#apuJson').onclick=()=>{if(isGBA())return download(`${gba.meta?.title||'game'}_audio_info.json`,JSON.stringify({system:'GBA',core:'JSD clean-room ARM7TDMI',audio:audioOn?'enabled':'disabled',events:gba.engine?.audio?.events||[]},null,2),'application/json');download(`${machine.cart.title||'game'}_apu.json`,JSON.stringify({rom:machine.cart.info(),events:machine.apuLog},null,2),'application/json')};$('#apuClear').onclick=()=>{if(!isGBA())machine.apuLog=[];refreshUI()};$('#clearEvents').onclick=()=>$('#eventList').innerHTML='';
+window.addEventListener('beforeunload',()=>{machine.cart.saveBattery();try{gba.persistSave()}catch(_){}});
 machine.ppu.setDisplayMode($('#graphics').value);setSystemUI('GB');updateCartUI();refreshAssets();memDump();refreshUI();emuClock=performance.now();requestAnimationFrame(frame);
 })();
 </script>
-<script src="emulator-autoload.js"></script>
+<script>
+/*
+ * JSD Emulator Hub — local iframe autoload bridge
+ * Project code. No emulator core is included here.
+ */
+(()=>{
+  'use strict';
+  const byId=id=>document.getElementById(id);
+  const delay=ms=>new Promise(r=>setTimeout(r,ms));
+  const ext=f=>((f&&f.name)||'').toLowerCase().match(/\.([^.]+)$/)?.[1]||'';
+  function setFiles(input,files){
+    if(!input||!files||!files.length)return false;
+    try{
+      const dt=new DataTransfer();
+      for(const f of files)if(f instanceof File)dt.items.add(f);
+      if(!dt.files.length)return false;
+      input.files=dt.files;
+      input.dispatchEvent(new Event('change',{bubbles:true}));
+      return true;
+    }catch(err){
+      console.warn('JSD autoload: cannot assign files',err);
+      return false;
+    }
+  }
+  function status(system,loaded,error=''){
+    try{parent.postMessage({type:'emulator-autoload-status',system,loaded,error},'*')}catch(_){ }
+  }
+  addEventListener('message',async e=>{
+    const p=e.data;
+    if(!p||p.type!=='emulator-autoload')return;
+    const system=String(p.system||'');
+    const bios=Array.isArray(p.bios)?p.bios.filter(f=>f instanceof File):[];
+    const roms=Array.isArray(p.rom)?p.rom.filter(f=>f instanceof File):[];
+    const loaded=[];
+    try{
+      if(system==='gameboy'){
+        if(setFiles(byId('romFile'),roms.slice(0,1)))loaded.push('ROM');
+      }else if(system==='sega'){
+        // SMS/GG in this build does not require automatic BIOS loading.
+        if(setFiles(byId('romFile'),roms.slice(0,1)))loaded.push('ROM');
+      }else if(system==='coleco'){
+        const b=bios.find(f=>f.size===8192);
+        if(b&&setFiles(byId('biosFile'),[b])){loaded.push('BIOS');await delay(120)}
+        if(setFiles(byId('romFile'),roms.slice(0,1)))loaded.push('ROM');
+      }else if(system==='msx1'){
+        const b=bios.find(f=>f.size===32768);
+        if(b&&setFiles(byId('biosFile'),[b])){loaded.push('BIOS');await delay(120)}
+        if(setFiles(byId('romFile'),roms.slice(0,1)))loaded.push('ROM');
+      }else if(system==='spectrum'){
+        const b=bios.find(f=>f.size===16384);
+        if(b&&setFiles(byId('romFile'),[b])){loaded.push('SYSTEM ROM');await delay(120)}
+        if(setFiles(byId('gameFile'),roms.slice(0,1)))loaded.push('GAME');
+      }else if(system==='vectrex'){
+        const b=bios.find(f=>f.size===8192);
+        if(b&&setFiles(byId('biosFile'),[b])){loaded.push('BIOS');await delay(120)}
+        if(setFiles(byId('romFile'),roms.slice(0,1)))loaded.push('ROM');
+      }else if(system==='intellivision'){
+        // Strict validation: only named EXEC/GROM BIOS files and .int cartridges.
+        const exec=bios.find(f=>f.size===8192&&/exec|executive/i.test(f.name));
+        const grom=bios.find(f=>f.size===2048&&/(^|[^a-z])grom([^a-z]|$)|graphics[ _.-]*rom/i.test(f.name));
+        const cart=roms.find(f=>ext(f)==='int');
+        if(exec&&setFiles(byId('file-exec'),[exec])){loaded.push('EXEC');await delay(80)}
+        if(grom&&setFiles(byId('file-grom'),[grom])){loaded.push('GROM');await delay(80)}
+        if(cart&&setFiles(byId('file-cart'),[cart]))loaded.push('CARTRIDGE');
+      }
+      status(system,loaded);
+    }catch(err){status(system,loaded,String(err&&err.message||err));}
+  });
+  try{parent.postMessage({type:'emulator-autoload-ready'},'*')}catch(_){ }
+})();
+
+</script>
 </body>
 </html>

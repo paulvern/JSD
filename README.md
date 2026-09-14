@@ -23,6 +23,7 @@ Each emulator remains a **separate standalone HTML file**. The launcher identifi
 |---|---|---|---|
 | Game Boy / Game Boy Color / Game Boy Advance | `gbjsd.html` | LR35902 / ARM7TDMI | Disassembly, memory, tiles, OAM, palettes |
 | SEGA Master System / Game Gear | `segajsd.html` | Z80 / VDP / SN76489 | Z80 listing, VRAM/CRAM, tile atlas |
+| Neo Geo AES / MVS | `neogeojsd.html` | Motorola 68000 / Z80 / LSPC / YM2610 | 68000 runtime/trace, P-ROM disassembly, FIX/sprite extraction, Z80 M1 analysis |
 | ColecoVision | `colecojsd.html` | Z80 / TMS9918A / SN76489A | Z80 analysis, sprites, VRAM, sound capture |
 | ZX Spectrum 48K | `zx48jsd.html` | Z80 / ULA / beeper | Trace, memory, disassembly, screen/audio capture |
 | MSX1 | `msx1jsd.html` | Z80 / TMS9918A / AY-3-8910 | Z80 analysis, sprites, VDP, sound registers |
@@ -44,6 +45,8 @@ The project is entirely client-side.
 For local use, open `index.html` or `landing.html` in a modern browser. For GitHub Pages, publish the repository root as a static site.
 
 No commercial BIOS or game ROM is included.
+
+The current hub includes **8 emulator targets**, including the optimized single-file GBA build and **Neo Geo v1.2.5**.
 
 ### Launcher behaviour
 
@@ -94,6 +97,7 @@ Machine instructions are converted to readable assembly for the relevant CPU, in
 - LR35902
 - ARM / Thumb
 - Motorola 6809
+- Motorola 68000
 - CP1610
 
 ### Heuristic analysis / decompilation
@@ -154,7 +158,7 @@ Supported ROM types include:
 
 The launcher requires no external BIOS.
 
-GB/GBC use the internal Game Boy core. GBA uses a separate core loaded when needed.
+GB/GBC use the internal Game Boy core. The optimized GBA core is embedded directly inside `gbjsd.html`; no external GBA JavaScript file, emulator core or CDN is required.
 
 ### Controls
 
@@ -201,7 +205,7 @@ GBA extraction includes:
 
 Available exports include PNG/JSON and screenshots.
 
-For GB/GBC, the audio monitor exposes the four-channel APU and its state.
+For GB/GBC, the audio monitor exposes the four-channel APU and its state. The independent GBA core logs sound-register activity and provides basic audio monitoring; full DirectSound emulation is not yet complete.
 
 ### Save data
 
@@ -209,9 +213,9 @@ State and RAM import/export are available where supported by the active mode.
 
 ### Limitations
 
-The GBA core is separate and uses an experimental HLE BIOS.
+The GBA engine is an independent JavaScript implementation and uses an experimental HLE BIOS. It currently implements a broad ARM/Thumb subset, the main GBA memory map, approximate DMA/timers/IRQs, video modes 0–5, basic text/affine backgrounds, non-affine objects, keypad input and several common BIOS SWIs.
 
-The project remains experimental. GB/GBC audio models many details but does not reproduce every analogue quirk or every cycle-perfect edge case.
+It is intentionally experimental: cycle-perfect timing, windows/blending, complete affine OBJ support, full DirectSound, EEPROM command semantics and unusual cartridge peripherals remain incomplete or approximate. GB/GBC audio also does not reproduce every analogue quirk.
 
 GBA disassembly is static and does not reconstruct the original C/C++ source.
 
@@ -519,6 +523,78 @@ It is not MSX2. There is no:
 
 ---
 
+
+## Neo Geo AES / MVS
+
+**File:** `neogeojsd.html`  
+**Current build:** v1.2.5
+
+### Packages and BIOS
+
+Neo Geo is handled as a ROM **set**, not as a single cartridge image.
+
+For launcher autoload, keep the packages as ZIP files:
+
+- `neogeo.zip` — system BIOS / board ROM package;
+- `game.zip` — MAME-style game set containing the cartridge P/S/M/V/C ROMs.
+
+The emulator can also load extracted files manually. Recognised groups include P-ROM, S-ROM, M1, V-ROM and C-ROM files, together with common BIOS/board files such as `.sp1`, `.sp2`, `.sp3`, `.sfix`, `.sm1` and `.lo`.
+
+The BIOS selector supports original SNK BIOS images and UniBIOS. For MVS input/credit testing, the emulator itself recommends **Europe MVS Ver. 2 (`sp-s2.sp1`)**.
+
+### Controls
+
+| Key | Function |
+|---|---|
+| Arrow keys | P1 directions |
+| `Z` | A |
+| `X` | B |
+| `A` | C |
+| `S` | D |
+| `Enter` | Start P1 |
+| `Shift` | Select |
+| `5` | Coin 1 |
+| `F2` | Service / auxiliary coin input |
+
+A **Quick Start** control is also available; in MVS mode it performs a Coin 1 → Start sequence.
+
+### Runtime and reverse engineering
+
+v1.2.5 includes an experimental Neo Geo runtime with:
+
+- Motorola 68000 execution;
+- AES/MVS memory mapping;
+- BIOS and cartridge vector handling;
+- LSPC/VRAM and palette handling;
+- FIX-layer rendering;
+- sprite rendering using an active scanline list;
+- player/coin/start inputs;
+- BCD credit handling;
+- short cooperative CPU slices so the browser UI remains responsive;
+- runtime register view and execution trace.
+
+Reverse-engineering tools include:
+
+- P-ROM conversion to the byte order seen by the 68000;
+- static 68000 disassembly and ASM export;
+- M1/Z80 static disassembly and ASM export;
+- FIX/S-ROM tile inspection;
+- C-ROM sprite inspection;
+- graphics atlas/export tools;
+- ROM-set report/export.
+
+### Audio limitation
+
+The build identifies M1 and V-ROM data and exposes the Z80 sound program for analysis, but **full Z80/YM2610 runtime synchronisation, FM synthesis and ADPCM playback are not yet complete**.
+
+The 68000/LSPC/palette/FIX/sprite runtime is still experimental and should not be considered cycle-perfect.
+
+### Launcher note
+
+Unlike single-ROM systems, the launcher deliberately passes the **original Neo Geo ZIP files** to `neogeojsd.html`. It may inspect their internal filenames for detection, but it does not replace the game ZIP with one extracted P-ROM.
+
+---
+
 ## Vectrex
 
 **File:** `vectrex_emulator.html`
@@ -543,10 +619,10 @@ Without a cartridge ROM, the built-in vector demo remains available.
 | `Z` | Button 1 |
 | `X` | Button 2 |
 | `C` | Button 3 |
-| `Space` | Additional fire/button input |
-| `Enter` | Start |
+| `Space` | Button 4 |
 | `R` | Reset |
-| `P` | Pause / Resume |
+
+Run/pause, single-step and fullscreen are available from the interface buttons.
 
 ### Reverse engineering
 
@@ -570,18 +646,11 @@ Capture can record up to approximately 300 samples (~10 seconds at 1×) and expo
 
 ### Implementation / limitations
 
-The build reports support for:
+Vectrex uses the independent local `vectrex-clean-core.js` implementation written for this project. It directly implements the Motorola 6809 execution core, the Vectrex memory map, VIA 6522 registers/timers/shift register, the AY-3-8912 bus, reset through vector `$FFFE`, and an approximate analogue vector-beam model.
 
-- VecX-style emulation;
-- reset through vector `$FFFE`;
-- VIA timers;
-- VIA shift register;
-- DAC/integrators;
-- AY registers and audio.
+The implementation is experimental. VIA/analogue timing, less-common 6809 cases and cycle-sensitive vector effects may still need work, so compatibility can be lower than mature emulators.
 
-Commercial BIOS and ROM files are not included and must be provided by the user.
-
-WAV export represents the current audio emulation model and does not reconstruct original music source files.
+Commercial BIOS and ROM files are not included and must be provided by the user. WAV export represents the current audio emulation model and does not reconstruct original music source files.
 
 ---
 
@@ -702,11 +771,14 @@ Typical repository structure:
 ├── landing.html
 ├── help.html
 ├── gbjsd.html
+├── gba-clean-core.js
 ├── segajsd.html
+├── neogeojsd.html
 ├── colecojsd.html
 ├── zx48jsd.html
 ├── msx1jsd.html
 ├── vectrex_emulator.html
+├── vectrex-clean-core.js
 ├── intellijsd.html
 ├── emulator-autoload.js
 ├── .nojekyll

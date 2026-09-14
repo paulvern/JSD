@@ -21,7 +21,7 @@ body.lang-it span[data-lang="it"],body.lang-en span[data-lang="en"]{display:inli
 <body class="lang-it">
 <div class="wrap">
   <div class="topbar">
-    <div class="actions"><a class="btn" href="landing.html">← <span data-lang="it">Landing</span><span data-lang="en">Launcher</span></a></div>
+    <div class="actions"><a class="btn" href="index.html">← <span data-lang="it">Landing</span><span data-lang="en">Launcher</span></a></div>
     <label class="langbox"><span data-lang="it">Lingua</span><span data-lang="en">Language</span>
       <select id="lang"><option value="it">Italiano</option><option value="en">English</option></select>
     </label>
@@ -46,6 +46,7 @@ body.lang-it span[data-lang="it"],body.lang-en span[data-lang="en"]{display:inli
     <a href="#launcher">02 · Launcher / ZIP</a>
     <a href="#gameboy">Game Boy / GBC / GBA</a>
     <a href="#sega">SEGA SMS / GG</a>
+    <a href="#neogeo">Neo Geo AES / MVS</a>
     <a href="#coleco">ColecoVision</a>
     <a href="#spectrum">ZX Spectrum 48K</a>
     <a href="#msx">MSX1</a>
@@ -108,28 +109,28 @@ body.lang-it span[data-lang="it"],body.lang-en span[data-lang="en"]{display:inli
   </section>
 
   <section id="gameboy" class="card sys">
-    <div class="syshead"><div class="sysicon">🟩</div><div><h2>Game Boy · Game Boy Color · Game Boy Advance</h2><div class="muted">GBxJSD / GBC / GBA tools</div></div></div>
+    <div class="syshead"><div class="sysicon">🟩</div><div><h2>Game Boy · Game Boy Color · Game Boy Advance</h2><div class="muted">GBxJSD · GBC · JSD ARM7TDMI clean core</div></div></div>
     <div class="cols">
       <div data-lang="it">
-        <h3>File e avvio</h3><p>ROM <code>.gb</code>, <code>.gbc</code>, <code>.gba</code> e, quando appropriato, <code>.bin</code>. Nessun BIOS esterno è richiesto dalla landing. GB/GBC usano il core interno; GBA usa un core separato caricato solo quando serve.</p>
+        <h3>File e avvio</h3><p>ROM <code>.gb</code>, <code>.gbc</code>, <code>.gba</code> e, quando appropriato, <code>.bin</code>. Nessun BIOS esterno è richiesto dalla landing. GB/GBC usano il core interno; GBA usa il nuovo core JSD ARM7TDMI indipendente, caricato localmente solo quando serve.</p>
         <h3>Comandi</h3>
         <ul><li><span class="kbd">Frecce</span> o <span class="kbd">WASD</span>: D-pad</li><li><span class="kbd">Z</span>: A · <span class="kbd">X</span>: B</li><li><span class="kbd">Invio</span>: Start · <span class="kbd">Shift</span>: Select</li><li>GBA: <span class="kbd">Q</span>: L · <span class="kbd">E</span>: R</li></ul>
         <h3>Reverse engineering</h3><p>Dump della memoria con mappa CPU e ROM fisica; disassembler LR35902 bank-aware per GB/GBC; disassembler ARM7TDMI ARM/Thumb per GBA con branch, load/store, ALU, stack e SWI. Esportazione ASM.</p>
       </div>
       <div data-lang="it">
-        <h3>Grafica e audio</h3><p>GB/GBC: tile 2bpp, tilemap e OAM. GBA: tile BG/OBJ 4bpp/8bpp, palette e 128 oggetti OAM. Export PNG/JSON e screenshot. Per GB/GBC il monitor audio espone l’APU a 4 canali e il relativo stato.</p>
+        <h3>Grafica e audio</h3><p>GB/GBC: tile 2bpp, tilemap e OAM. GBA: tile BG/OBJ 4bpp/8bpp, palette e 128 oggetti OAM. Export PNG/JSON e screenshot. Per GB/GBC il monitor audio espone l’APU a 4 canali e il relativo stato; il nuovo core GBA registra i registri audio e offre un monitor audio di base, ma DirectSound non è ancora completo.</p>
         <h3>Stato / salvataggi</h3><p>Export/import dello stato e della RAM dove supportato dalla modalità corrente.</p>
-        <h3>Limitazioni</h3><div class="warnbox">Il core GBA è separato e usa un BIOS HLE sperimentale. Il progetto resta sperimentale. Per GB/GBC l’audio modella molti dettagli, ma non tutte le anomalie analogiche e i casi limite cycle-perfect. La qualità del disassembly GBA è statica: non sostituisce un decompiler ad alto livello né ricostruisce C/C++ originale.</div>
+        <h3>Limitazioni</h3><div class="warnbox">Il core GBA è una implementazione JSD indipendente in JavaScript con BIOS HLE sperimentale. Implementa una parte ampia di ARM/Thumb, mappa memoria, DMA/timer/IRQ approssimati, modalità video 0–5, BG e OBJ di base e diverse SWI BIOS comuni. Restano incompleti o approssimati timing cycle-perfect, finestre/blending, OBJ affine completo, DirectSound, EEPROM e periferiche cartuccia insolite. Per GB/GBC l’audio modella molti dettagli, ma non tutte le anomalie analogiche. Il disassembly GBA è statico e non ricostruisce il C/C++ originale.</div>
       </div>
       <div data-lang="en">
-        <h3>Files and boot</h3><p>ROMs: <code>.gb</code>, <code>.gbc</code>, <code>.gba</code> and, where appropriate, <code>.bin</code>. The launcher requires no external BIOS. GB/GBC use the internal core; GBA uses a separate core loaded on demand.</p>
+        <h3>Files and boot</h3><p>ROMs: <code>.gb</code>, <code>.gbc</code>, <code>.gba</code> and, where appropriate, <code>.bin</code>. The launcher requires no external BIOS. GB/GBC use the internal core; GBA uses the new independent JSD ARM7TDMI core, loaded locally on demand.</p>
         <h3>Controls</h3><ul><li><span class="kbd">Arrows</span> or <span class="kbd">WASD</span>: D-pad</li><li><span class="kbd">Z</span>: A · <span class="kbd">X</span>: B</li><li><span class="kbd">Enter</span>: Start · <span class="kbd">Shift</span>: Select</li><li>GBA: <span class="kbd">Q</span>: L · <span class="kbd">E</span>: R</li></ul>
         <h3>Reverse engineering</h3><p>CPU-mapped and physical-ROM memory views; bank-aware LR35902 disassembly for GB/GBC; ARM7TDMI ARM/Thumb disassembly for GBA including branches, load/store, ALU, stack and SWI. ASM export.</p>
       </div>
       <div data-lang="en">
-        <h3>Graphics and audio</h3><p>GB/GBC: 2bpp tiles, tilemaps and OAM. GBA: 4bpp/8bpp BG/OBJ tiles, palettes and 128 OAM objects. PNG/JSON export and screenshots. For GB/GBC the audio monitor exposes the four-channel APU and its state.</p>
+        <h3>Graphics and audio</h3><p>GB/GBC: 2bpp tiles, tilemaps and OAM. GBA: 4bpp/8bpp BG/OBJ tiles, palettes and 128 OAM objects. PNG/JSON export and screenshots. For GB/GBC the audio monitor exposes the four-channel APU and its state; the new GBA core logs audio registers and provides a basic audio monitor, while DirectSound is not yet complete.</p>
         <h3>State / save data</h3><p>State and RAM export/import where supported by the active mode.</p>
-        <h3>Limitations</h3><div class="warnbox">The GBA core is separate and uses an experimental HLE BIOS. The project remains experimental. GB/GBC audio models many details but not every analogue quirk or cycle-perfect edge case. GBA disassembly is static and does not reconstruct the original C/C++ source.</div>
+        <h3>Limitations</h3><div class="warnbox">The GBA core is an independent JSD JavaScript implementation with an experimental HLE BIOS. It implements a broad ARM/Thumb subset, memory mapping, approximate DMA/timers/IRQs, video modes 0–5, basic BG/OBJ rendering and several common BIOS SWIs. Cycle-perfect timing, windows/blending, complete affine OBJ support, DirectSound, EEPROM and unusual cartridge peripherals remain incomplete or approximate. GB/GBC audio models many details but not every analogue quirk. GBA disassembly is static and does not reconstruct the original C/C++ source.</div>
       </div>
     </div>
   </section>
@@ -154,6 +155,29 @@ body.lang-it span[data-lang="it"],body.lang-en span[data-lang="en"]{display:inli
       <div data-lang="en">
         <h3>Options</h3><p>NTSC/PAL, SEGA or Codemasters mapper, pixel/scanline/CRT effects, emulation speed and machine state.</p>
         <h3>Limitations</h3><div class="warnbox"><strong>This is not a Mega Drive/Genesis emulator.</strong> The build covers Master System and Game Gear. Exposed mapper support is SEGA + SRAM and Codemasters; titles requiring other hardware or mappers may fail. The disassembler sees the currently mapped Z80 address space. Internal ZIP support does not cover encrypted archives, ZIP64 or every compression method.</div>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="neogeo" class="card sys">
+    <div class="syshead"><div class="sysicon">🟨</div><div><h2>Neo Geo AES · MVS</h2><div class="muted">neogeojsd v1.2.5 · 68000 / Z80 / LSPC / YM2610</div></div></div>
+    <div class="cols">
+      <div data-lang="it">
+        <h3>ROM set e BIOS</h3><p>La landing passa gli ZIP completi: <code>neogeo.zip</code> per BIOS/board ROM e uno ZIP MAME per il gioco. L'emulatore separa internamente P/S/M/V/C. Sono supportati anche file estratti caricati manualmente.</p>
+        <h3>Comandi</h3><ul><li><span class="kbd">Frecce</span>: direzioni</li><li><span class="kbd">Z/X/A/S</span>: A/B/C/D</li><li><span class="kbd">Invio</span>: Start · <span class="kbd">Shift</span>: Select</li><li><span class="kbd">5</span>: Coin 1 · <span class="kbd">F2</span>: input servizio</li></ul>
+        <h3>Reverse engineering</h3><p>Runtime 68000 sperimentale, trace e registri, disassembly P-ROM 68000, disassembly M1/Z80, estrazione FIX/S-ROM e C-ROM sprite, export ASM e report del ROM set.</p>
+      </div>
+      <div data-lang="it">
+        <h3>Limitazioni</h3><div class="warnbox">Il runtime 68000/LSPC/FIX/sprite è sperimentale. M1 e V-ROM vengono riconosciuti e lo Z80 può essere disassemblato, ma sincronizzazione Z80/YM2610, sintesi FM e ADPCM complete non sono ancora implementate.</div>
+      </div>
+      <div data-lang="en">
+        <h3>ROM sets and BIOS</h3><p>The launcher passes complete ZIP packages: <code>neogeo.zip</code> for BIOS/board ROMs and a MAME-style ZIP for the game. The emulator separates P/S/M/V/C internally. Extracted files can also be loaded manually.</p>
+        <h3>Controls</h3><ul><li><span class="kbd">Arrow keys</span>: directions</li><li><span class="kbd">Z/X/A/S</span>: A/B/C/D</li><li><span class="kbd">Enter</span>: Start · <span class="kbd">Shift</span>: Select</li><li><span class="kbd">5</span>: Coin 1 · <span class="kbd">F2</span>: service input</li></ul>
+        <h3>Reverse engineering</h3><p>Experimental 68000 runtime, trace/register view, 68000 P-ROM disassembly, M1/Z80 disassembly, FIX/S-ROM and C-ROM sprite extraction, ASM export and ROM-set reporting.</p>
+      </div>
+      <div data-lang="en">
+        <h3>Limitations</h3><div class="warnbox">The 68000/LSPC/FIX/sprite runtime remains experimental. M1 and V-ROM data are identified and the Z80 program can be disassembled, but full Z80/YM2610 synchronisation, FM synthesis and ADPCM playback are not yet implemented.</div>
       </div>
     </div>
   </section>
@@ -231,25 +255,25 @@ body.lang-it span[data-lang="it"],body.lang-en span[data-lang="en"]{display:inli
   </section>
 
   <section id="vectrex" class="card sys">
-    <div class="syshead"><div class="sysicon">✳️</div><div><h2>Vectrex</h2><div class="muted">VecX WebAssembly · 6809 / VIA 6522 / AY-3-8912</div></div></div>
+    <div class="syshead"><div class="sysicon">✳️</div><div><h2>Vectrex</h2><div class="muted">JSD clean core · 6809 / VIA 6522 / AY-3-8912</div></div></div>
     <div class="cols">
       <div data-lang="it">
         <h3>File e BIOS</h3><p>Cartucce <code>.vec</code>, <code>.rom</code> o <code>.bin</code>. Per le cartucce commerciali servono ROM e BIOS originale; senza ROM resta disponibile la demo vettoriale interna.</p>
-        <h3>Comandi</h3><ul><li><span class="kbd">Frecce/WASD</span>: joystick</li><li><span class="kbd">Z</span>, <span class="kbd">X</span>, <span class="kbd">C</span>: pulsanti 1–3</li><li><span class="kbd">Spazio</span>: ulteriore comando fuoco/pulsante gestito dal core</li><li><span class="kbd">Invio</span>: Start · <span class="kbd">R</span>: Reset · <span class="kbd">P</span>: Pausa/Riprendi</li></ul>
+        <h3>Comandi</h3><ul><li><span class="kbd">Frecce/WASD</span>: joystick</li><li><span class="kbd">Z</span>, <span class="kbd">X</span>, <span class="kbd">C</span>, <span class="kbd">Spazio</span>: pulsanti 1–4</li><li><span class="kbd">R</span>: Reset</li><li>Avvio/pausa, passo singolo e fullscreen sono disponibili dai pulsanti dell’interfaccia.</li></ul>
         <h3>Reverse engineering</h3><p>Stato CPU Motorola 6809, memoria, trace, disassembler 6809 da indirizzo o dal PC corrente, export ASM.</p>
       </div>
       <div data-lang="it">
         <h3>Forme e suoni</h3><p>Il Vectrex costruisce le immagini durante l’esecuzione. La cattura registra fino a 300 campioni (~10 s a 1×) e permette di esportare fotogramma SVG, sequenza vettoriale JSON, registri AY JSON e WAV ricostruito dai tre canali tonali.</p>
-        <h3>Stato implementazione / limiti</h3><p>La build dichiara core VecX completo, reset dal vettore <code>$FFFE</code>, timer/shift register VIA, DAC/integratori e registri/audio AY. Il limite principale è che BIOS e ROM commerciali non sono inclusi e devono essere forniti dall’utente. L’export WAV deriva dal modello audio corrente e non ricostruisce eventuali sorgenti musicali originali.</p>
+        <h3>Stato implementazione / limiti</h3><p>Questa build usa un core JSD JavaScript indipendente: CPU 6809, mappa memoria Vectrex, VIA 6522, bus AY-3-8912 e un modello analogico del fascio sono implementati direttamente nel progetto. Il reset usa il vettore <code>$FFFE</code>. Timing VIA/analogico, alcune istruzioni o modalità 6809 meno comuni e gli effetti vettoriali molto sensibili ai cicli restano sperimentali. BIOS e ROM commerciali non sono inclusi. Il WAV esportato deriva dal modello audio corrente e non ricostruisce sorgenti musicali originali.</p>
       </div>
       <div data-lang="en">
         <h3>Files and BIOS</h3><p>Cartridges: <code>.vec</code>, <code>.rom</code> or <code>.bin</code>. Commercial cartridges require both ROM and original BIOS; without a ROM the built-in vector demo remains available.</p>
-        <h3>Controls</h3><ul><li><span class="kbd">Arrows/WASD</span>: joystick</li><li><span class="kbd">Z</span>, <span class="kbd">X</span>, <span class="kbd">C</span>: buttons 1–3</li><li><span class="kbd">Space</span>: additional fire/button input handled by the core</li><li><span class="kbd">Enter</span>: Start · <span class="kbd">R</span>: Reset · <span class="kbd">P</span>: Pause/Resume</li></ul>
+        <h3>Controls</h3><ul><li><span class="kbd">Arrows/WASD</span>: joystick</li><li><span class="kbd">Z</span>, <span class="kbd">X</span>, <span class="kbd">C</span>, <span class="kbd">Space</span>: buttons 1–4</li><li><span class="kbd">R</span>: Reset</li><li>Run/pause, single-step and fullscreen are available from the interface buttons.</li></ul>
         <h3>Reverse engineering</h3><p>Motorola 6809 CPU state, memory, trace, 6809 disassembler from an address or current PC, ASM export.</p>
       </div>
       <div data-lang="en">
         <h3>Shapes and sound</h3><p>Vectrex builds its image while running. Capture records up to 300 samples (~10 s at 1×) and can export an SVG frame, vector sequence JSON, AY register JSON and a WAV reconstructed from the three tone channels.</p>
-        <h3>Implementation / limits</h3><p>The build reports a complete VecX core, reset through vector <code>$FFFE</code>, VIA timers/shift register, DAC/integrators and AY registers/audio. The main practical limit is that commercial BIOS and ROM files are not included. WAV export comes from the current audio model and does not reconstruct original music source files.</p>
+        <h3>Implementation / limits</h3><p>This build uses an independent JSD JavaScript core: the 6809 CPU, Vectrex memory map, VIA 6522, AY-3-8912 bus and an analogue beam model are implemented directly in the project. Reset uses vector <code>$FFFE</code>. VIA/analogue timing, some less-common 6809 instructions or modes, and highly cycle-sensitive vector effects remain experimental. Commercial BIOS and ROM files are not included. WAV export comes from the current audio model and does not reconstruct original music source files.</p>
       </div>
     </div>
   </section>
