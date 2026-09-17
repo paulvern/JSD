@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCEJSD · PC Engine / TurboGrafx-16</title>
+<style>
+:root{--bg:#071014;--panel:#0d1b20;--panel2:#10252c;--line:#24434c;--text:#d8f2ed;--muted:#7fa39d;--mint:#67f5bd;--amber:#ffcc66;--red:#ff6b76;--blue:#5cc8ff;--shadow:0 18px 48px #0008}
+*{box-sizing:border-box}html{color-scheme:dark}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 45% -10%,#17404a 0,#071014 42%,#03080a 100%);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+button,select,input,textarea{font:inherit}select,option{background:#09171c;color:#e6f4ef}button{border:1px solid var(--line);background:#13292f;color:var(--text);border-radius:9px;padding:8px 11px;cursor:pointer;transition:.15s}button:hover{border-color:#4b7d87;background:#18363e}button:disabled{opacity:.38;cursor:not-allowed}.primary{background:var(--mint);color:#052017;border-color:var(--mint);font-weight:800}.danger{color:#ffd8dc}.tiny{font-size:11px;padding:5px 8px}.app{max-width:1540px;margin:auto;padding:18px}.top{display:flex;align-items:center;gap:14px;margin-bottom:15px}.brand{font-size:27px;font-weight:900;letter-spacing:-1px}.brand i{color:var(--mint);font-style:normal}.version{font:11px ui-monospace,monospace;color:var(--muted)}.statuses{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}.badge{padding:5px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font:700 10px ui-monospace,monospace}.badge.ok{color:var(--mint);border-color:#2a805f}.badge.warn{color:var(--amber);border-color:#806b2a}.badge.on{color:#081a15;background:var(--mint);border-color:var(--mint)}
+.layout{display:grid;grid-template-columns:minmax(560px,1.38fr) minmax(450px,.95fr);gap:15px}.card{background:linear-gradient(150deg,#102128f2,#0a171cf2);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.screen-card{padding:14px}.screen-shell{position:relative;border-radius:18px;padding:22px;background:linear-gradient(145deg,#2a2d31,#0d1013);border:1px solid #4e555c;box-shadow:inset 0 0 45px #000b,0 14px 34px #0008;overflow:hidden}.screen-bezel{max-width:760px;margin:auto;padding:18px 18px 30px;border-radius:20px;background:linear-gradient(135deg,#ece8de,#a8a59e);box-shadow:inset 0 1px 0 #fff8,0 6px 20px #0008}.screen-wrap{position:relative;margin:auto;max-width:690px;border-radius:10px;padding:15px;background:#15191b;border:1px solid #666}.screen{display:block;width:100%;aspect-ratio:4/3;background:#080b0d;image-rendering:pixelated;border-radius:3px;box-shadow:0 0 32px #67f5bd16}.scanlines,.phosphor-mask,.crt-glass{pointer-events:none;position:absolute;inset:15px;border-radius:3px;opacity:0}.screen-shell.crt .screen{filter:saturate(.94) contrast(1.08) brightness(.96)}.screen-shell.crt .scanlines{opacity:.42;background:repeating-linear-gradient(0deg,#0000 0,#0000 2px,#0006 3px,#0002 4px)}.screen-shell.crt .phosphor-mask{opacity:.12;background:repeating-linear-gradient(90deg,#0002 0,#0002 1px,#fff1 1px,#fff1 2px,#0002 2px,#0002 3px)}.screen-shell.crt .crt-glass{opacity:1;background:radial-gradient(ellipse at center,#fff0 58%,#00110a25 78%,#0009 100%),linear-gradient(118deg,#fff6 0,#fff0 18%,#fff0 78%,#9f91 100%);box-shadow:inset 0 0 35px #0009}.screen-shell.soft .screen{image-rendering:auto}.power-led{width:8px;height:8px;border-radius:50%;background:#4a201f;box-shadow:0 0 5px #000;display:inline-block}.power-led.on{background:#ff5656;box-shadow:0 0 9px #ff5656}.bezel-mark{display:flex;align-items:center;gap:8px;color:#222;font:800 11px ui-monospace;margin:8px 5px -8px}.osd{position:absolute;top:25px;left:27px;color:#fff;background:#000b;padding:5px 8px;border-radius:6px;font:12px ui-monospace;opacity:0;transition:.2s;z-index:8}.osd.show{opacity:1}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.grow{flex:1}.control-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.field label,.section-label{display:block;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}.field select,.field input,.memrow select,.memrow input{width:100%;background:#09171c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px}.side{display:flex;flex-direction:column;min-height:0}.tabs{display:flex;overflow:auto;border-bottom:1px solid var(--line);padding:8px 8px 0}.tabbtn{border:0;background:transparent;color:var(--muted);border-radius:8px 8px 0 0;padding:9px 10px;white-space:nowrap}.tabbtn.active{color:var(--mint);background:#173039}.pages{padding:14px;min-height:685px}.page{display:none}.page.active{display:block}.drop{border:1px dashed #3c6570;border-radius:12px;padding:14px;margin-bottom:10px;background:#07161b}.drop.loaded{border-style:solid;border-color:#2f8465}.drop-title{display:flex;align-items:center;justify-content:space-between;font-weight:800}.drop p{margin:5px 0 10px;color:var(--muted);font-size:12px}.filebtn{display:inline-block;border:1px solid var(--line);background:#142d34;padding:7px 10px;border-radius:8px;cursor:pointer}.filebtn input{display:none}.notice{border-left:3px solid var(--amber);background:#261f0d;padding:9px 11px;border-radius:6px;color:#dbc68b;font-size:12px;margin:12px 0}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#08171b;border:1px solid #1d3941;border-radius:9px;padding:9px}.stat b{display:block;font:800 14px ui-monospace,monospace;color:#c9fff0;overflow:hidden;text-overflow:ellipsis}.stat small{color:var(--muted)}.regs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.reg{background:#071418;border:1px solid #18353d;border-radius:7px;padding:6px;text-align:center}.reg span{display:block;color:var(--muted);font:9px ui-monospace}.reg b{font:12px ui-monospace;color:var(--mint)}.flags{display:flex;gap:4px;margin:9px 0}.flag{width:25px;height:25px;display:grid;place-items:center;border:1px solid var(--line);border-radius:5px;color:#516f70;font:700 10px ui-monospace}.flag.on{color:#061811;background:var(--mint);border-color:var(--mint)}.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.trace{height:235px;overflow:auto;background:#03090b;border:1px solid #173039;border-radius:9px;padding:8px;color:#8fb7ae;font:11px/1.55 ui-monospace,monospace;white-space:pre}.memrow{display:flex;gap:7px;margin-bottom:8px}.memrow input{width:110px}.dump{height:360px;overflow:auto;background:#03090b;border:1px solid #173039;border-radius:9px;padding:9px;font:11px/1.5 ui-monospace,monospace;white-space:pre;color:#a6c8c1}.controller{display:grid;grid-template-columns:170px 1fr;gap:18px;align-items:start}.dpad{width:150px;height:150px;position:relative;margin:12px auto}.dkey{position:absolute;width:50px;height:50px;padding:0}.dkey.up{left:50px;top:0}.dkey.down{left:50px;bottom:0}.dkey.left{left:0;top:50px}.dkey.right{right:0;top:50px}.dkey.center{left:50px;top:50px;background:#0c181b}.ab{display:flex;gap:12px;align-items:center;justify-content:center;padding-top:25px}.ab button{width:62px;height:62px;border-radius:50%;font-size:17px;font-weight:900;background:#183b72;border-color:#497cc6}.meta-buttons{display:flex;gap:10px;justify-content:center;margin-top:16px}.meta-buttons button{transform:rotate(-9deg);min-width:70px}.held{background:var(--mint)!important;color:#051812!important}.help{color:var(--muted);font-size:12px}.footer{color:#52716c;text-align:center;padding:16px;font-size:11px}.logline{padding:7px 0;border-bottom:1px solid #173039;font:11px ui-monospace;color:#8fb5ad}.lang{display:flex;gap:4px}.lang button.active{color:#061811;background:var(--mint)}.canvas-box{background:#020708;border:1px solid #173039;border-radius:10px;padding:8px;overflow:auto;margin:8px 0}.asset-canvas{display:block;image-rendering:pixelated;background:#080b0d;max-width:100%;margin:auto}.asset-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sprite-gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;max-height:240px;overflow:auto}.sprite-item{display:grid;place-items:center;background:#03090b;border:1px solid #173039;border-radius:8px;padding:5px}.sprite-item canvas{width:54px;height:54px;image-rendering:pixelated}.sprite-item small{font:9px ui-monospace;color:var(--muted)}.decomp{width:100%;height:410px;resize:vertical;background:#03090b;border:1px solid #173039;border-radius:9px;padding:9px;color:#a6c8c1;font:11px/1.5 ui-monospace,monospace;white-space:pre;tab-size:4px}.checkrow{display:flex;align-items:center;gap:8px;margin:8px 0;color:var(--text);font-size:12px}.checkrow input{accent-color:var(--mint)}.audioch{display:grid;grid-template-columns:74px 1fr 90px;gap:8px;align-items:center;margin:9px 0}.meter{height:7px;background:#061013;border-radius:10px;overflow:hidden}.meter i{display:block;height:100%;background:var(--mint);width:0}.kbd{display:inline-block;padding:1px 5px;border:1px solid #3f5b61;border-bottom-width:2px;border-radius:4px;background:#0d1b20;font:10px ui-monospace;color:#b9d0cb}.sep{height:1px;background:#173039;margin:12px 0}.capture-status{padding:9px;border:1px solid var(--line);border-radius:9px;background:#071418;margin:10px 0;font:11px ui-monospace;color:var(--mint)}
+@media(max-width:1050px){.layout{grid-template-columns:1fr}.pages{min-height:0}.asset-grid{grid-template-columns:1fr}}@media(max-width:650px){.app{padding:8px}.control-row,.grid3{grid-template-columns:1fr}.controller{grid-template-columns:1fr}.top{align-items:flex-start;flex-wrap:wrap}.statuses{margin-left:0}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div><div class="brand">PCE<i>JSD</i></div><div class="version">HuC6280 · HuC6270 · HuC6260 · HuCard · COMPAT V5</div></div>
+    <div class="statuses">
+      <span class="badge" id="romBadge">ROM —</span><span class="badge" id="cpuBadge">CPU OFF</span><span class="badge" id="videoBadge">VDC —</span><span class="badge" id="fpsBadge">0 FPS</span>
+      <div class="lang"><button class="tiny active" id="langIT">IT</button><button class="tiny" id="langEN">EN</button></div>
+    </div>
+  </div>
+  <div class="layout">
+    <section class="card screen-card">
+      <div class="screen-shell crt" id="screenShell">
+        <div class="screen-bezel">
+          <div class="screen-wrap" id="screenWrap">
+            <canvas id="screen" class="screen" width="256" height="240"></canvas>
+            <div class="scanlines"></div><div class="phosphor-mask"></div><div class="crt-glass"></div>
+          </div>
+          <div class="bezel-mark"><span class="power-led" id="powerLed"></span> NEC PC Engine / TurboGrafx-16 · JSD CORE</div>
+        </div>
+        <div id="osd" class="osd"></div>
+      </div>
+      <div class="toolbar">
+        <button id="power" class="primary">ACCENDI</button><button id="reset">RESET</button><button id="pause">Pausa</button><button id="step">Passo ›</button><button id="fullscreen">Schermo intero ⛶</button><button id="audioBtn">Attiva audio ♪</button>
+      </div>
+      <div class="control-row">
+        <div class="field"><label>Velocità</label><select id="speed"><option value=".5">50%</option><option value="1" selected>100%</option><option value="1.5">150%</option><option value="2">200%</option><option value="0">Turbo</option></select></div>
+        <div class="field"><label>Grafica</label><select id="gfx"><option value="crt" selected>CRT</option><option value="sharp">Pixel nitidi</option><option value="soft">Antialias</option></select></div>
+        <div class="field"><label>Regione pad</label><select id="region"><option value="jp" selected>PC Engine (JP)</option><option value="us">TurboGrafx-16 (US)</option></select></div>
+      </div>
+      <div class="controller">
+        <div><div class="section-label" style="margin-top:14px">D-PAD</div><div class="dpad">
+          <button class="dkey up" data-key="up">▲</button><button class="dkey left" data-key="left">◀</button><button class="dkey center">•</button><button class="dkey right" data-key="right">▶</button><button class="dkey down" data-key="down">▼</button>
+        </div></div>
+        <div><div class="section-label" style="margin-top:14px">PAD</div><div class="ab"><button data-key="ii">II</button><button data-key="i">I</button></div><div class="meta-buttons"><button data-key="select">SELECT</button><button data-key="run">RUN</button></div>
+        <p class="help"><span class="kbd">Frecce</span>/<span class="kbd">WASD</span> D-pad · <span class="kbd">Z</span> I · <span class="kbd">X</span> II · <span class="kbd">Invio</span> RUN · <span class="kbd">Shift</span> SELECT.</p></div>
+      </div>
+    </section>
+
+    <section class="card side">
+      <div class="tabs">
+        <button class="tabbtn active" data-tab="machine">Macchina</button><button class="tabbtn" data-tab="memory">Memoria</button><button class="tabbtn" data-tab="resources">Risorse</button><button class="tabbtn" data-tab="disasm">Disassembler</button><button class="tabbtn" data-tab="audio">Audio</button><button class="tabbtn" data-tab="events">Eventi</button>
+      </div>
+      <div class="pages">
+        <div id="machine" class="page active">
+          <div class="drop" id="romDrop"><div class="drop-title"><span>HUCARD ROM / RACCOLTA</span><span id="romState">nessuna</span></div><p>Carica .pce, .bin, .rom, .hes, ZIP singolo oppure un grande ZIP contenente ROM dirette e/o ZIP individuali. Gli header copier da 512 byte vengono rimossi automaticamente.</p><label class="filebtn">Seleziona ROM / raccolta<input type="file" id="romFile" accept=".pce,.bin,.rom,.hes,.zip,application/zip"></label></div>
+          <div id="archiveLibrary" class="notice" style="display:none">
+            <div class="drop-title"><b id="archiveTitle">Raccolta ZIP</b><span id="archiveCount" class="badge">0 giochi</span></div>
+            <div class="memrow" style="margin-top:8px"><input id="archiveFilter" class="grow" style="width:auto" placeholder="Filtra giochi…"><select id="archiveSelect" class="grow" size="7" style="min-width:260px;width:auto"></select><button id="archiveLoad" class="primary">Carica gioco</button></div>
+            <div id="archiveInfo" class="version"></div>
+          </div>
+          <div class="grid3"><div class="stat"><b id="romName">—</b><small>ROM</small></div><div class="stat"><b id="romSize">—</b><small>dimensione</small></div><div class="stat"><b id="mapperInfo">HuCard</b><small>mapping</small></div></div>
+          <div id="hesPanel" style="display:none;margin-top:10px" class="notice">
+            <b>HES MUSIC RIP</b> · questo file non è una HuCard: viene eseguito come player musicale HuC6280/PSG.
+            <div class="toolbar" style="margin-top:8px">
+              <button id="hesPrev">◀ Traccia</button>
+              <input id="hesTrack" value="0" min="0" max="255" type="number" style="width:72px;background:#09171c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px">
+              <button id="hesNext">Traccia ▶</button>
+              <button id="hesRestart" class="primary">Avvia brano</button>
+            </div>
+            <div id="hesInfo" class="mono" style="margin-top:7px"></div>
+          </div>
+          <div class="sep"></div>
+          <div class="section-label">HuC6280</div><div class="regs" id="regs"></div><div class="flags" id="flags"></div>
+          <div class="grid2"><div class="stat"><b id="mprs">00 00 00 00 00 00 00 00</b><small>MPR0–MPR7</small></div><div class="stat"><b id="cpuSpeed">1.79 MHz</b><small>CPU clock</small></div></div>
+          <div class="toolbar"><button id="saveState">Esporta stato</button><label class="filebtn">Importa stato<input type="file" id="loadState" accept=".json"></label><button id="saveRam">Esporta Backup RAM</button><label class="filebtn">Importa RAM<input type="file" id="loadRam"></label></div>
+          <div class="sep"></div>
+          <div class="section-label">Debugger</div><div class="memrow"><input id="breakAddr" value="" placeholder="PC es. E123"><button id="setBreak">Breakpoint</button><button id="clearBreak">Rimuovi</button><label class="checkrow"><input type="checkbox" id="traceEnable"> trace</label></div>
+          <div class="trace" id="trace">Carica una ROM.</div>
+          <div class="notice">Core sperimentale pulito: HuCard standard, singolo VDC e pad 2 pulsanti. CD-ROM², Arcade Card e SuperGrafx non sono inclusi in questa prima versione.</div>
+        </div>
+
+        <div id="memory" class="page">
+          <div class="memrow"><select id="memSpace"><option value="logical">CPU logica 64K</option><option value="physical">Fisica 2MB</option><option value="ram">Work RAM</option><option value="vram">VRAM</option><option value="palette">VCE palette</option></select><input id="memStart" value="0000"><input id="memLen" value="0200"><button id="memShow">Mostra</button></div>
+          <div class="dump" id="dump"></div>
+          <div class="toolbar"><button id="exportRamBin">Work RAM .bin</button><button id="exportVram">VRAM .bin</button><button id="exportPalette">Palette .bin</button></div>
+        </div>
+
+        <div id="resources" class="page">
+          <p class="help">Estrazione diretta da VRAM: tile background 8×8 4bpp, palette VCE e SATB/sprite. Le esportazioni non modificano la ROM.</p>
+          <div class="memrow"><select id="assetMode"><option value="tiles">BG tiles</option><option value="bat">BAT / tilemap</option><option value="sprites">Sprite SATB</option></select><button id="refreshAssets">Aggiorna</button></div>
+          <div class="asset-grid">
+            <div><div class="section-label" id="assetLabel">VRAM TILE ATLAS</div><div class="canvas-box"><canvas id="assetCanvas" class="asset-canvas" width="512" height="512"></canvas></div><div class="toolbar"><button id="assetPng">PNG</button><button id="framePng">Schermata PNG</button></div></div>
+            <div><div class="section-label">PALETTE VCE</div><div class="canvas-box"><canvas id="paletteCanvas" class="asset-canvas" width="256" height="128"></canvas></div><div class="section-label" style="margin-top:10px">SPRITES</div><div id="spriteGallery" class="sprite-gallery"></div></div>
+          </div>
+          <div class="capture-status" id="captureState">VRAM 64 KiB · Palette 512 colori · SATB 64 sprite</div>
+        </div>
+
+        <div id="disasm" class="page">
+          <p class="help">Disassembler statico HuC6280. Può seguire il mapping MPR corrente oppure leggere direttamente un banco fisico della HuCard.</p>
+          <div class="memrow"><select id="disMode"><option value="logical">CPU / MPR correnti</option><option value="rom">ROM fisica</option></select><input id="disStart" value="E000"><input id="disCount" value="0200"><button id="disRun" class="primary">Analizza</button></div>
+          <div class="toolbar"><button id="disPc">Dal PC</button><button id="disReset">Reset vector</button><button id="disCopy">Copia</button><button id="disExport">Esporta ASM</button></div>
+          <textarea id="disOut" class="decomp" spellcheck="false">; Carica una ROM e premi Analizza.</textarea>
+        </div>
+
+        <div id="audio" class="page">
+          <p class="help">Monitor PSG HuC6280: 6 canali wavetable, DDA e rumore approssimato. Il pannello mostra lo stato dei registri mentre il gioco scrive l'audio.</p>
+          <div id="audioRows"></div>
+          <div class="grid2"><div class="stat"><b id="psgMaster">$00</b><small>master balance</small></div><div class="stat"><b id="psgEvents">0</b><small>PSG writes</small></div></div>
+          <div class="toolbar"><button id="apuJson">PSG log JSON</button><button id="apuClear">Pulisci</button></div>
+          <div class="notice">Il PSG è già utilizzabile, ma non è ancora cycle-perfect: LFO, rumore e livelli analogici sono approssimati.</div>
+        </div>
+
+        <div id="events" class="page"><div class="toolbar"><button id="clearEvents">Pulisci</button></div><div id="eventList"></div></div>
+      </div>
+    </section>
+  </div>
+  <div class="footer">PCEJSD COMPAT V8 · emulatore sperimentale indipendente · nessuna ROM o BIOS incluso</div>
+</div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const hex=(n,w=2)=>((n>>>0).toString(16).toUpperCase().padStart(w,'0'));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const s8=v=>(v&0x80)?v-256:v;
+const OPS=[["BRK","IMP",8],["ORA","INDX",7],["SXY","IMP",3],["ST0","IMM",4],["TSB","ZP",5],["ORA","ZP",4],["ASL","ZP",6],["RMB0","ZP",7],["PHP","IMP",3],["ORA","IMM",2],["ASL","ACC",2],["NOP","IMP",2],["TSB","ABS",6],["ORA","ABS",5],["ASL","ABS",7],["BBR0","ZPREL",6],["BPL","REL",2],["ORA","INDY",7],["ORA","INDZ",7],["ST1","IMM",4],["TRB","ZP",5],["ORA","ZPX",4],["ASL","ZPX",6],["RMB1","ZP",7],["CLC","IMP",2],["ORA","ABSY",5],["INA","IMP",2],["NOP","IMP",2],["TRB","ABS",6],["ORA","ABSX",5],["ASL","ABSX",7],["BBR1","ZPREL",6],["JSR","ABS",7],["AND","INDX",7],["SAX","IMP",3],["ST2","IMM",4],["BIT","ZP",4],["AND","ZP",4],["ROL","ZP",6],["RMB2","ZP",7],["PLP","IMP",4],["AND","IMM",2],["ROL","ACC",2],["NOP","IMP",2],["BIT","ABS",5],["AND","ABS",5],["ROL","ABS",7],["BBR2","ZPREL",6],["BMI","REL",2],["AND","INDY",7],["AND","INDZ",7],["NOP","IMP",2],["BIT","ZPX",4],["AND","ZPX",4],["ROL","ZPX",6],["RMB3","ZP",7],["SEC","IMP",2],["AND","ABSY",5],["DEA","IMP",2],["NOP","IMP",2],["BIT","ABSX",5],["AND","ABSX",5],["ROL","ABSX",7],["BBR3","ZPREL",6],["RTI","IMP",7],["EOR","INDX",7],["SAY","IMP",3],["TMA","IMM",4],["BSR","REL",8],["EOR","ZP",4],["LSR","ZP",6],["RMB4","ZP",7],["PHA","IMP",3],["EOR","IMM",2],["LSR","ACC",2],["NOP","IMP",2],["JMP","ABS",4],["EOR","ABS",5],["LSR","ABS",7],["BBR4","ZPREL",6],["BVC","REL",2],["EOR","INDY",7],["EOR","INDZ",7],["TAM","IMM",5],["CSL","IMP",3],["EOR","ZPX",4],["LSR","ZPX",6],["RMB5","ZP",7],["CLI","IMP",2],["EOR","ABSY",5],["PHY","IMP",3],["NOP","IMP",2],["NOP","IMP",2],["EOR","ABSX",5],["LSR","ABSX",7],["BBR5","ZPREL",6],["RTS","IMP",7],["ADC","INDX",7],["CLA","IMP",2],["NOP","IMP",2],["STZ","ZP",4],["ADC","ZP",4],["ROR","ZP",6],["RMB6","ZP",7],["PLA","IMP",4],["ADC","IMM",2],["ROR","ACC",2],["NOP","IMP",2],["JMP","ABSIND",7],["ADC","ABS",5],["ROR","ABS",7],["BBR6","ZPREL",6],["BVS","REL",2],["ADC","INDY",7],["ADC","INDZ",7],["TII","BLOCK",17],["STZ","ZPX",4],["ADC","ZPX",4],["ROR","ZPX",6],["RMB7","ZP",7],["SEI","IMP",2],["ADC","ABSY",5],["PLY","IMP",4],["NOP","IMP",2],["JMP","ABSINDX",7],["ADC","ABSX",5],["ROR","ABSX",7],["BBR7","ZPREL",6],["BRA","REL",4],["STA","INDX",7],["CLX","IMP",2],["TST","TSTZP",7],["STY","ZP",4],["STA","ZP",4],["STX","ZP",4],["SMB0","ZP",7],["DEY","IMP",2],["BIT","IMM",2],["TXA","IMP",2],["NOP","IMP",2],["STY","ABS",5],["STA","ABS",5],["STX","ABS",5],["BBS0","ZPREL",6],["BCC","REL",2],["STA","INDY",7],["STA","INDZ",7],["TST","TSTABS",8],["STY","ZPX",4],["STA","ZPX",4],["STX","ZPY",4],["SMB1","ZP",7],["TYA","IMP",2],["STA","ABSY",5],["TXS","IMP",2],["NOP","IMP",2],["STZ","ABS",5],["STA","ABSX",5],["STZ","ABSX",5],["BBS1","ZPREL",6],["LDY","IMM",2],["LDA","INDX",7],["LDX","IMM",2],["TST","TSTZPX",7],["LDY","ZP",4],["LDA","ZP",4],["LDX","ZP",4],["SMB2","ZP",7],["TAY","IMP",2],["LDA","IMM",2],["TAX","IMP",2],["NOP","IMP",2],["LDY","ABS",5],["LDA","ABS",5],["LDX","ABS",5],["BBS2","ZPREL",6],["BCS","REL",2],["LDA","INDY",7],["LDA","INDZ",7],["TST","TSTABSX",8],["LDY","ZPX",4],["LDA","ZPX",4],["LDX","ZPY",4],["SMB3","ZP",7],["CLV","IMP",2],["LDA","ABSY",5],["TSX","IMP",2],["NOP","IMP",2],["LDY","ABSX",5],["LDA","ABSX",5],["LDX","ABSY",5],["BBS3","ZPREL",6],["CPY","IMM",2],["CMP","INDX",7],["CLY","IMP",2],["TDD","BLOCK",17],["CPY","ZP",4],["CMP","ZP",4],["DEC","ZP",6],["SMB4","ZP",7],["INY","IMP",2],["CMP","IMM",2],["DEX","IMP",2],["NOP","IMP",2],["CPY","ABS",5],["CMP","ABS",5],["DEC","ABS",7],["BBS4","ZPREL",6],["BNE","REL",2],["CMP","INDY",7],["CMP","INDZ",7],["TIN","BLOCK",17],["CSH","IMP",3],["CMP","ZPX",4],["DEC","ZPX",6],["SMB5","ZP",7],["CLD","IMP",2],["CMP","ABSY",5],["PHX","IMP",3],["NOP","IMP",2],["NOP","IMP",2],["CMP","ABSX",5],["DEC","ABSX",7],["BBS5","ZPREL",6],["CPX","IMM",2],["SBC","INDX",7],["NOP","IMP",2],["TIA","BLOCK",17],["CPX","ZP",4],["SBC","ZP",4],["INC","ZP",6],["SMB6","ZP",7],["INX","IMP",2],["SBC","IMM",2],["NOP","IMP",2],["NOP","IMP",2],["CPX","ABS",5],["SBC","ABS",5],["INC","ABS",7],["BBS6","ZPREL",6],["BEQ","REL",2],["SBC","INDY",7],["SBC","INDZ",7],["TAI","BLOCK",17],["SET","IMP",2],["SBC","ZPX",4],["INC","ZPX",6],["SMB7","ZP",7],["SED","IMP",2],["SBC","ABSY",5],["PLX","IMP",4],["NOP","IMP",2],["NOP","IMP",2],["SBC","ABSX",5],["INC","ABSX",7],["BBS7","ZPREL",6]];
+
+function download(name,data,type='application/octet-stream'){
+  let blob=data instanceof Blob?data:new Blob([data],{type}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+function bytesToB64(a){let s='',n=a.length;for(let i=0;i<n;i+=0x8000)s+=String.fromCharCode(...a.subarray(i,Math.min(n,i+0x8000)));return btoa(s)}
+function b64ToBytes(s){let b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a}
+const zipDecoder=new TextDecoder();
+function zipDirectory(bytes){
+  const u=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes),dv=new DataView(u.buffer,u.byteOffset,u.byteLength);
+  let eocd=-1,from=Math.max(0,u.length-0x10000-22);
+  for(let p=u.length-22;p>=from;p--){if(dv.getUint32(p,true)===0x06054b50){eocd=p;break}}
+  if(eocd<0)throw Error('ZIP: directory centrale non trovata');
+  const count=dv.getUint16(eocd+10,true),cd0=dv.getUint32(eocd+16,true);let p=cd0,entries=[];
+  for(let i=0;i<count;i++){
+    if(p+46>u.length||dv.getUint32(p,true)!==0x02014b50)throw Error('ZIP: directory centrale non valida');
+    const flags=dv.getUint16(p+8,true),method=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),us=dv.getUint32(p+24,true),nl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+    if(cs===0xffffffff||us===0xffffffff||lo===0xffffffff)throw Error('ZIP64 non supportato');
+    const name=zipDecoder.decode(u.subarray(p+46,p+46+nl));entries.push({name,flags,method,cs,us,lo,isDir:name.endsWith('/')});p+=46+nl+xl+cl;
+  }
+  return {bytes:u,entries};
+}
+async function zipExtract(zip,entry){
+  const u=zip.bytes,dv=new DataView(u.buffer,u.byteOffset,u.byteLength),p=entry.lo;
+  if(entry.flags&1)throw Error('ZIP cifrato non supportato: '+entry.name);
+  if(p+30>u.length||dv.getUint32(p,true)!==0x04034b50)throw Error('ZIP: header locale non valido: '+entry.name);
+  const nl=dv.getUint16(p+26,true),xl=dv.getUint16(p+28,true),from=p+30+nl+xl,to=from+entry.cs;if(to>u.length)throw Error('ZIP: file troncato '+entry.name);
+  const data=u.slice(from,to);if(entry.method===0)return data;
+  if(entry.method===8){if(typeof DecompressionStream==='undefined')throw Error('Browser senza DecompressionStream');const ds=new DecompressionStream('deflate-raw');return new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(ds)).arrayBuffer())}
+  throw Error('ZIP: metodo '+entry.method+' non supportato ('+entry.name+')');
+}
+async function unzipFirstPCE(bytes){
+  const zip=zipDirectory(bytes),entry=zip.entries.find(e=>!e.isDir&&/\.(pce|bin|rom|hes)$/i.test(e.name));
+  if(!entry)throw Error('ZIP interno: nessuna ROM PC Engine trovata');
+  return {bytes:await zipExtract(zip,entry),name:entry.name.split('/').pop()};
+}
+let archiveCollection=null,archiveVisible=[];
+function archiveLabel(name){return name.split('/').pop().replace(/\.(zip|pce|bin|rom|hes)$/i,'').replace(/_/g,' ').trim()||name}
+function archiveEscape(s){return String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function renderArchiveLibrary(){
+  const box=$('#archiveLibrary');if(!archiveCollection){box.style.display='none';return}box.style.display='block';$('#archiveTitle').textContent=archiveCollection.name;
+  const q=$('#archiveFilter').value.trim().toLowerCase();archiveVisible=archiveCollection.items.filter(x=>!q||x.label.toLowerCase().includes(q)||x.entry.name.toLowerCase().includes(q));
+  $('#archiveCount').textContent=archiveCollection.items.length+' giochi';$('#archiveSelect').innerHTML=archiveVisible.map((x,i)=>`<option value="${i}">${archiveEscape(x.label)}</option>`).join('');
+  $('#archiveInfo').textContent=`${archiveVisible.length} visibili · ${archiveCollection.nested} ZIP interni · ${archiveCollection.direct} ROM dirette`;$('#archiveLoad').disabled=!archiveVisible.length;if(archiveVisible.length)$('#archiveSelect').selectedIndex=0;
+}
+async function loadArchiveItem(item){
+  if(!archiveCollection||!item)return;$('#archiveLoad').disabled=true;osd('Apro il gioco…');
+  try{let data=await zipExtract(archiveCollection.zip,item.entry),rom=item.kind==='zip'?await unzipFirstPCE(data):{bytes:data,name:item.entry.name.split('/').pop()};await loadROMBytes(rom.bytes,rom.name);}
+  catch(e){event('ERRORE RACCOLTA: '+e.message);osd('Errore ROM');alert(e.message)}finally{$('#archiveLoad').disabled=false}
+}
+
+
+class VDC {
+  constructor(bus){this.bus=bus;this.vram=new Uint16Array(0x8000);this.sat=new Uint16Array(256);this.reg=new Uint16Array(20);this.sel=0;this.low=0;this.status=0;this.frame=0;this.scan=0;this.lineClocks=0;this.width=256;this.height=240;this.satPending=false;this.bxrLatched=0;this.byrLatched=0;this.fbW=256;this.fbH=240;this.framebuf=new Uint8ClampedArray(this.fbW*this.fbH*4)}
+  reset(){this.vram.fill(0);this.sat.fill(0);this.reg.fill(0);this.sel=0;this.low=0;this.status=0;this.frame=0;this.scan=0;this.lineClocks=0;this.reg[11]=31;this.reg[13]=239;this.width=256;this.height=240;this.satPending=false;this.bxrLatched=0;this.byrLatched=0;this.ensureFrame(true)}
+  ensureFrame(force=false){let w=clamp(this.width||256,128,512),h=clamp(this.height||240,64,263);if(force||w!==this.fbW||h!==this.fbH){this.fbW=w;this.fbH=h;this.framebuf=new Uint8ClampedArray(w*h*4);for(let i=3;i<this.framebuf.length;i+=4)this.framebuf[i]=255}return [w,h]}
+  inc(){return [1,32,64,128][(this.reg[5]>>11)&3]}
+  read(port){port&=3;if(port===0){let s=this.status;this.status=0;this.bus.irq1=false;return s}if(port===2||port===3){let v;if(this.sel===2){v=this.vram[this.reg[1]&0x7fff];if(port===3)this.reg[1]=(this.reg[1]+this.inc())&0xffff}else v=this.reg[this.sel]||0;return port===2?v&255:v>>8}return 0xff}
+  write(port,v){port&=3;v&=255;if(port===0){this.sel=v&31;return}if(port===2){this.low=v;if(this.sel!==2&&this.sel<20)this.reg[this.sel]=(this.reg[this.sel]&0xff00)|v;return}if(port===3){let w=this.sel===2?(this.low|(v<<8)):(((this.reg[this.sel]||0)&0xff)|(v<<8));this.writeReg(this.sel,w)}}
+  writeReg(r,w){if(r>=20)return;if(r===2){this.vram[this.reg[0]&0x7fff]=w;this.reg[0]=(this.reg[0]+this.inc())&0xffff;return}this.reg[r]=w&0xffff;if(r===7)this.reg[r]&=0x03ff;if(r===8){this.reg[r]&=0x01ff;this.byrLatched=this.reg[r]}if(r===11){let z=((w&0x7f)+1)*8;if(z>=128&&z<=512)this.width=z}if(r===13){let z=(w&0x1ff)+1;if(z>=64&&z<=263)this.height=z}if(r===18)this.dma();if(r===19)this.satPending=true}
+  dma(){let src=this.reg[16]&0x7fff,dst=this.reg[17]&0x7fff,len=(this.reg[18]+1)&0xffff;if(!len)len=65536;const decS=!!(this.reg[15]&4),decD=!!(this.reg[15]&8);for(let i=0;i<len;i++){this.vram[dst]=this.vram[src];src=(src+(decS?-1:1))&0x7fff;dst=(dst+(decD?-1:1))&0x7fff}this.reg[16]=src;this.reg[17]=dst;if(this.reg[15]&2){this.status|=0x10;this.bus.raiseIRQ1()}}
+  copySAT(){let s=this.reg[19]&0x7fff;for(let n=0;n<64;n++){let q=n*4;this.sat[q]=this.vram[(s+q)&0x7fff]&0x03ff;this.sat[q+1]=this.vram[(s+q+1)&0x7fff]&0x03ff;this.sat[q+2]=this.vram[(s+q+2)&0x7fff]&0x07ff;this.sat[q+3]=this.vram[(s+q+3)&0x7fff]}}
+  tick(master){this.lineClocks+=master;while(this.lineClocks>=455){this.lineClocks-=455;let line=this.scan;const rcr=this.reg[6]&0x03ff,cr=this.reg[5];if(line===0){this.byrLatched=this.reg[8]&0x01ff}else if(line<this.fbH){const mask=(this.reg[9]&0x40)?0x01ff:0x00ff;this.byrLatched=(this.byrLatched+1)&mask}this.bxrLatched=this.reg[7]&0x03ff;if(line<this.fbH)this.renderLine(line,this.bxrLatched,this.byrLatched);const raster=(0x40+line)&0x03ff;if((cr&4)&&rcr===raster){this.status|=4;this.bus.raiseIRQ1()}this.scan++;if(this.scan===240){if((cr&4)&&rcr===0x130){this.status|=4;this.bus.raiseIRQ1()}if(this.satPending||(this.reg[15]&0x10)){this.copySAT();this.satPending=false;if(this.reg[15]&1){this.status|=0x08;this.bus.raiseIRQ1()}}this.status|=0x20;if(cr&8)this.bus.raiseIRQ1()}if(this.scan>=263){this.scan=0;this.byrLatched=this.reg[8]&0x01ff;this.frame++;this.bus.frameReady=true}}}
+  tilePixel(tile,x,y){const base=(tile&0x7ff)*16,bit=7-(x&7),a=this.vram[(base+(y&7))&0x7fff],b=this.vram[(base+8+(y&7))&0x7fff];return ((a>>bit)&1)|(((a>>(bit+8))&1)<<1)|(((b>>bit)&1)<<2)|(((b>>(bit+8))&1)<<3)}
+  spritePixel(pattern,line,x,satLsb=0){pattern=(pattern+((line>>4)<<1))&0x3ff;const a=((pattern<<6)+(line&15))&0x7fff,bit=15-(x&15);let p0,p1,p2=0,p3=0;if((this.reg[9]&0x0c)===0x04){if(satLsb){p0=this.vram[(a+32)&0x7fff];p1=this.vram[(a+48)&0x7fff]}else{p0=this.vram[a];p1=this.vram[(a+16)&0x7fff]}}else{p0=this.vram[a];p1=this.vram[(a+16)&0x7fff];p2=this.vram[(a+32)&0x7fff];p3=this.vram[(a+48)&0x7fff]}return ((p0>>bit)&1)|(((p1>>bit)&1)<<1)|(((p2>>bit)&1)<<2)|(((p3>>bit)&1)<<3)}
+  spriteInfo(n){const q=n*4,pw=this.sat[q+2]&0x7ff,at=this.sat[q+3],cgy=(at>>12)&3,cgx=!!(at&0x0100);let pattern=pw>>1;if(cgy&1)pattern&=~2;if(cgy&2)pattern&=~6;if(cgx)pattern&=~1;return{x:(this.sat[q+1]&0x3ff)-32,y:(this.sat[q]&0x3ff)-64,pattern,lsb:pw&1,attr:at,hflip:!!(at&0x0800),vflip:!!(at&0x8000),front:!!(at&0x0080),pal:16+(at&15),width:cgx?32:16,height:[16,32,64,64][cgy]}}
+  spriteLinePixel(si,py,px){
+    let srcY=si.vflip?si.height-1-py:py,srcX=si.hflip?si.width-1-px:px;
+    let pat=(si.pattern+(srcX>>4))&0x3ff;
+    return this.spritePixel(pat,srcY,srcX&15,si.lsb);
+  }
+  renderLine(y,bx=this.reg[7]&0x03ff,by=this.reg[8]&0x01ff){const [w,h]=this.ensureFrame();if(y<0||y>=h)return;const d=this.framebuf,cr=this.reg[5],bgOn=!!(cr&0x80),spOn=!!(cr&0x40),mwr=this.reg[9],mw=[32,64,128,128][(mwr>>4)&3],mh=(mwr&0x40)?64:32,bgOpaque=new Uint8Array(w);
+    for(let x=0;x<w;x++){let ci=0,pal=0;if(bgOn){let sx=(x+bx)%(mw*8),sy=by%(mh*8),bat=this.vram[((sy>>3)*mw+(sx>>3))&0x7fff],tile=bat&0xfff;pal=bat>>>12;ci=this.tilePixel(tile,sx&7,sy&7);if(ci)bgOpaque[x]=1}let rgb=this.bus.vceRGB(ci?((pal<<4)|ci):0),o=(y*w+x)*4;d[o]=rgb[0];d[o+1]=rgb[1];d[o+2]=rgb[2];d[o+3]=255}
+    if(!spOn)return;
+
+    // HuC6270 evaluates a maximum of 16 16-pixel sprite units per line.
+    // A 32-pixel wide SATB entry consumes two units. Keep the accepted
+    // portion so the last wide sprite can be clipped exactly at the limit.
+    let active=[],units=0;
+    for(let n=0;n<64;n++){
+      let si=this.spriteInfo(n);
+      if(y<si.y||y>=si.y+si.height)continue;
+      let need=si.width>>4,allow=Math.min(need,Math.max(0,16-units));
+      if(allow>0){active.push([n,si,allow]);units+=allow}
+      if(units>=16)break;
+    }
+    // MAME/HuC6270 behavior: OR is latched only when the corresponding
+    // interrupt-enable bit is active. Some games explicitly depend on this.
+    if(units>=16&&(cr&0x02)){this.status|=0x02;this.bus.raiseIRQ1()}
+
+    // Sprite collision is not a software AABB test. The VDC sets CR only
+    // when a non-transparent pixel of SATB sprite #0 overlaps a non-
+    // transparent pixel of another accepted sprite on the active line.
+    // Priority and background masking do not cancel the collision.
+    if(cr&0x01){
+      let s0mask=new Uint8Array(w),hit=false;
+      for(let ai=0;ai<active.length&&!hit;ai++){
+        let [n,si,halves]=active[ai],py=y-si.y,drawW=halves*16;
+        for(let px=0;px<drawW;px++){
+          let xx=si.x+px;if(xx<0||xx>=w)continue;
+          let ci=this.spriteLinePixel(si,py,px);if(!ci)continue;
+          if(n===0)s0mask[xx]=1;else if(s0mask[xx]){hit=true;break}
+        }
+      }
+      if(hit){this.status|=0x01;this.bus.raiseIRQ1()}
+    }
+
+    // Lower SATB indices have priority over higher ones, hence reverse draw.
+    for(let ai=active.length-1;ai>=0;ai--){
+      let [n,si,halves]=active[ai],py=y-si.y,behind=!si.front,drawW=halves*16;
+      for(let px=0;px<drawW;px++){
+        let xx=si.x+px;if(xx<0||xx>=w)continue;
+        let ci=this.spriteLinePixel(si,py,px);if(!ci)continue;
+        if(behind&&bgOpaque[xx])continue;
+        let rgb=this.bus.vceRGB((si.pal<<4)|ci),o=(y*w+xx)*4;
+        d[o]=rgb[0];d[o+1]=rgb[1];d[o+2]=rgb[2];d[o+3]=255;
+      }
+    }
+  }
+  rebuildFrame(){const [w,h]=this.ensureFrame(true);let by=this.reg[8]&0x01ff,mask=(this.reg[9]&0x40)?0x01ff:0x00ff;for(let y=0;y<h;y++){if(y)by=(by+1)&mask;this.renderLine(y,this.reg[7]&0x03ff,by)}}
+  render(canvas){const [w,h]=this.ensureFrame();if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}const ctx=canvas.getContext('2d'),im=new ImageData(new Uint8ClampedArray(this.framebuf),w,h);ctx.putImageData(im,0,0)}
+}
+
+
+class PSG {
+  constructor(){this.ch=Array.from({length:6},()=>({freq:0,ctrl:0,bal:0,wave:new Uint8Array(32),wp:0,phase:0,noise:0,lfsr:0x1ffff,dda:16}));this.sel=0;this.master=0;this.lfoFreq=0;this.lfoCtrl=0;this.events=[];this.ctx=null;this.node=null;this.enabled=false}
+  reset(){for(const c of this.ch){c.freq=0;c.ctrl=0;c.bal=0;c.wave.fill(16);c.wp=0;c.phase=0;c.noise=0;c.lfsr=0x1ffff;c.dda=16}this.sel=0;this.master=0;this.events=[]}
+  write(off,v,cycle=0){off&=15;v&=255;let c=this.ch[this.sel%6];
+    if(off===0)this.sel=v&7; else if(off===1)this.master=v; else if(off===2)c.freq=(c.freq&0xf00)|v; else if(off===3)c.freq=(c.freq&255)|((v&15)<<8); else if(off===4){c.ctrl=v;if(!(v&0x40))c.wp=0}
+    else if(off===5)c.bal=v; else if(off===6){if(c.ctrl&0x40)c.dda=v&31;else{c.wave[c.wp&31]=v&31;c.wp=(c.wp+1)&31}} else if(off===7)c.noise=v; else if(off===8)this.lfoFreq=v; else if(off===9)this.lfoCtrl=v;
+    this.events.push({cycle,reg:off,value:v,channel:this.sel%6});if(this.events.length>20000)this.events.shift();
+  }
+  async enable(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error('Web Audio non disponibile');if(!this.ctx){this.ctx=new AC({latencyHint:'interactive'});this.node=this.ctx.createScriptProcessor(1024,0,2);this.node.onaudioprocess=e=>this.process(e);this.node.connect(this.ctx.destination)}await this.ctx.resume();this.enabled=true}
+  disable(){this.enabled=false;if(this.ctx)this.ctx.suspend()}
+  process(e){let L=e.outputBuffer.getChannelData(0),R=e.outputBuffer.getChannelData(1),sr=e.outputBuffer.sampleRate;
+    for(let i=0;i<L.length;i++){let l=0,r=0;
+      if(this.enabled)for(let n=0;n<6;n++){let c=this.ch[n],on=!!(c.ctrl&0x80);if(!on)continue;let raw;
+        if(c.noise&0x80 && n>=4){let nf=(c.noise&31)+1,hz=3579545/(64*nf);c.phase+=hz/sr;if(c.phase>=1){c.phase-=1;let fb=(c.lfsr^(c.lfsr>>1))&1;c.lfsr=(c.lfsr>>1)|(fb<<16)}raw=(c.lfsr&1)?1:-1}
+        else if(c.ctrl&0x40)raw=(c.dda-16)/16;
+        else {let f=c.freq||4096,hz=3579545/(32*f);c.phase=(c.phase+hz/sr)%1;raw=(c.wave[(c.phase*32)&31]-16)/16}
+        let vol=(c.ctrl&31)/31, ml=((this.master>>4)&15)/15,mr=(this.master&15)/15,cl=((c.bal>>4)&15)/15,cr=(c.bal&15)/15;l+=raw*vol*ml*cl;r+=raw*vol*mr*cr;
+      }L[i]=clamp(l*.18,-1,1);R[i]=clamp(r*.18,-1,1)
+    }
+  }
+}
+
+class Bus {
+  constructor(){this.rom=new Uint8Array();this.hesMode=false;this.hesMem=null;this.mapper='standard';this.mapperBank=0;this.cartRam=null;this.romName='';this.ram=new Uint8Array(0x2000);this.backup=new Uint8Array(0x800);this.backupDirty=false;this.vce=new Uint16Array(512);this.vceAddr=0;this.vceCtrl=0;this.vdc=new VDC(this);this.psg=new PSG();this.timerLatch=0;this.timerVal=0;this.timerEnable=false;this.timerAccum=0;this.irqMask=0;this.irq1=false;this.irq2=false;this.timerIRQ=false;this.padLatch=0;this.pad={up:false,down:false,left:false,right:false,i:false,ii:false,run:false,select:false};this.frameReady=false;this.events=[];this.region='jp'}
+  reset(){this.ram.fill(0);this.vce.fill(0);this.vceAddr=0;this.vceCtrl=0;this.vdc.reset();this.psg.reset();this.timerLatch=0;this.timerVal=0;this.timerEnable=false;this.timerAccum=0;this.irqMask=0;this.irq1=this.irq2=this.timerIRQ=false;this.padLatch=0;this.frameReady=false}
+  attachROM(a,name=''){this.rom=new Uint8Array(a);this.hesMode=false;this.hesMem=null;this.romName=name;this.mapperBank=0;this.cartRam=null;this.mapper=this.rom.length>0x100000?'sf2':(/populous/i.test(name)?'populous':'standard');if(this.mapper==='populous')this.cartRam=new Uint8Array(0x8000)}
+  attachHES(mem){this.rom=new Uint8Array();this.hesMode=true;this.hesMem=mem;this.mapper='hes';this.mapperBank=0;this.cartRam=null}
+  mapROM(p){
+    if(this.hesMode)return this.hesMem?.[p&0xfffff]??0xff;if(!this.rom.length)return 0xff;p&=0xfffff;let n=this.rom.length;
+    if(this.mapper==='sf2'){
+      // Street Fighter II: first 512 KiB fixed, upper 512 KiB window selects
+      // one of four 512 KiB pages from the remainder of the HuCard.
+      if(p<0x80000)return p<n?this.rom[p]:0xff;
+      let a=0x80000+(this.mapperBank&3)*0x80000+(p&0x7ffff);return a<n?this.rom[a]:0xff;
+    }
+    // Populous exposes 32 KiB cartridge RAM in physical $80000-$87FFF.
+    if(this.mapper==='populous'&&p>=0x80000&&p<0x88000)return this.cartRam[p-0x80000];
+    // Most HuCards mirror their physical ROM through the 1 MiB cartridge window.
+    // 384 KiB cards use 256 KiB + mirrored 128 KiB in the upper half.
+    if(n===0x60000){let x=p&0x7ffff;if(x>=0x40000)x=0x40000+(x&0x1ffff);return this.rom[x]}
+    return this.rom[p%n];
+  }
+  readPhys(p){p&=0x1fffff;let bank=p>>13,off=p&0x1fff;if(bank<0x80)return this.mapROM(p);
+    if(bank>=0xf8&&bank<=0xfb)return this.ram[off];
+    if(bank===0xf7)return this.backup[off&0x7ff];
+    if(bank===0xff)return this.readIO(off);
+    return 0xff
+  }
+  writePhys(p,v){p&=0x1fffff;v&=255;
+    if(this.mapper==='sf2'&&p>=0x1ff0&&p<=0x1ff3){this.mapperBank=p&3;return}
+    if(this.mapper==='populous'&&p>=0x80000&&p<0x88000&&this.cartRam){this.cartRam[p-0x80000]=v;return}
+    let bank=p>>13,off=p&0x1fff;if(bank>=0xf8&&bank<=0xfb){this.ram[off]=v;return}if(bank===0xf7){let i=off&0x7ff;if(this.backup[i]!==v){this.backup[i]=v;this.backupDirty=true}else this.backup[i]=v;return}if(bank===0xff)this.writeIO(off,v)}
+  readIO(o){
+    if(o<0x400)return this.vdc.read(o);
+    if(o<0x800){let r=o&7;if(r===4)return this.vce[this.vceAddr&511]&255;if(r===5){let v=this.vce[this.vceAddr&511]>>8;this.vceAddr=(this.vceAddr+1)&511;return v}return 0xff}
+    if(o<0xc00)return 0xff;
+    if(o<0x1000)return (o&1)?(this.timerEnable?1:0):(this.timerVal&0x7f);
+    if(o<0x1400)return this.readPad();
+    if(o<0x1800){let r=o&3;if(r===2)return this.irqMask&7;if(r===3)return (this.irq2?1:0)|(this.irq1?2:0)|(this.timerIRQ?4:0);return 0xff}
+    return 0xff
+  }
+  writeIO(o,v){
+    if(o<0x400){this.vdc.write(o,v);return}
+    if(o<0x800){let r=o&7;if(r===0)this.vceCtrl=v;else if(r===2)this.vceAddr=(this.vceAddr&0x100)|v;else if(r===3)this.vceAddr=(this.vceAddr&255)|((v&1)<<8);else if(r===4)this.vce[this.vceAddr&511]=(this.vce[this.vceAddr&511]&0x100)|v;else if(r===5){this.vce[this.vceAddr&511]=(this.vce[this.vceAddr&511]&255)|((v&1)<<8);this.vceAddr=(this.vceAddr+1)&511}return}
+    if(o<0xc00){this.psg.write(o&15,v,core?core.cycles:0);return}
+    if(o<0x1000){if((o&1)===0){this.timerLatch=v&0x7f;this.timerVal=this.timerLatch}else{let was=this.timerEnable;this.timerEnable=!!(v&1);if(this.timerEnable&&!was)this.timerVal=this.timerLatch}return}
+    if(o<0x1400){this.padLatch=v;return}
+    if(o<0x1800){let r=o&3;if(r===2)this.irqMask=v&7;else if(r===3)this.timerIRQ=false;return}
+  }
+  readPad(){
+    let sel=!!(this.padLatch&1),clr=!!(this.padLatch&2);if(clr)return 0xf0|(this.region==='us'?0:0x40);
+    let n=0x0f;if(sel){if(this.pad.up)n&=~1;if(this.pad.right)n&=~2;if(this.pad.down)n&=~4;if(this.pad.left)n&=~8}
+    else {if(this.pad.i)n&=~1;if(this.pad.ii)n&=~2;if(this.pad.select)n&=~4;if(this.pad.run)n&=~8}
+    return (n&15)|0xb0|(this.region==='jp'?0x40:0);
+  }
+  vceRGB(i){let v=this.vce[i&511]&0x1ff,b=v&7,r=(v>>3)&7,g=(v>>6)&7;return [Math.round(r*255/7),Math.round(g*255/7),Math.round(b*255/7)]}
+  raiseIRQ1(){this.irq1=true}
+  tick(master){this.vdc.tick(master);if(this.timerEnable){this.timerAccum+=master;while(this.timerAccum>=1024){this.timerAccum-=1024;if(this.timerVal===0){this.timerVal=this.timerLatch;this.timerIRQ=true}else this.timerVal=(this.timerVal-1)&0x7f}}}
+}
+
+class CPU {
+  constructor(bus){this.b=bus;this.A=0;this.X=0;this.Y=0;this.S=0xff;this.P=0x14;this.PC=0;this.M=new Uint8Array(8);this.high=false;this.cycles=0;this.stopped=false;this.breakpoints=new Set();this.trace=[];this.traceOn=false;this.inStep=false;this.busPenalty=0}
+  reset(){this.A=this.X=this.Y=0;this.S=0xff;this.P=0x14;this.M.fill(0);this.high=false;this.cycles=0;this.stopped=false;this.PC=this.read16(0xfffe);this.trace=[]}
+  phys(a){return (this.M[(a>>>13)&7]<<13)|(a&0x1fff)}
+  r(a){let p=this.phys(a&0xffff);if(this.inStep&&(p&0x1ff800)===0x1fe000)this.busPenalty++;return this.b.readPhys(p)}
+  w(a,v){let p=this.phys(a&0xffff);if(this.inStep&&(p&0x1ff800)===0x1fe000)this.busPenalty++;this.b.writePhys(p,v)}
+  read16(a){let l=this.r(a),h=this.r((a+1)&0xffff);return l|(h<<8)}
+  fetch(){let v=this.r(this.PC);this.PC=(this.PC+1)&0xffff;return v}
+  fetch16(){let l=this.fetch(),h=this.fetch();return l|(h<<8)}
+  zp(a){return 0x2000|(a&255)}
+  push(v){this.w(0x2100|this.S,v);this.S=(this.S-1)&255}
+  pull(){this.S=(this.S+1)&255;return this.r(0x2100|this.S)}
+  setNZ(v){v&=255;this.P=(this.P&~0xa2)|(v?0:2)|(v&0x80);return v}
+  flag(f,on){this.P=on?(this.P|f):(this.P&~f)}
+  cmp(a,b){let t=(a-b)&0x1ff;this.flag(1,a>=b);this.setNZ(t&255)}
+  adc(v,targetA=true){let a=targetA?this.A:this.r(this.zp(this.X)),c=this.P&1,res;
+    if(this.P&8){let lo=(a&15)+(v&15)+c,hi=(a>>4)+(v>>4);if(lo>9){lo-=10;hi++}this.flag(1,hi>9);if(hi>9)hi-=10;res=((hi<<4)|lo)&255;this.flag(0x40,(~(a^v)&(a^res)&0x80)!==0)}
+    else {let t=a+v+c;res=t&255;this.flag(1,t>255);this.flag(0x40,(~(a^v)&(a^res)&0x80)!==0)}
+    this.setNZ(res);if(targetA)this.A=res;else this.w(this.zp(this.X),res)
+  }
+  sbc(v,targetA=true){let a=targetA?this.A:this.r(this.zp(this.X)),c=this.P&1,res;
+    if(this.P&8){let d=(a&15)-(v&15)-(c?0:1),hi=(a>>4)-(v>>4);if(d<0){d+=10;hi--}this.flag(1,hi>=0);if(hi<0)hi+=10;res=((hi<<4)|d)&255;this.flag(0x40,((a^res)&(a^v)&0x80)!==0)}
+    else {let t=a-v-(c?0:1);res=t&255;this.flag(1,t>=0);this.flag(0x40,((a^res)&(a^v)&0x80)!==0)}
+    this.setNZ(res);if(targetA)this.A=res;else this.w(this.zp(this.X),res)
+  }
+  addr(mode){
+    if(mode==='ZP')return this.zp(this.fetch());
+    if(mode==='ZPX')return this.zp((this.fetch()+this.X)&255);
+    if(mode==='ZPY')return this.zp((this.fetch()+this.Y)&255);
+    if(mode==='ABS')return this.fetch16();
+    if(mode==='ABSX')return (this.fetch16()+this.X)&0xffff;
+    if(mode==='ABSY')return (this.fetch16()+this.Y)&0xffff;
+    if(mode==='INDX'){let z=(this.fetch()+this.X)&255;return this.r(this.zp(z))|(this.r(this.zp((z+1)&255))<<8)}
+    if(mode==='INDY'){let z=this.fetch(),a=this.r(this.zp(z))|(this.r(this.zp((z+1)&255))<<8);return (a+this.Y)&0xffff}
+    if(mode==='INDZ'){let z=this.fetch();return this.r(this.zp(z))|(this.r(this.zp((z+1)&255))<<8)}
+    return 0
+  }
+  val(mode){if(mode==='IMM')return this.fetch();return this.r(this.addr(mode))}
+  branch(ok,penalty=true){let d=s8(this.fetch());if(ok){this.PC=(this.PC+d)&0xffff;return penalty?2:0}return 0}
+  interrupt(vec){this.push(this.PC>>8);this.push(this.PC&255);this.push(this.P&~0x10);this.P=(this.P|4)&~0x28;this.PC=this.read16(vec);return 8}
+  serviceIRQ(){
+    if(this.P&4)return 0;
+    if(this.b.timerIRQ && !(this.b.irqMask&4))return this.interrupt(0xfffa);
+    if(this.b.irq1 && !(this.b.irqMask&2))return this.interrupt(0xfff8);
+    if(this.b.irq2 && !(this.b.irqMask&1))return this.interrupt(0xfff6);
+    return 0
+  }
+  step(){
+    let ic=this.serviceIRQ();if(ic){this.tick(ic);return ic}
+    if(this.breakpoints.has(this.PC)){this.stopped=true;return 0}
+    this.inStep=true;this.busPenalty=0;let pc0=this.PC,op=this.fetch(),[mn,mode,cy]=OPS[op],extra=0,T=!!(this.P&0x20);
+    if(this.traceOn){this.trace.push(hex(pc0,4)+'  '+hex(op)+'  '+mn+' '+this.previewOperand(pc0,op));if(this.trace.length>500)this.trace.shift()}
+    const aluTarget=()=>!T;
+    switch(mn){
+      case 'NOP': if(mode!=='IMP')this.addr(mode);break;
+      case 'LDA':this.A=this.setNZ(this.val(mode));break;case 'LDX':this.X=this.setNZ(this.val(mode));break;case 'LDY':this.Y=this.setNZ(this.val(mode));break;
+      case 'STA':this.w(this.addr(mode),this.A);break;case 'STX':this.w(this.addr(mode),this.X);break;case 'STY':this.w(this.addr(mode),this.Y);break;case 'STZ':this.w(this.addr(mode),0);break;
+      case 'ORA':{let v=this.val(mode);if(T){let a=this.r(this.zp(this.X));a=this.setNZ(a|v);this.w(this.zp(this.X),a)}else this.A=this.setNZ(this.A|v);this.P&=~0x20;break}
+      case 'AND':{let v=this.val(mode);if(T){let a=this.r(this.zp(this.X));a=this.setNZ(a&v);this.w(this.zp(this.X),a)}else this.A=this.setNZ(this.A&v);this.P&=~0x20;break}
+      case 'EOR':{let v=this.val(mode);if(T){let a=this.r(this.zp(this.X));a=this.setNZ(a^v);this.w(this.zp(this.X),a)}else this.A=this.setNZ(this.A^v);this.P&=~0x20;break}
+      case 'ADC':this.adc(this.val(mode),!T);this.P&=~0x20;break;case 'SBC':this.sbc(this.val(mode),!T);this.P&=~0x20;break;
+      case 'CMP':this.cmp(this.A,this.val(mode));break;case 'CPX':this.cmp(this.X,this.val(mode));break;case 'CPY':this.cmp(this.Y,this.val(mode));break;
+      case 'BIT':{let v=this.val(mode);this.flag(2,(this.A&v)===0);if(mode!=='IMM'){this.P=(this.P&~0xc0)|(v&0xc0)}break}
+      case 'TST':{let imm=this.fetch(),a;if(mode==='TSTZP')a=this.zp(this.fetch());else if(mode==='TSTABS')a=this.fetch16();else if(mode==='TSTZPX')a=this.zp((this.fetch()+this.X)&255);else a=(this.fetch16()+this.X)&0xffff;let v=this.r(a);this.flag(2,(imm&v)===0);this.P=(this.P&~0xc0)|(v&0xc0);break}
+      case 'TSB':{let a=this.addr(mode),v=this.r(a);this.flag(2,(v&this.A)===0);this.w(a,v|this.A);break}
+      case 'TRB':{let a=this.addr(mode),v=this.r(a);this.flag(2,(v&this.A)===0);this.w(a,v&~this.A);break}
+      case 'ASL':case 'LSR':case 'ROL':case 'ROR':{let acc=mode==='ACC',a=acc?0:this.addr(mode),v=acc?this.A:this.r(a),c=this.P&1,n;
+        if(mn==='ASL'){this.flag(1,v&0x80);n=(v<<1)&255}else if(mn==='LSR'){this.flag(1,v&1);n=v>>>1}else if(mn==='ROL'){n=((v<<1)|c)&255;this.flag(1,v&0x80)}else{n=((v>>>1)|(c<<7))&255;this.flag(1,v&1)}this.setNZ(n);if(acc)this.A=n;else this.w(a,n);break}
+      case 'INC':case 'DEC':{let a=this.addr(mode),v=(this.r(a)+(mn==='INC'?1:-1))&255;this.w(a,this.setNZ(v));break}
+      case 'INA':this.A=this.setNZ((this.A+1)&255);break;case 'DEA':this.A=this.setNZ((this.A-1)&255);break;case 'INX':this.X=this.setNZ((this.X+1)&255);break;case 'DEX':this.X=this.setNZ((this.X-1)&255);break;case 'INY':this.Y=this.setNZ((this.Y+1)&255);break;case 'DEY':this.Y=this.setNZ((this.Y-1)&255);break;
+      case 'TAX':this.X=this.setNZ(this.A);break;case 'TAY':this.Y=this.setNZ(this.A);break;case 'TXA':this.A=this.setNZ(this.X);break;case 'TYA':this.A=this.setNZ(this.Y);break;case 'TSX':this.X=this.setNZ(this.S);break;case 'TXS':this.S=this.X;break;
+      case 'SAX':{let t=this.A;this.A=this.X;this.X=t;break}case 'SAY':{let t=this.A;this.A=this.Y;this.Y=t;break}case 'SXY':{let t=this.X;this.X=this.Y;this.Y=t;break}
+      case 'CLA':this.A=0;break;case 'CLX':this.X=0;break;case 'CLY':this.Y=0;break;
+      case 'PHA':this.push(this.A);break;case 'PHP':this.push(this.P|0x10);break;case 'PHX':this.push(this.X);break;case 'PHY':this.push(this.Y);break;
+      case 'PLA':this.A=this.setNZ(this.pull());break;case 'PLP':this.P=this.pull();break;case 'PLX':this.X=this.setNZ(this.pull());break;case 'PLY':this.Y=this.setNZ(this.pull());break;
+      case 'JMP':if(mode==='ABS')this.PC=this.fetch16();else if(mode==='ABSIND'){let p=this.fetch16();this.PC=this.read16(p)}else{let p=(this.fetch16()+this.X)&0xffff;this.PC=this.read16(p)}break;
+      case 'JSR':{let a=this.fetch16(),ret=(this.PC-1)&0xffff;this.push(ret>>8);this.push(ret);this.PC=a;break}
+      case 'BSR':{let d=s8(this.fetch()),ret=(this.PC-1)&0xffff;this.push(ret>>8);this.push(ret);this.PC=(this.PC+d)&0xffff;break}
+      case 'RTS':{let l=this.pull(),h=this.pull();this.PC=((l|(h<<8))+1)&0xffff;break}
+      case 'RTI':this.P=this.pull();{let l=this.pull(),h=this.pull();this.PC=l|(h<<8)}break;
+      case 'BRK':this.PC=(this.PC+1)&0xffff;this.push(this.PC>>8);this.push(this.PC);this.push(this.P|0x10);this.P=(this.P|4)&~0x28;this.PC=this.read16(0xfff6);break;
+      case 'BRA':this.branch(true,false);break;case 'BPL':extra+=this.branch(!(this.P&0x80));break;case 'BMI':extra+=this.branch(!!(this.P&0x80));break;case 'BVC':extra+=this.branch(!(this.P&0x40));break;case 'BVS':extra+=this.branch(!!(this.P&0x40));break;case 'BCC':extra+=this.branch(!(this.P&1));break;case 'BCS':extra+=this.branch(!!(this.P&1));break;case 'BNE':extra+=this.branch(!(this.P&2));break;case 'BEQ':extra+=this.branch(!!(this.P&2));break;
+      case 'CLC':this.P&=~1;break;case 'SEC':this.P|=1;break;case 'CLI':this.P&=~4;break;case 'SEI':this.P|=4;break;case 'CLV':this.P&=~0x40;break;case 'CLD':this.P&=~8;break;case 'SED':this.P|=8;break;case 'SET':this.P|=0x20;break;
+      case 'CSH':this.high=true;break;case 'CSL':this.high=false;break;
+      case 'TAM':{let m=this.fetch();for(let i=0;i<8;i++)if(m&(1<<i))this.M[i]=this.A;break}
+      case 'TMA':{let m=this.fetch();for(let i=0;i<8;i++)if(m&(1<<i))this.A=this.M[i];this.setNZ(this.A);break}
+      case 'ST0':this.b.vdc.write(0,this.fetch());extra++;break;case 'ST1':this.b.vdc.write(2,this.fetch());extra++;break;case 'ST2':this.b.vdc.write(3,this.fetch());extra++;break;
+      case 'TII':case 'TDD':case 'TIN':case 'TIA':case 'TAI':{let s=this.fetch16(),d=this.fetch16(),n=this.fetch16();if(n===0)n=65536;for(let i=0;i<n;i++){this.w(d,this.r(s));if(mn==='TII'){s=(s+1)&65535;d=(d+1)&65535}else if(mn==='TDD'){s=(s-1)&65535;d=(d-1)&65535}else if(mn==='TIN'){s=(s+1)&65535}else if(mn==='TIA'){s=(s+1)&65535;d=(d+(i&1?-1:1))&65535}else{d=(d+1)&65535;s=(s+(i&1?-1:1))&65535}}cy+=6*n;break}
+      default:
+        if(/^RMB/.test(mn)||/^SMB/.test(mn)){let bit=+mn.slice(3),a=this.addr('ZP'),v=this.r(a);this.w(a,/^RMB/.test(mn)?v&~(1<<bit):v|(1<<bit));break}
+        if(/^BBR/.test(mn)||/^BBS/.test(mn)){let bit=+mn.slice(3),z=this.fetch(),d=s8(this.fetch()),v=this.r(this.zp(z)),ok=/^BBR/.test(mn)?!(v&(1<<bit)):!!(v&(1<<bit));if(ok){this.PC=(this.PC+d)&65535;extra+=2}break}
+    }
+    // HuC6280 clears the T flag after every instruction except SET.
+    // T-mode ALU operations also pay the extra memory read/write cycles.
+    if(T && ['ORA','AND','EOR','ADC','SBC'].includes(mn))extra+=3;
+    if(mn!=='SET')this.P&=~0x20;
+    cy+=extra+this.busPenalty;this.inStep=false;this.tick(cy);return cy
+  }
+  tick(c){this.cycles+=c;this.b.tick(c*(this.high?1:4))}
+  previewOperand(pc,op){
+    let [mn,m]=OPS[op],p=(pc+1)&65535,r=a=>this.r(a);
+    try{
+      if(m==='IMP'||m==='ACC')return m==='ACC'?'A':'';
+      if(m==='IMM')return '#$'+hex(r(p));
+      if(m==='REL')return '$'+hex((p+1+s8(r(p)))&65535,4);
+      if(m==='BLOCK'){let a=r(p)|(r(p+1)<<8),b=r(p+2)|(r(p+3)<<8),n=r(p+4)|(r(p+5)<<8);return '$'+hex(a,4)+',$'+hex(b,4)+',$'+hex(n,4)}
+      if(m==='ZPREL'){let z=r(p),d=s8(r(p+1));return '$'+hex(z)+',$'+hex((p+2+d)&65535,4)}
+      if(m.startsWith('TST'))return '#$'+hex(r(p))+',...';
+      if(['ZP','ZPX','ZPY','INDX','INDY','INDZ'].includes(m))return '$'+hex(r(p))+(m==='ZPX'?',X':m==='ZPY'?',Y':m==='INDX'?' ,X':m==='INDY'?' ,Y':'');
+      let a=r(p)|(r(p+1)<<8);return '$'+hex(a,4)+(m==='ABSX'?',X':m==='ABSY'?',Y':'')
+    }catch(e){return ''}
+  }
+}
+
+const bus=new Bus(),core=new CPU(bus);window.core=core;
+let running=false,paused=false,lastFrame=performance.now(),fpsFrames=0,fps=0,romFilename='',animation=0;
+let hes=null;
+function bootCore(){
+  bus.reset();
+  if(hes){
+    core.A=hes.track&255;core.X=0;core.Y=0;core.S=0xfd;core.P=0x14;core.M.set(hes.banks);core.high=false;core.cycles=0;core.stopped=false;core.trace=[];
+    // HES init routine is called like a subroutine. Return into a harmless RAM loop at $2200.
+    bus.ram[0x200]=0x4c;bus.ram[0x201]=0x00;bus.ram[0x202]=0x22; // JMP $2200
+    const ret=0x21ff;bus.ram[0x1fe]=ret&255;bus.ram[0x1ff]=ret>>8;
+    core.PC=hes.init&0xffff;
+    return;
+  }
+  core.reset();
+}
+
+
+function pceSaveKey(){if(!romFilename||!bus.rom.length)return '';return 'pcejsd:bram:'+encodeURIComponent(String(romFilename).toLowerCase())+':'+bus.rom.length}
+function persistBackup(force=false){if(!bus.rom.length||(!force&&!bus.backupDirty))return;try{const k=pceSaveKey();localStorage.setItem(k,bytesToB64(bus.backup));localStorage.setItem('jsd-save-meta:'+k,JSON.stringify({system:'pce',name:romFilename||'PC Engine game',format:'sav',size:bus.backup.length,updated:Date.now()}));bus.backupDirty=false}catch(_){}}
+function restoreBackup(){if(!bus.rom.length)return;try{const raw=localStorage.getItem(pceSaveKey());if(raw){bus.backup.set(b64ToBytes(raw).subarray(0,bus.backup.length));bus.backupDirty=false;event('Backup RAM ripristinata dal browser')}}catch(_){}}
+
+function event(msg,type=''){bus.events.unshift({t:new Date().toLocaleTimeString(),msg,type});if(bus.events.length>250)bus.events.length=250;refreshEvents()}
+function osd(msg){let e=$('#osd');e.textContent=msg;e.classList.add('show');clearTimeout(osd.t);osd.t=setTimeout(()=>e.classList.remove('show'),1200)}
+function power(on=true){if(!bus.rom.length&&!hes){osd('Carica prima una ROM');return}running=on;paused=false;if(on){bootCore();$('#powerLed').classList.add('on');$('#cpuBadge').textContent='CPU RUN';$('#cpuBadge').className='badge ok';event('POWER → reset vector $'+hex(core.PC,4));loop()}else{persistBackup(true);$('#powerLed').classList.remove('on');$('#cpuBadge').textContent='CPU OFF';$('#cpuBadge').className='badge'}}
+function loop(t=performance.now()){
+  if(animation)return;animation=requestAnimationFrame(frame)
+}
+function frame(t){
+  animation=0;if(!running)return;
+  if(!paused){
+    let target=$('#speed').value==='0'?450000:+$('#speed').value*120000,spent=0,guard=0;
+    bus.frameReady=false;
+    while(spent<target&&!bus.frameReady&&guard++<250000){let c=core.step();if(core.stopped){paused=true;osd('Breakpoint $'+hex(core.PC,4));break}spent+=c||1}
+    bus.vdc.render($('#screen'));fpsFrames++;if(bus.backupDirty&&(bus.vdc.frame%120===0))persistBackup();
+  }
+  if(t-lastFrame>=1000){fps=fpsFrames*1000/(t-lastFrame);fpsFrames=0;lastFrame=t;$('#fpsBadge').textContent=fps.toFixed(1)+' FPS'}
+  updateUI();animation=requestAnimationFrame(frame)
+}
+function updateUI(){
+  const names=['A','X','Y','S','P','PC','CYC','SCAN'],vals=[core.A,core.X,core.Y,core.S,core.P,core.PC,core.cycles,bus.vdc.scan];
+  $('#regs').innerHTML=names.map((n,i)=>`<div class="reg"><span>${n}</span><b>${n==='PC'?hex(vals[i],4):n==='CYC'?String(vals[i]):hex(vals[i],2)}</b></div>`).join('');
+  $('#flags').innerHTML=['N','V','T','B','D','I','Z','C'].map((n,i)=>`<div class="flag ${core.P&(1<<(7-i))?'on':''}">${n}</div>`).join('');
+  $('#mprs').textContent=[...core.M].map(x=>hex(x)).join(' ');$('#cpuSpeed').textContent=core.high?'7.16 MHz':'1.79 MHz';$('#videoBadge').textContent=hes?'HES AUDIO':`VDC ${bus.vdc.width}×${bus.vdc.height}`;
+  if(core.traceOn)$('#trace').textContent=core.trace.slice(-180).join('\n');refreshAudio(false)
+}
+function reverseBits8(v){v=((v&0x55)<<1)|((v>>1)&0x55);v=((v&0x33)<<2)|((v>>2)&0x33);return ((v<<4)|(v>>4))&255}
+function romBootScore(a){
+  if(a.length<0x2000)return -99;let pc=a[0x1ffe]|(a[0x1fff]<<8),score=0;
+  if(pc>=0xe000)score+=5;else if(pc>=0x8000)score+=2;else if(pc<0x2000)score-=4;
+  let off=pc&0x1fff,b=a[off];if(b!==0xff&&b!==0x00)score+=1;
+  // Common TG16 region-check prologue when present.
+  for(let i=0;i<Math.min(a.length-2,0x100);i++)if(a[i]===0x78&&a[i+1]===0x54&&a[i+2]===0xa9){score+=5;break}
+  return score
+}
+function normalizeHuCard(bytes){
+  if(bytes.length<0x2000)return {bytes,bitReversed:false};
+  let sample=new Uint8Array(Math.min(bytes.length,0x2000));for(let i=0;i<sample.length;i++)sample[i]=reverseBits8(bytes[i]);
+  let normal=romBootScore(bytes),rev=romBootScore(sample);
+  if(rev>=normal+4){let out=new Uint8Array(bytes.length);for(let i=0;i<bytes.length;i++)out[i]=reverseBits8(bytes[i]);return {bytes:out,bitReversed:true}}
+  return {bytes,bitReversed:false}
+}
+function detectHuCardRegion(name){
+  const n=String(name||'');
+  if(/(?:\(USA\)|\(U\)|\[U\]|\bUSA\b|\bTurboGrafx\b)/i.test(n))return 'us';
+  if(/(?:\(Japan\)|\(J\)|\[J\]|\bJapan\b|\bPC\s*Engine\b)/i.test(n))return 'jp';
+  return null;
+}
+function applyDetectedRegion(name){
+  const r=detectHuCardRegion(name);if(!r)return false;
+  bus.region=r;const sel=$('#region');if(sel)sel.value=r;
+  event('Regione rilevata automaticamente: '+(r==='us'?'TurboGrafx-16 (US)':'PC Engine (JP)'));
+  return true;
+}
+function loadROMBytes(inputBytes,name){
+  let bytes=inputBytes instanceof Uint8Array?new Uint8Array(inputBytes):new Uint8Array(inputBytes);name=name||'game.pce';
+  if(bytes.length>=0x20&&bytes[0]===0x48&&bytes[1]===0x45&&bytes[2]===0x53&&bytes[3]===0x4d){
+    const u16=o=>bytes[o]|(bytes[o+1]<<8),u32=o=>(bytes[o]|(bytes[o+1]<<8)|(bytes[o+2]<<16)|(bytes[o+3]<<24))>>>0,init=u16(6),first=bytes[5],banks=bytes.slice(8,16),size=u32(20),addr=u32(24),dataStart=0x20,dataLen=Math.min(size,Math.max(0,bytes.length-dataStart)),mem=new Uint8Array(0x100000);mem.fill(0xff);if(addr<mem.length)mem.set(bytes.subarray(dataStart,dataStart+Math.min(dataLen,mem.length-addr)),addr);hes={init,first,track:first,banks:new Uint8Array(banks),size:dataLen,addr,name};bus.attachHES(mem);romFilename=name;$('#hesPanel').style.display='block';$('#hesTrack').value=first;$('#hesInfo').textContent=`init $${hex(init,4)} · DATA $${hex(addr,6)} + $${hex(dataLen,6)} · MPR ${[...banks].map(x=>hex(x)).join(' ')}`;$('#romName').textContent=name;$('#romSize').textContent=(bytes.length/1024).toFixed(0)+' KiB';$('#romState').textContent='HES music';$('#romDrop').classList.add('loaded');$('#romBadge').textContent='HES OK';$('#romBadge').className='badge ok';$('#mapperInfo').textContent='HES / PSG';event(`HES caricato: ${name}, init $${hex(init,4)}, prima traccia ${first}`);power(true);refreshAssets();osd('HES · abilita AUDIO per ascoltare');return;
+  }
+  hes=null;$('#hesPanel').style.display='none';if((bytes.length&0x1fff)===512){bytes=bytes.slice(512);event('Header 512 byte rimosso')}if(bytes.length<8192)throw Error('ROM troppo piccola');let norm=normalizeHuCard(bytes);bytes=norm.bytes;if(norm.bitReversed)event('Dump TurboGrafx bit-reversed rilevato: D0↔D7 normalizzato');applyDetectedRegion(name);bus.attachROM(bytes,name);romFilename=name;restoreBackup();$('#romName').textContent=name;$('#romSize').textContent=(bytes.length/1024).toFixed(0)+' KiB';$('#romState').textContent='caricata';$('#romDrop').classList.add('loaded');$('#romBadge').textContent='ROM OK';$('#romBadge').className='badge ok';let m=bus.mapper==='sf2'?'SF2 2.5M mapper':bus.mapper==='populous'?'Populous + 32K RAM':bytes.length===0x60000?'384K split mirror':'HuCard mirror';$('#mapperInfo').textContent=m;event(`ROM caricata: ${name}, ${bytes.length} byte`);power(true);refreshAssets()
+}
+async function loadROM(file){
+  let u=new Uint8Array(await file.arrayBuffer()),name=file.name;archiveCollection=null;renderArchiveLibrary();
+  if(/\.zip$/i.test(name)||(u[0]===0x50&&u[1]===0x4b)){
+    const zip=zipDirectory(u),direct=zip.entries.filter(e=>!e.isDir&&/\.(pce|bin|rom|hes)$/i.test(e.name)),nested=zip.entries.filter(e=>!e.isDir&&/\.zip$/i.test(e.name));
+    const items=[...direct.map(entry=>({entry,kind:'rom',label:archiveLabel(entry.name)})),...nested.map(entry=>({entry,kind:'zip',label:archiveLabel(entry.name)}))].sort((a,b)=>a.label.localeCompare(b.label,undefined,{numeric:true,sensitivity:'base'}));
+    if(!items.length)throw Error('ZIP: nessuna ROM PC Engine o ZIP interno trovato');archiveCollection={name,zip,items,direct:direct.length,nested:nested.length};renderArchiveLibrary();
+    if(items.length===1){await loadArchiveItem(items[0]);return}$('#romBadge').textContent='RACCOLTA OK';$('#romBadge').className='badge ok';$('#romName').textContent=name;$('#romState').textContent=items.length+' giochi';event(`Raccolta ZIP: ${name} · ${items.length} elementi`);osd(items.length+' giochi trovati');return;
+  }
+  await loadROMBytes(u,name);
+}
+
+
+function dumpMemory(){
+  let space=$('#memSpace').value,start=parseInt($('#memStart').value,16)||0,len=clamp(parseInt($('#memLen').value,16)||0x200,1,0x4000),out=[];
+  const rb=a=>{if(space==='logical')return core.r(a&65535);if(space==='physical')return bus.readPhys(a&0x1fffff);if(space==='ram')return bus.ram[a&0x1fff];if(space==='vram'){let w=bus.vdc.vram[(a>>1)&0x7fff];return a&1?w>>8:w&255}let w=bus.vce[(a>>1)&511];return a&1?w>>8:w&255};
+  for(let o=0;o<len;o+=16){let xs=[],as='';for(let i=0;i<16&&o+i<len;i++){let v=rb(start+o+i);xs.push(hex(v));as+=v>=32&&v<127?String.fromCharCode(v):'.'}out.push(hex(start+o,space==='physical'?6:4)+'  '+xs.join(' ').padEnd(47)+'  '+as)}
+  $('#dump').textContent=out.join('\n')
+}
+function u16Bytes(a){let b=new Uint8Array(a.length*2);for(let i=0;i<a.length;i++){b[i*2]=a[i]&255;b[i*2+1]=a[i]>>8}return b}
+function pngCanvas(c,name){c.toBlob(b=>download(name,b,'image/png'))}
+function refreshAssets(){
+  drawPalette();drawTiles();drawSprites()
+}
+function drawPalette(){
+  let c=$('#paletteCanvas'),x=c.getContext('2d'),im=x.createImageData(c.width,c.height),d=im.data,sw=c.width/16,sh=c.height/32;
+  x.clearRect(0,0,c.width,c.height);for(let i=0;i<512;i++){let [r,g,b]=bus.vceRGB(i),xx=(i%16)*sw,yy=(i>>4)*sh;x.fillStyle=`rgb(${r},${g},${b})`;x.fillRect(xx,yy,sw,sh)}
+}
+function drawTiles(){
+  let c=$('#assetCanvas'),ctx=c.getContext('2d'),mode=$('#assetMode').value;
+  if(mode==='bat'){let mw=[32,64,128,128][(bus.vdc.reg[9]>>4)&3],mh=(bus.vdc.reg[9]&0x40)?64:32,w=Math.min(mw*8,1024),h=Math.min(mh*8,512);c.width=w;c.height=h;let im=ctx.createImageData(w,h),d=im.data;
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){let bat=bus.vdc.vram[((y>>3)*mw+(x>>3))&0x7fff],ci=bus.vdc.tilePixel(bat&0xfff,x&7,y&7),rgb=bus.vceRGB(ci?(((bat>>12)<<4)|ci):0),o=(y*w+x)*4;d[o]=rgb[0];d[o+1]=rgb[1];d[o+2]=rgb[2];d[o+3]=255}ctx.putImageData(im,0,0);$('#assetLabel').textContent='BAT / TILEMAP';return}
+  c.width=512;c.height=512;let im=ctx.createImageData(c.width,c.height),d=im.data,cols=64;
+  for(let t=0;t<2048;t++){let tx=(t%cols)*8,ty=((t/cols)|0)*8;for(let y=0;y<8;y++)for(let x=0;x<8;x++){let ci=bus.vdc.tilePixel(t,x,y),rgb=bus.vceRGB(ci),o=((ty+y)*c.width+tx+x)*4;d[o]=rgb[0];d[o+1]=rgb[1];d[o+2]=rgb[2];d[o+3]=255}}ctx.putImageData(im,0,0);$('#assetLabel').textContent='VRAM TILE ATLAS · 2048 tiles'
+}
+function drawSprites(){
+  let g=$('#spriteGallery');g.innerHTML='';for(let n=0;n<64;n++){let si=bus.vdc.spriteInfo(n),c=document.createElement('canvas');c.width=si.width;c.height=si.height;let x=c.getContext('2d'),im=x.createImageData(si.width,si.height),d=im.data,used=false;
+    for(let yy=0;yy<si.height;yy++){let sy=si.vflip?si.height-1-yy:yy;for(let xx=0;xx<si.width;xx++){let sx=si.hflip?si.width-1-xx:xx,pat=(si.pattern+(sx>>4))&0x3ff,ci=bus.vdc.spritePixel(pat,sy,sx&15,si.lsb);if(ci)used=true;let rgb=bus.vceRGB((si.pal<<4)|ci),o=(yy*si.width+xx)*4;d[o]=rgb[0];d[o+1]=rgb[1];d[o+2]=rgb[2];d[o+3]=ci?255:0}}x.putImageData(im,0,0);if(used||n<8){let e=document.createElement('div');e.className='sprite-item';e.append(c);let z=document.createElement('small');z.textContent='#'+n+' $'+hex(si.pattern,3)+' '+si.width+'×'+si.height;e.append(z);g.append(e)}}
+}
+function modeLen(m){return ({IMP:1,ACC:1,IMM:2,ZP:2,ZPX:2,ZPY:2,INDX:2,INDY:2,INDZ:2,REL:2,ABS:3,ABSX:3,ABSY:3,ABSIND:3,ABSINDX:3,ZPREL:3,TSTZP:3,TSTZPX:3,TSTABS:4,TSTABSX:4,BLOCK:7})[m]||1}
+function disasm(){
+  if(!bus.rom.length)return;let logical=$('#disMode').value==='logical',addr=parseInt($('#disStart').value,16)||0,count=clamp(parseInt($('#disCount').value,16)||0x200,1,0x8000),lines=[],used=0;
+  const r=a=>logical?core.r(a&65535):bus.rom[a%bus.rom.length];
+  while(used<count){let pc=addr,op=r(addr++),[mn,m]=OPS[op],len=modeLen(m),bs=[op];for(let i=1;i<len;i++)bs.push(r(addr++));let o='';
+    if(m==='ACC')o='A';else if(m==='IMM')o='#$'+hex(bs[1]);else if(['ZP','ZPX','ZPY'].includes(m))o='$'+hex(bs[1])+(m==='ZPX'?',X':m==='ZPY'?',Y':'');else if(m==='INDX')o='($'+hex(bs[1])+',X)';else if(m==='INDY')o='($'+hex(bs[1])+'),Y';else if(m==='INDZ')o='($'+hex(bs[1])+')';
+    else if(['ABS','ABSX','ABSY','ABSIND','ABSINDX'].includes(m)){let a=bs[1]|(bs[2]<<8);o='$'+hex(a,4)+(m==='ABSX'?',X':m==='ABSY'?',Y':m==='ABSIND'?' indirect':m==='ABSINDX'?' indirect,X':'')}
+    else if(m==='REL')o='$'+hex((addr+s8(bs[1]))&65535,4);else if(m==='ZPREL')o='$'+hex(bs[1])+',$'+hex((addr+s8(bs[2]))&65535,4);
+    else if(m.startsWith('TST')){let p=1,imm=bs[p++],a=bs[p++]|(m.includes('ABS')?(bs[p++]<<8):0);o='#$'+hex(imm)+',$'+hex(a,m.includes('ABS')?4:2)+(m.endsWith('X')?',X':'')}
+    else if(m==='BLOCK'){let a=bs[1]|(bs[2]<<8),b=bs[3]|(bs[4]<<8),n=bs[5]|(bs[6]<<8);o='$'+hex(a,4)+',$'+hex(b,4)+',$'+hex(n,4)}
+    lines.push(hex(pc,logical?4:6)+'  '+bs.map(x=>hex(x)).join(' ').padEnd(20)+'  '+mn.padEnd(5)+' '+o);used+=len
+  }
+  $('#disOut').value=lines.join('\n')
+}
+function refreshAudio(full=true){
+  if(full){$('#audioRows').innerHTML=bus.psg.ch.map((c,i)=>`<div class="audioch"><b>CH ${i}</b><div class="meter"><i id="meter${i}"></i></div><span class="mono" id="ainfo${i}"></span></div>`).join('')}
+  bus.psg.ch.forEach((c,i)=>{let m=$('#meter'+i),a=$('#ainfo'+i);if(m)m.style.width=((c.ctrl&31)/31*100)+'%';if(a)a.textContent='$'+hex(c.freq,3)+' · '+((c.ctrl&0x80)?'ON':'OFF')});$('#psgMaster').textContent='$'+hex(bus.psg.master);$('#psgEvents').textContent=bus.psg.events.length
+}
+function refreshEvents(){$('#eventList').innerHTML=bus.events.slice(0,120).map(e=>`<div class="logline">[${e.t}] ${e.msg}</div>`).join('')}
+function serializeState(){return JSON.stringify({app:'PCEJSD',v:2,rom:romFilename,hes:hes?{init:hes.init,first:hes.first,track:hes.track,banks:[...hes.banks],size:hes.size,addr:hes.addr,name:hes.name}:null,cpu:{A:core.A,X:core.X,Y:core.Y,S:core.S,P:core.P,PC:core.PC,M:[...core.M],high:core.high,cycles:core.cycles},ram:bytesToB64(bus.ram),backup:bytesToB64(bus.backup),vram:bytesToB64(u16Bytes(bus.vdc.vram)),vce:bytesToB64(u16Bytes(bus.vce)),vdcReg:[...bus.vdc.reg],sat:bytesToB64(u16Bytes(bus.vdc.sat)),psg:bus.psg.ch.map(c=>({freq:c.freq,ctrl:c.ctrl,bal:c.bal,wave:[...c.wave],wp:c.wp,noise:c.noise,dda:c.dda})),master:bus.psg.master})}
+function restoreState(o){if(!o||o.app!=='PCEJSD')throw Error('Stato non valido');Object.assign(core,o.cpu);core.M.set(o.cpu.M);bus.ram.set(b64ToBytes(o.ram));bus.backup.set(b64ToBytes(o.backup));let vb=b64ToBytes(o.vram);for(let i=0;i<bus.vdc.vram.length;i++)bus.vdc.vram[i]=vb[i*2]|(vb[i*2+1]<<8);let pb=b64ToBytes(o.vce);for(let i=0;i<512;i++)bus.vce[i]=pb[i*2]|(pb[i*2+1]<<8);bus.vdc.reg.set(o.vdcReg);let sb=b64ToBytes(o.sat);for(let i=0;i<256;i++)bus.vdc.sat[i]=sb[i*2]|(sb[i*2+1]<<8);o.psg?.forEach((q,i)=>Object.assign(bus.psg.ch[i],q,{wave:new Uint8Array(q.wave)}));bus.psg.master=o.master||0;paused=true;bus.vdc.rebuildFrame();bus.vdc.render($('#screen'));updateUI();refreshAssets();event('Stato importato')}
+function setup(){
+  $$('.tabbtn').forEach(b=>b.onclick=()=>{$$('.tabbtn').forEach(x=>x.classList.remove('active'));$$('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.tab).classList.add('active');if(b.dataset.tab==='resources')refreshAssets();if(b.dataset.tab==='audio')refreshAudio()});
+  $('#romFile').onchange=e=>e.target.files[0]&&loadROM(e.target.files[0]).catch(x=>{event('ERRORE ROM: '+x.message);alert(x.message)});
+  $('#archiveFilter').oninput=renderArchiveLibrary;$('#archiveLoad').onclick=()=>{let i=+$('#archiveSelect').value;if(Number.isInteger(i)&&archiveVisible[i])loadArchiveItem(archiveVisible[i])};$('#archiveSelect').ondblclick=()=>$('#archiveLoad').click();
+  $('#romDrop').ondragover=e=>{e.preventDefault()};$('#romDrop').ondrop=e=>{e.preventDefault();let f=e.dataTransfer.files[0];if(f)loadROM(f).catch(x=>alert(x.message))};
+  $('#power').onclick=()=>power(true);$('#reset').onclick=()=>{if(bus.rom.length||hes){bootCore();event((hes?'HES RESTART':'RESET')+' → $'+hex(core.PC,4));osd(hes?'HES RESTART':'RESET')}};$('#pause').onclick=()=>{paused=!paused;$('#pause').textContent=paused?'Riprendi':'Pausa';osd(paused?'PAUSA':'RUN')};$('#step').onclick=()=>{paused=true;core.stopped=false;core.step();bus.vdc.render($('#screen'));updateUI()};
+  $('#fullscreen').onclick=()=>$('#screenShell').requestFullscreen?.();$('#audioBtn').onclick=async()=>{if(!bus.psg.enabled){await bus.psg.enable();$('#audioBtn').textContent='Disattiva audio';osd('AUDIO ON')}else{bus.psg.disable();$('#audioBtn').textContent='Attiva audio ♪';osd('AUDIO OFF')}};
+  $('#gfx').onchange=e=>{let s=$('#screenShell');s.classList.remove('crt','soft');if(e.target.value==='crt')s.classList.add('crt');if(e.target.value==='soft')s.classList.add('soft')};$('#region').onchange=e=>bus.region=e.target.value;
+  $$('.dkey,[data-key]').forEach(b=>{if(!b.dataset.key)return;let k=b.dataset.key;for(const ev of ['pointerdown','pointerenter'])b.addEventListener(ev,e=>{if(ev==='pointerenter'&&!(e.buttons&1))return;bus.pad[k]=true;b.classList.add('held')});for(const ev of ['pointerup','pointerleave','pointercancel'])b.addEventListener(ev,()=>{bus.pad[k]=false;b.classList.remove('held')})});
+  const km={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',KeyZ:'i',KeyX:'ii',Enter:'run',ShiftLeft:'select',ShiftRight:'select'};
+  addEventListener('keydown',e=>{let k=km[e.code];if(k){e.preventDefault();bus.pad[k]=true;document.querySelector(`[data-key="${k}"]`)?.classList.add('held')}});addEventListener('keyup',e=>{let k=km[e.code];if(k){e.preventDefault();bus.pad[k]=false;document.querySelector(`[data-key="${k}"]`)?.classList.remove('held')}});
+  $('#setBreak').onclick=()=>{let a=parseInt($('#breakAddr').value,16);if(Number.isFinite(a)){core.breakpoints.add(a&65535);event('Breakpoint $'+hex(a,4))}};$('#clearBreak').onclick=()=>{core.breakpoints.clear();core.stopped=false;event('Breakpoint rimossi')};$('#traceEnable').onchange=e=>core.traceOn=e.target.checked;
+  $('#memShow').onclick=dumpMemory;$('#exportRamBin').onclick=()=>download('pce_workram.bin',bus.ram);$('#exportVram').onclick=()=>download('pce_vram.bin',u16Bytes(bus.vdc.vram));$('#exportPalette').onclick=()=>download('pce_palette.bin',u16Bytes(bus.vce));
+  $('#refreshAssets').onclick=refreshAssets;$('#assetMode').onchange=drawTiles;$('#assetPng').onclick=()=>pngCanvas($('#assetCanvas'),'pce_assets.png');$('#framePng').onclick=()=>pngCanvas($('#screen'),'pce_frame.png');
+  $('#disRun').onclick=disasm;$('#disPc').onclick=()=>{$('#disMode').value='logical';$('#disStart').value=hex(core.PC,4);disasm()};$('#disReset').onclick=()=>{$('#disMode').value='logical';$('#disStart').value=hex(core.read16(0xfffe),4);disasm()};$('#disCopy').onclick=()=>navigator.clipboard?.writeText($('#disOut').value);$('#disExport').onclick=()=>download('pce_disassembly.asm',$('#disOut').value,'text/plain');
+  $('#saveState').onclick=()=>download('pce_state.json',serializeState(),'application/json');$('#loadState').onchange=async e=>{let f=e.target.files[0];if(f)restoreState(JSON.parse(await f.text()))};$('#saveRam').onclick=()=>{persistBackup(true);download((romFilename.replace(/\.[^.]+$/,'')||'pce')+'_backup_ram.sav',bus.backup)};$('#loadRam').onchange=async e=>{let f=e.target.files[0];if(f){let a=new Uint8Array(await f.arrayBuffer());bus.backup.set(a.subarray(0,bus.backup.length));bus.backupDirty=true;persistBackup(true);event('Backup RAM importata e salvata nel browser')}};
+  $('#apuJson').onclick=()=>download('pce_psg_log.json',JSON.stringify(bus.psg.events,null,2),'application/json');$('#apuClear').onclick=()=>{bus.psg.events=[];refreshAudio()};$('#clearEvents').onclick=()=>{bus.events=[];refreshEvents()};
+  $('#hesRestart').onclick=()=>{if(hes){hes.track=clamp(parseInt($('#hesTrack').value)||0,0,255);bootCore();running=true;paused=false;event('HES traccia '+hes.track+' avviata');osd('TRACCIA '+hes.track)}};
+  $('#hesPrev').onclick=()=>{if(hes){hes.track=(clamp(parseInt($('#hesTrack').value)||0,0,255)+255)&255;$('#hesTrack').value=hes.track;$('#hesRestart').click()}};
+  $('#hesNext').onclick=()=>{if(hes){hes.track=(clamp(parseInt($('#hesTrack').value)||0,0,255)+1)&255;$('#hesTrack').value=hes.track;$('#hesRestart').click()}};
+  $('#langIT').onclick=()=>{$('#langIT').classList.add('active');$('#langEN').classList.remove('active');osd('Italiano')};$('#langEN').onclick=()=>{$('#langEN').classList.add('active');$('#langIT').classList.remove('active');osd('English UI: core labels remain technical')};
+  bus.vdc.rebuildFrame();refreshAudio();updateUI();drawPalette();drawTiles();drawSprites();event('PCEJSD COMPAT V8 core pronto')
+}
+setup();
+window.addEventListener('beforeunload',()=>persistBackup(true));
+</script>
+
+
+<!-- JSD Hub optional launch receiver: standalone operation does not depend on it. -->
+<script>
+(function(){
+  'use strict';
+  var JSD_SYS='pce';
+  var m=(location.hash||'').match(/(?:^#|&)jsdlaunch=([^&]+)/);
+  var JSD_TOKEN=m?decodeURIComponent(m[1]):'';
+  function jsdPost(type,extra){try{if(window.opener)window.opener.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+  function jsdFile(x){return new File([x.bytes],x.name||'game.bin',{type:'application/octet-stream',lastModified:Date.now()})}
+  function jsdRole(p,r){return (p.files||[]).filter(function(x){return x.role===r})}
+  function jsdSet(id,files,fire){var el=document.querySelector(id);if(!el||!files.length)return null;var dt=new DataTransfer();files.forEach(function(f){dt.items.add(f)});el.files=dt.files;if(fire!==false)el.dispatchEvent(new Event('change',{bubbles:true}));return el}
+  function jsdSleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  async function jsdInject(p){
+    var games=jsdRole(p,'game').map(jsdFile),bios=jsdRole(p,'bios').map(jsdFile),execs=jsdRole(p,'exec').map(jsdFile),groms=jsdRole(p,'grom').map(jsdFile);
+    var game=games[0]||null;
+    if(JSD_SYS==='gameboy'){jsdSet('#romFile',games);await jsdSleep(450);var b=document.querySelector('#powerBtn');if(b)b.click()}
+    else if(JSD_SYS==='sega'){if(bios[0]){var bi=jsdSet('#biosFile',[bios[0]],false);await fileLoad(bi,'bios')}if(game){var ri=jsdSet('#romFile',[game],false);await fileLoad(ri,'rom')}}
+    else if(JSD_SYS==='megadrive'){if(game){await loadFile(game);machine.power(true);refreshUI()}}
+    else if(JSD_SYS==='neogeo'){if(bios.length)await loadPackage(bios,'bios');if(games.length)await loadPackage(games,'game');ngPower();if(typeof ngToggleRun==='function')ngToggleRun()}
+    else if(JSD_SYS==='nes'){if(game){await loadFile(game);if(!nes.powered)power()}}
+    else if(JSD_SYS==='snes'){if(game){jsdSet('#romFile',[game],false);await loadSelected();await jsdSleep(80);if(emu&&emu.cart&&!emu.running)document.querySelector('#runBtn')?.click()}}
+    else if(JSD_SYS==='pce'){if(game)await loadROM(game)}
+    else if(JSD_SYS==='coleco'){if(bios[0]){machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);document.querySelector('#biosInfo').textContent=bios[0].name}if(game){machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);document.querySelector('#romInfo').textContent=game.name}if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='spectrum'){if(bios[0])machine.setROM(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game){var u=new Uint8Array(await game.arrayBuffer()),x=(game.name.split('.').pop()||'').toLowerCase();if(x==='sna'||x==='z80')machine.loadSnapshot(x==='sna'?parseSNA(u):parseZ80(u));else if(x==='tap'){machine.tape=new Tape(parseTAP(u));machine.autoLoad()}else if(x==='scr'){machine.reset();machine.paused=true;machine.mem.set(u,0x4000);machine.drawFull()}document.querySelector('#gameName').textContent=game.name;render();refresh()}}
+    else if(JSD_SYS==='msx1'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='intellivision'){if(execs[0])await loadFile('exec',execs[0]);if(groms[0])await loadFile('grom',groms[0]);if(game)await loadFile('cart',game);if(!state.power)boot();reset();if(state.paused)togglePause()}
+    else if(JSD_SYS==='vectrex'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.biosLoaded&&machine.cartLoaded){machine.reset();machine.running=true}machine.updateUI();renderMachineText()}
+    jsdPost('jsd-launch-accepted',{files:(p.files||[]).length});
+  }
+  var jsdReadyTimer=0;window.addEventListener('message',function(ev){if(!JSD_TOKEN||ev.source!==window.opener||!ev.data||ev.data.type!=='jsd-launch'||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;if(jsdReadyTimer)clearInterval(jsdReadyTimer);jsdInject(ev.data).catch(function(err){console.error(err);jsdPost('jsd-launch-error',{error:err&&err.message?err.message:String(err)})})});
+  function ready(){if(JSD_TOKEN)jsdPost('jsd-emulator-ready')}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();jsdReadyTimer=setInterval(ready,500);setTimeout(function(){if(jsdReadyTimer)clearInterval(jsdReadyTimer)},30000);
+})();
+</script>
+</body>
+</html>

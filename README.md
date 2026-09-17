@@ -1,794 +1,509 @@
 # JSD Emulator Hub
 
-JSD Emulator Hub is a browser-based collection of experimental emulators designed not only to run software, but also to act as a **reverse-engineering and asset-recovery laboratory**.
+JSD Emulator Hub è una raccolta di emulatori sperimentali **HTML/JavaScript eseguiti interamente nel browser**, accompagnati da strumenti di analisi, disassemblaggio, ispezione memoria ed estrazione di risorse.
 
-The project focuses on inspecting how classic machines work and, where the hardware and ROM format allow it, on:
+L'obiettivo non è soltanto avviare i giochi: il progetto vuole essere anche un **laboratorio di reverse engineering per hardware e ROM retro**, mantenendo ogni macchina in un file HTML separato e leggibile.
 
-- disassembling or heuristically reconstructing machine code;
-- identifying code, data, entry points, jumps and calls;
-- inspecting ROM, RAM, VRAM, CPU registers and execution traces;
-- extracting tiles, sprites, OAM data, palettes, vector frames and other graphics resources;
-- capturing sound-chip writes and registers;
-- reconstructing or exporting audio as WAV/JSON where supported.
+## Build corrente
 
-Each emulator remains a **separate standalone HTML file**. The launcher identifies supported systems, can inspect ZIP archives, and passes ROM/BIOS files only when they match the expected format.
+La build corrente integra **12 famiglie di sistemi** nel launcher:
 
-> **Important:** the original source code of a commercial ROM cannot be faithfully recovered. Variable names, comments, macros, original source files, art tools and the original project structure are normally absent from the ROM. The reverse-engineering tools in this project produce a technical reconstruction useful for understanding the program, not the original source code.
-
----
-
-## Included systems
-
-| System | Emulator | CPU / main hardware | Reverse-engineering focus |
+| Sistema | File | CPU / hardware principale | Stato sintetico |
 |---|---|---|---|
-| Game Boy / Game Boy Color / Game Boy Advance | `gbjsd.html` | LR35902 / ARM7TDMI | Disassembly, memory, tiles, OAM, palettes |
-| SEGA Master System / Game Gear | `segajsd.html` | Z80 / VDP / SN76489 | Z80 listing, VRAM/CRAM, tile atlas |
-| Neo Geo AES / MVS | `neogeojsd.html` | Motorola 68000 / Z80 / LSPC / YM2610 | 68000 runtime/trace, P-ROM disassembly, FIX/sprite extraction, Z80 M1 analysis |
-| ColecoVision | `colecojsd.html` | Z80 / TMS9918A / SN76489A | Z80 analysis, sprites, VRAM, sound capture |
-| ZX Spectrum 48K | `zx48jsd.html` | Z80 / ULA / beeper | Trace, memory, disassembly, screen/audio capture |
-| MSX1 | `msx1jsd.html` | Z80 / TMS9918A / AY-3-8910 | Z80 analysis, sprites, VDP, sound registers |
-| Vectrex | `vectrex_emulator.html` | Motorola 6809 / VIA 6522 / AY-3-8912 | 6809 disassembly, vector capture, sound export |
-| Intellivision | `intellijsd.html` | CP1610 / STIC / AY-3-8914 | CP1610 analysis, code/data detection, sprite/audio extraction |
+| Game Boy / Game Boy Color / Game Boy Advance | `gbjsd.html` | LR35902 / ARM7TDMI | GB/GBC maturi; GBA sperimentale |
+| SEGA Master System / Game Gear | `segajsd.html` | Z80 / VDP / SN76489 | Funzionale, compatibilità buona |
+| SEGA Mega Drive / Genesis | `megadrivejsd.html` | 68000 / Z80 / VDP / YM2612 | Alpha avanzata, raster timing |
+| Neo Geo AES / MVS | `neogeojsd.html` | 68000 / Z80 / LSPC / YM2610 | Avanzato ma ancora sperimentale |
+| Nintendo Entertainment System / Famicom | `nesjsd.html` | Ricoh 2A03 / PPU | Funzionale, mapper da ampliare |
+| Super Nintendo / Super Famicom | `snesjsd.html` | 65C816 / PPU / SPC700 | Alpha 0.22c STABLE, sperimentale |
+| PC Engine / TurboGrafx-16 | `pcejsd.html` | HuC6280 / HuC6270 / HuC6260 | HuCard funzionale, COMPAT V8 |
+| ColecoVision | `colecojsd.html` | Z80 / TMS9918A / SN76489A | Funzionale, da rifinire |
+| ZX Spectrum 48K | `zx48jsd.html` | Z80 / ULA | Funzionale per il target 48K |
+| MSX1 | `msx1jsd.html` | Z80 / TMS9918A / AY-3-8910 | Funzionale, compatibilità da estendere |
+| Intellivision | `intellijsd.html` | CP1610 / STIC / AY-3-8914 | Funzionale, strumenti RE avanzati |
+| Vectrex | `vectrex_emulator.html` | MC6809 / VIA 6522 / AY-3-8912 | Core JavaScript originale, sperimentale |
 
-The project launcher is available as:
+È inoltre presente come laboratorio separato `laserdiscjsd_v1_0_daphne_timeline.html`, dedicato a **Dragon's Lair / Space Ace** con Z80 + player LaserDisc virtuale. Non è ancora conteggiato tra i 12 target del launcher principale.
 
-- `index.html` — GitHub Pages entry point
-- `landing.html` — launcher page
-- `help.html` — full bilingual help
+## Filosofia del progetto
 
----
+I principi attuali sono:
 
-## Running the project
+- **un emulatore = un HTML autonomo**, per evitare un monolite difficile da correggere;
+- esecuzione locale nel browser, senza invio di ROM o BIOS a server;
+- preferenza per core JavaScript originali e codice ispezionabile;
+- nessuna ROM, BIOS o contenuto commerciale incluso;
+- strumenti di analisi integrati quando utili: debugger, trace, disassembler, memoria, tile/sprite/vector/audio extraction;
+- launcher comune come **selettore/riconoscitore**, senza dipendenze runtime imposte agli emulatori;
+- ogni emulatore deve poter essere copiato e aperto da solo come singolo file `.html`;
+- compatibilità incrementale basata su ROM reali testate, senza nascondere i limiti ancora presenti.
 
-The project is entirely client-side.
+## Regola di autonomia dei core
 
-For local use, open `index.html` or `landing.html` in a modern browser. For GitHub Pages, publish the repository root as a static site.
+Questa è una regola architetturale del progetto, non una preferenza grafica:
 
-No commercial BIOS or game ROM is included.
+1. **Ogni emulatore distribuito deve essere un singolo HTML autosufficiente.**
+2. Non deve richiedere `emulator-autoload.js`, `universal-debugger.js`, framework, CDN o altri file JavaScript locali per avviarsi.
+3. Il launcher non deve dipendere da variabili interne dei core, usare `eval()` o rendere l’emulatore dipendente dall’Hub.
+4. Ogni HTML può però esporre un **ricevitore opzionale JSD Hub** incorporato: se aperto dal launcher può ricevere ROM/BIOS via `postMessage`; se aperto da solo funziona normalmente e non richiede il launcher.
+5. Codice comune di sviluppo è ammesso solo come **sorgente/build-time**: nella release finale viene incorporato nell'HTML che lo usa.
+6. Un file emulator HTML copiato fuori dall'Hub deve mantenere caricamento ROM/BIOS, save, audio, video e strumenti che dichiara di supportare.
 
-The current hub includes **8 emulator targets**, including the optimized single-file GBA build and **Neo Geo v1.2.5**.
+Nella build corrente il debugger universale, dove presente, è incorporato direttamente nell'HTML; non è una dipendenza runtime separata.
 
-### Launcher behaviour
+## Avvio
 
-The launcher can inspect a complete folder and, when supported by the browser, files contained inside ZIP archives.
+Aprire `index.html` in un browser moderno. `landing.html` è stato eliminato: esiste un solo entry point per evitare divergenze tra due launcher.
 
-System detection uses a combination of:
+Per un uso stabile dei salvataggi si consiglia di servire la cartella tramite HTTP/HTTPS, per esempio con un piccolo server statico locale o GitHub Pages. `localStorage` è associato all'origine del sito; con URL `file://` il comportamento può variare tra browser.
 
-- file extensions;
-- expected file sizes;
-- known headers and signatures;
-- system-specific ROM patterns.
-
-Examples include the Nintendo logo, GBA header data, `TMR SEGA`, Coleco headers and MSX cartridge headers.
-
-### ZIP limitations
-
-Interesting ROM entries are extracted in memory when the browser supports the compression method.
-
-The following may not be extractable:
-
-- encrypted ZIP archives;
-- ZIP64 archives;
-- uncommon or unsupported compression methods.
-
-Files remain local to the browser.
-
-### BIOS handling
-
-A file is **not** selected as a BIOS merely because it uses `.bin` or `.rom`.
-
-Where a BIOS is required, the launcher checks the expected system, size and identifying name/signature.
-
-For the included **Game Boy/GBC/GBA** and **SEGA Master System/Game Gear** builds, the launcher does not automatically load a BIOS because normal operation does not require one.
-
----
-
-# What “decompiling” a ROM means
-
-A commercial ROM contains machine code and data rather than the original development project.
-
-The tools therefore operate at several levels.
-
-### Disassembly
-
-Machine instructions are converted to readable assembly for the relevant CPU, including:
-
-- Z80
-- LR35902
-- ARM / Thumb
-- Motorola 6809
-- Motorola 68000
-- CP1610
-
-### Heuristic analysis / decompilation
-
-Where implemented, the analyser attempts to:
-
-- distinguish reachable code from data;
-- follow branches, calls and returns;
-- identify entry points;
-- create synthetic labels;
-- use runtime traces to improve static analysis;
-- classify manually defined memory regions.
-
-This is not equivalent to recovering the original C, C++, assembler source or development environment.
-
-### Memory and trace
-
-Depending on the emulator, the interface can expose:
+Il launcher può ricevere una cartella contenente:
 
 - ROM;
-- RAM;
-- VRAM;
-- CPU registers;
-- graphics registers;
-- sound-chip registers;
-- recent instructions;
-- runtime control transfers;
-- execution traces.
+- BIOS richiesti dal sistema;
+- ZIP;
+- savegame compatibili;
+- sottocartelle.
 
-### Graphics extraction
+Analizza i file localmente e prova a riconoscere il sistema. Quando si seleziona un gioco e si preme **Apri gioco**, `index.html` apre l’HTML corrispondente in una nuova scheda e trasferisce **solo la ROM selezionata e gli eventuali BIOS richiesti** tramite `postMessage`/`ArrayBuffer`. Il ricevitore è incorporato nel singolo HTML e resta completamente opzionale: l’emulatore continua a funzionare anche aperto direttamente.
 
-The type of resource that can be extracted depends on the original hardware.
+## Riconoscimento nel launcher
 
-Systems with hardware tiles and sprites can expose resources close to the underlying game assets. Bitmap systems such as the ZX Spectrum do not have hardware sprites, so the appropriate operation is screen capture/cropping. Vectrex graphics are vector-based, so SVG/JSON vector export is more meaningful than sprite extraction.
+Il riconoscimento usa una combinazione di:
 
-### Sound extraction
+- estensione;
+- dimensione;
+- firme/header noti;
+- nome del file o della cartella;
+- presenza congiunta di BIOS o componenti di un ROM set.
 
-When supported, the emulator may capture sound-chip writes or registers and export them as JSON or reconstruct the resulting audio as WAV.
+Esempi:
 
-A reconstructed WAV represents the sound produced by the current emulation model. It does **not** imply that a WAV file existed inside the original ROM.
+- Nintendo logo per GB/GBC;
+- header GBA;
+- `TMR SEGA` per SMS/GG;
+- header `SEGA` per Mega Drive;
+- firma iNES per NES;
+- `.sfc` / `.smc` per SNES;
+- struttura P/S/M/V/C per Neo Geo;
+- BIOS Executive + GROM per Intellivision;
+- BIOS Vectrex da 8 KiB + cartuccia `.vec`.
 
----
+Il riconoscimento automatico può sempre essere corretto manualmente dal menu **Sistema**.
 
-# Emulator reference
+## ZIP e archivi
 
-## Game Boy / Game Boy Color / Game Boy Advance
+Il launcher e molti core leggono ZIP direttamente con API native del browser, senza decompressione lato server.
 
-**File:** `gbjsd.html`
+Sono supportati soprattutto:
 
-### Files and boot
+- ZIP Store;
+- ZIP Deflate quando `DecompressionStream('deflate-raw')` è disponibile.
 
-Supported ROM types include:
+Limitazioni tipiche:
 
-- `.gb`
-- `.gbc`
-- `.gba`
-- `.bin` where appropriate
+- ZIP cifrati non supportati;
+- ZIP64 non gestiti in tutti i percorsi;
+- metodi di compressione poco comuni non supportati.
 
-The launcher requires no external BIOS.
+### SNES e 7z
 
-GB/GBC use the internal Game Boy core. The optimized GBA core is embedded directly inside `gbjsd.html`; no external GBA JavaScript file, emulator core or CDN is required.
+La build SNES integrata è `SNESJSD alpha 0.22c STABLE`. La versione originale allegata poteva scaricare `7z-wasm` da CDN al primo uso di un `.7z`.
 
-### Controls
+Nella build Hub la parte 7z remota è stata rimossa: **SNES usa `.sfc`, `.smc` e `.zip`**, così il pacchetto resta utilizzabile offline e non introduce una dipendenza runtime esterna.
 
-| Key | Function |
-|---|---|
-| Arrow keys / `WASD` | D-pad |
-| `Z` | A |
-| `X` | B |
-| `Enter` | Start |
-| `Shift` | Select |
-| `Q` | GBA L |
-| `E` | GBA R |
+## Salvataggi
 
-### Reverse engineering
+Il launcher dispone di **I miei salvataggi**, che legge i save persistenti presenti in `localStorage`.
 
-GB/GBC provide:
+Attualmente la gestione Hub è normalizzata soprattutto per:
 
-- CPU-mapped memory view;
-- physical ROM view;
-- bank-aware LR35902 disassembly;
-- ASM export.
+- Game Boy / GBC / GBA;
+- NES;
+- PC Engine;
+- Mega Drive / Genesis.
 
-GBA provides static ARM7TDMI analysis covering ARM/Thumb instructions including:
+Per questi sistemi, dove il core lo consente, i dati batterizzati possono essere:
 
-- branches;
-- loads/stores;
-- ALU instructions;
-- stack operations;
-- SWI instructions.
+- ripristinati automaticamente dal browser;
+- salvati automaticamente;
+- scaricati sul PC;
+- reimportati dal PC;
+- esportati insieme tramite backup JSON del launcher.
 
-### Graphics and audio
+### Savegame e save-state non sono la stessa cosa
 
-GB/GBC extraction includes:
+**Savegame persistente**: SRAM, Backup RAM, Flash o memoria equivalente prevista dalla macchina/cart.
 
-- 2bpp tiles;
-- tilemaps;
-- OAM.
+**Save-state**: fotografia completa dello stato dell'emulatore, molto più dipendente dalla versione del core.
 
-GBA extraction includes:
+I due formati restano separati per evitare che un aggiornamento dell'emulatore renda inaffidabile l'archivio dei progressi normali.
 
-- 4bpp and 8bpp BG/OBJ tiles;
-- palettes;
-- up to 128 OAM objects.
+Vectrex non dispone di una SRAM batterizzata standard paragonabile a Mega Drive o SNES: eventuali salvataggi completi vanno quindi trattati come save-state.
 
-Available exports include PNG/JSON and screenshots.
+La SRAM SNES non è ancora integrata nella gestione persistente dell'Hub: è una priorità P0 del TODO.
 
-For GB/GBC, the audio monitor exposes the four-channel APU and its state. The independent GBA core logs sound-register activity and provides basic audio monitoring; full DirectSound emulation is not yet complete.
+## Reverse engineering
 
-### Save data
+A seconda della piattaforma sono disponibili o in sviluppo:
 
-State and RAM import/export are available where supported by the active mode.
-
-### Limitations
-
-The GBA engine is an independent JavaScript implementation and uses an experimental HLE BIOS. It currently implements a broad ARM/Thumb subset, the main GBA memory map, approximate DMA/timers/IRQs, video modes 0–5, basic text/affine backgrounds, non-affine objects, keypad input and several common BIOS SWIs.
-
-It is intentionally experimental: cycle-perfect timing, windows/blending, complete affine OBJ support, full DirectSound, EEPROM command semantics and unusual cartridge peripherals remain incomplete or approximate. GB/GBC audio also does not reproduce every analogue quirk.
-
-GBA disassembly is static and does not reconstruct the original C/C++ source.
-
----
-
-## SEGA Master System / Game Gear
-
-**File:** `segajsd.html`
-
-> This build is **not** a Mega Drive / Genesis emulator.
-
-### Files and BIOS
-
-Supported ROM formats:
-
-- `.sms`
-- `.gg`
-- ZIP archives containing those formats
-
-The BIOS is optional and is **not auto-loaded by the launcher**.
-
-### Controls
-
-| Key | Function |
-|---|---|
-| Arrow keys / `WASD` | D-pad |
-| `Z` | Button 1 |
-| `X` | Button 2 |
-| `Enter` | Game Gear Start / Master System Pause NMI |
-
-### Reverse-engineering tools
-
-- CPU memory view;
-- ROM/RAM/SRAM inspection;
-- Z80 trace;
-- static Z80 listing;
-- ASM export;
-- PNG screenshots;
-- VRAM export;
-- CRAM export;
-- live 4bpp tile atlas;
-- SMS and Game Gear palette handling.
-
-### Options
-
-- NTSC / PAL;
-- SEGA mapper;
-- Codemasters mapper;
-- pixel / scanline / CRT effects;
-- emulation speed;
-- machine state.
-
-### Limitations
-
-The build covers only Master System and Game Gear.
-
-Exposed mapper support is primarily:
-
-- SEGA + SRAM;
-- Codemasters.
-
-Titles requiring different hardware or mapper behaviour may fail.
-
-The disassembler operates on the currently mapped Z80 address space.
-
----
-
-## ColecoVision
-
-**File:** `colecojsd.html`
-
-### Files and BIOS
-
-An **8 KiB ColecoVision BIOS** is required.
-
-Supported cartridge formats can include:
-
-- `.col`
-- `.cv`
-- `.rom`
-- `.bin`
-
-when valid for the system.
-
-### Controls
-
-#### Player 1
-
-- mouse or Arrow keys / `WASD`
-- `Z` / `X` — action buttons
-- `0–9`, `*`, `#` — keypad
-
-#### Player 2
-
-- `I J K L` — directions
-- `N` / `M` — buttons
-
-Mouse control can capture the pointer when the screen is clicked. `Esc` releases it. Sensitivity and vertical-axis inversion are available.
-
-### Reverse engineering
-
-- Z80 registers;
-- memory inspection;
-- VRAM inspection;
-- VDP registers;
-- I/O trace;
-- heuristic Z80 decompiler/analyser;
-- header-based, `$8000`, or manual entry point;
-- ASM export;
-- diagnostic report.
-
-### Graphics and audio
-
-Capture can run for roughly 600 VBlanks (about 10 seconds).
-
-Available data can include:
-
-- TMS9918A sprites;
-- sprite PNG;
-- sprite JSON;
-- VRAM;
-- SN76489A state;
-- sound-chip writes;
-- sound JSON;
-- reconstructed WAV.
-
-### Limitations
-
-The Z80 reconstruction is heuristic and is not the original source.
-
-The current build targets base ColecoVision hardware and does not advertise dedicated support for extensions such as ADAM or SGM.
-
-Cartridges requiring additional peripherals or hardware are not guaranteed to work.
-
----
-
-## ZX Spectrum 48K
-
-**File:** `zx48jsd.html`
-
-### Files
-
-The system ROM must be exactly **16,384 bytes**.
-
-Supported system ROM extensions:
-
-- `.rom`
-- `.bin`
-
-Supported game/screen formats include:
-
-- `.sna`
-- `.z80` (48K)
-- `.tap`
-- `.scr`
-
-### Keyboard
-
-| Key | Function |
-|---|---|
-| Physical letters/numbers | Original Spectrum keyboard |
-| `Shift` | CAPS SHIFT |
-| `Ctrl` | SYMBOL SHIFT |
-| `Backspace` | Delete |
-
-### Joystick
-
-- Arrow keys — direction
-- `Alt` — fire
-
-Available joystick modes include:
-
-- Kempston;
-- Sinclair 2;
-- Cursor;
-- QAOP + Space;
-- disabled.
-
-An optional mouse joystick mode uses the centre as neutral and the left mouse button as fire.
-
-### Tape
-
-For TAP files, use:
-
-```text
-LOAD ""
-```
-
-from BASIC.
-
-Available tape controls include:
-
-- Play;
-- Stop;
-- Rewind;
-- fast loading through the standard ROM loading routine.
-
-### Reverse engineering / extraction
-
-- Z80 registers;
-- instruction step;
-- frame step;
-- trace of the last ~160 instructions;
+- disassembly CPU;
+- trace delle istruzioni;
+- registri CPU e periferiche;
 - memory dump;
-- disassembler;
-- listing export;
-- RAM export;
-- screen capture and PNG cropping;
-- 1-bit beeper capture;
-- WAV/JSON audio export for recordings up to roughly 30 seconds.
+- breakpoint/debugger;
+- tile viewer;
+- sprite/OAM viewer;
+- palette viewer;
+- estrazione PNG;
+- cattura vettori SVG/JSON;
+- cattura registri audio;
+- ricostruzione WAV;
+- esportazione ASM o JSON diagnostico.
 
-### Limitations
+### Cosa non significa “decompilare”
 
-This is a **ZX Spectrum 48K** emulator only.
+Una ROM commerciale contiene codice macchina e dati, non il progetto originale. Il disassembler può ricostruire istruzioni, label sintetiche e flusso di controllo, ma normalmente non può recuperare:
 
-Not implemented:
+- nomi originali di variabili/funzioni;
+- commenti;
+- macro e include originali;
+- sorgenti C/C++ originali;
+- struttura del repository dello sviluppatore;
+- file sorgente degli strumenti grafici/audio.
 
-- Spectrum 128K;
-- AY audio;
-- floppy support;
-- TZX support.
+## Dipendenze e funzionamento offline
 
-RAM/ULA contention, floating bus behaviour and some internal bus timings are not reproduced precisely.
+L'obiettivo della build Hub è non richiedere CDN o librerie remote per emulare.
 
-Raster effects, unusual loaders and some timing-sensitive games may therefore require fixes.
+- Vectrex usa ora il **core JavaScript originale del progetto**, senza VecX/WebAssembly di terze parti.
+- SNES non usa più il caricamento remoto di `7z-wasm` nella build Hub.
+- ZIP usa API native del browser.
+- Canvas 2D, Web Audio, WebAssembly eventualmente presente nei singoli esperimenti e `localStorage` sono API del browser, non CDN.
 
-The internal diagnostic demo tests the CPU/video/audio path, not the entire Spectrum software catalogue.
+Per la situazione dettagliata vedere `DEPENDENCIES.md`.
 
----
+## Stato per piattaforma
 
-## MSX1
+### Game Boy / Game Boy Color / Game Boy Advance
 
-**File:** `msx1jsd.html`
+`gbjsd.html`
 
-### Files and BIOS
+Punti forti:
 
-A **32 KiB MSX1 Main BIOS** is required.
+- GB/GBC con buon livello di compatibilità;
+- GBA nello stesso laboratorio ma con core separato;
+- tile, OBJ/OAM, palette e disassembly;
+- salvataggi persistenti gestibili dal launcher.
 
-Supported cartridge formats include:
+Limiti principali:
 
-- `.mx1`
-- `.rom`
-- `.bin`
+- GBA non è cycle-perfect;
+- audio GBA e DirectSound ancora incompleti;
+- periferiche cartuccia e casi EEPROM/Flash particolari da ampliare.
 
-Emulated RAM: **64 KiB**.
+### Master System / Game Gear
 
-Supported cartridge mapping includes standard, ASCII and Konami mapper types.
+`segajsd.html`
 
-### Controls
+Punti forti:
 
-The physical keyboard drives the MSX keyboard matrix.
+- core Z80/VDP condiviso;
+- CRT/fullscreen;
+- ZIP;
+- strumenti grafici e disassembler.
 
-#### Joystick P1
+Limiti principali:
 
-- Arrow keys / `WASD`
-- `Z` / `X`
+- timing VDP e casi raster ancora migliorabili;
+- mapper meno comuni da verificare;
+- persistenza save da uniformare con il Save Manager centrale.
 
-#### Joystick P2
+### Mega Drive / Genesis
 
-- `I J K L`
-- `N` / `M`
+`megadrivejsd.html`
 
-Mouse control over the display can also drive Player 1 with the centre as neutral and mouse clicks as buttons.
+Build corrente: **MDJSD alpha 1.1 Raster Timing**.
 
-### Reverse engineering
+Punti forti:
 
-- Z80 registers;
-- memory;
-- VDP state;
-- trace;
-- heuristic cartridge analysis;
-- explicit entry points;
-- original-byte display;
-- ASM export.
+- Motorola 68000 + Z80;
+- VDP e timing raster più avanzato;
+- SRAM persistente;
+- import/export `.srm`.
 
-### Graphics and audio
+Limiti principali:
 
-Capture can run for approximately 600 VBlanks (~10 seconds).
+- accuratezza VDP/raster/DMA ancora da validare su più titoli;
+- audio YM2612/PSG da rendere più fedele;
+- chip cartuccia speciali non sono l'obiettivo corrente.
 
-Available exports can include:
+### Neo Geo AES / MVS
 
-- TMS9918A sprites;
-- sprite PNG/JSON;
-- AY-3-8910 registers;
-- sound JSON;
-- WAV where implemented.
+`neogeojsd.html`
 
-### Limitations
+Build corrente: **v1.2.5**.
 
-This is a base **MSX1** build.
+Punti forti:
 
-Not emulated:
+- 68000 + Z80;
+- ROM set P/S/M/V/C;
+- LSPC;
+- supporto BIOS/UniBIOS;
+- strumenti per P-ROM, FIX, sprite e audio.
 
-- cassette;
-- floppy disk;
-- subslots;
-- SCC audio.
+Limiti principali osservati durante lo sviluppo:
 
-It is not MSX2. There is no:
+- raster effects e ombre non perfetti in alcuni titoli;
+- alcuni giochi richiedono ulteriore accuratezza nel rendering sprite;
+- Metal Slug 2 e altri titoli complessi hanno mostrato blocchi dopo il boot;
+- YM2610/audio è ancora uno dei sottosistemi da migliorare.
 
-- V9938;
-- Sub-ROM;
-- MSX2 RAM mapper;
-- MSX2 video mode support.
+### NES / Famicom
 
----
+`nesjsd.html`
 
+Punti forti:
 
-## Neo Geo AES / MVS
+- core 2A03/PPU;
+- supporto iNES;
+- SRAM/PRG-RAM persistente;
+- import/export `.sav`.
 
-**File:** `neogeojsd.html`  
-**Current build:** v1.2.5
+Limiti principali:
 
-### Packages and BIOS
+- compatibilità fortemente legata ai mapper;
+- IRQ mapper, mirroring e casi PPU sensibili al timing devono essere testati sistematicamente.
 
-Neo Geo is handled as a ROM **set**, not as a single cartridge image.
+### SNES / Super Famicom
 
-For launcher autoload, keep the packages as ZIP files:
+`snesjsd.html`
 
-- `neogeo.zip` — system BIOS / board ROM package;
-- `game.zip` — MAME-style game set containing the cartridge P/S/M/V/C ROMs.
+Build corrente: **SNESJSD alpha 0.22c STABLE**.
 
-The emulator can also load extracted files manually. Recognised groups include P-ROM, S-ROM, M1, V-ROM and C-ROM files, together with common BIOS/board files such as `.sp1`, `.sp2`, `.sp3`, `.sfix`, `.sm1` and `.lo`.
+Implementa un core sperimentale 65C816 + PPU, SPC700/S-DSP e parti di chip speciali, incluso Super FX. Supporta Modes 0–7, HDMA e strumenti di debug/grafica.
 
-The BIOS selector supports original SNK BIOS images and UniBIOS. For MVS input/credit testing, the emulator itself recommends **Europe MVS Ver. 2 (`sp-s2.sp1`)**.
+Limiti principali:
 
-### Controls
+- timing PPU/DMA/HDMA non ancora completamente cycle-accurate;
+- Super FX è sperimentale;
+- DSP e altri coprocessori necessitano più copertura;
+- SRAM batterizzata non è ancora collegata al Save Manager;
+- SA-1, S-DD1 e altri chip speciali non sono completi;
+- audio SPC700/S-DSP richiede ulteriore accuratezza.
 
-| Key | Function |
-|---|---|
-| Arrow keys | P1 directions |
-| `Z` | A |
-| `X` | B |
-| `A` | C |
-| `S` | D |
-| `Enter` | Start P1 |
-| `Shift` | Select |
-| `5` | Coin 1 |
-| `F2` | Service / auxiliary coin input |
+La build Hub accetta `.sfc`, `.smc` e `.zip`; il supporto remoto 7z è stato eliminato.
 
-A **Quick Start** control is also available; in MVS mode it performs a Coin 1 → Start sequence.
+### PC Engine / TurboGrafx-16
 
-### Runtime and reverse engineering
+`pcejsd.html`
 
-v1.2.5 includes an experimental Neo Geo runtime with:
+Build corrente: **PCEJSD COMPAT V8**.
 
-- Motorola 68000 execution;
-- AES/MVS memory mapping;
-- BIOS and cartridge vector handling;
-- LSPC/VRAM and palette handling;
-- FIX-layer rendering;
-- sprite rendering using an active scanline list;
-- player/coin/start inputs;
-- BCD credit handling;
-- short cooperative CPU slices so the browser UI remains responsive;
-- runtime register view and execution trace.
+Punti forti:
 
-Reverse-engineering tools include:
+- HuC6280;
+- HuCard standard;
+- VDC/VCE;
+- sprite collision e priorità progressivamente migliorate;
+- Backup RAM persistente;
+- import/export save.
 
-- P-ROM conversion to the byte order seen by the 68000;
-- static 68000 disassembly and ASM export;
-- M1/Z80 static disassembly and ASM export;
-- FIX/S-ROM tile inspection;
-- C-ROM sprite inspection;
-- graphics atlas/export tools;
-- ROM-set report/export.
+Limiti principali:
 
-### Audio limitation
+- CD-ROM² non incluso;
+- Arcade Card non inclusa;
+- SuperGrafx non completo;
+- PSG e timing non completamente cycle-perfect.
 
-The build identifies M1 and V-ROM data and exposes the Z80 sound program for analysis, but **full Z80/YM2610 runtime synchronisation, FM synthesis and ADPCM playback are not yet complete**.
+### ColecoVision
 
-The 68000/LSPC/palette/FIX/sprite runtime is still experimental and should not be considered cycle-perfect.
+`colecojsd.html`
 
-### Launcher note
+Punti forti:
 
-Unlike single-ROM systems, the launcher deliberately passes the **original Neo Geo ZIP files** to `neogeojsd.html`. It may inspect their internal filenames for detection, but it does not replace the game ZIP with one extracted P-ROM.
+- Z80 + TMS9918A + SN76489A;
+- BIOS + cartuccia;
+- strumenti per sprite, VRAM, audio e disassembly.
 
----
+Limiti principali:
 
-## Vectrex
+- compatibilità da ampliare su titoli problematici;
+- timing VDP e input da sottoporre a suite di regressione.
 
-**File:** `vectrex_emulator.html`
+### ZX Spectrum 48K
 
-### Files and BIOS
+`zx48jsd.html`
 
-Supported cartridge formats:
+Target volutamente concentrato sul 48K.
 
-- `.vec`
-- `.rom`
-- `.bin`
+Punti forti:
 
-Commercial cartridges require both the cartridge ROM and the original BIOS.
+- Z80/ULA;
+- snapshot e formati tipici del 48K;
+- CRT;
+- trace/disassembly;
+- screen/audio capture.
 
-Without a cartridge ROM, the built-in vector demo remains available.
+Limiti principali:
 
-### Controls
+- non è ancora un emulatore unificato 48/128/+2/+3;
+- caricamento nastro e timing border/beeper possono essere ulteriormente raffinati.
 
-| Key | Function |
-|---|---|
-| Arrow keys / `WASD` | Joystick |
-| `Z` | Button 1 |
-| `X` | Button 2 |
-| `C` | Button 3 |
-| `Space` | Button 4 |
-| `R` | Reset |
+### MSX1
 
-Run/pause, single-step and fullscreen are available from the interface buttons.
+`msx1jsd.html`
 
-### Reverse engineering
+Punti forti:
 
-- Motorola 6809 CPU state;
-- memory inspection;
-- trace;
-- 6809 disassembler;
-- disassembly from a selected address or current PC;
-- ASM export.
+- Z80;
+- TMS9918A;
+- AY;
+- BIOS + cartuccia;
+- strumenti grafici e disassembly.
 
-### Shapes and sound
+Limiti principali:
 
-Vectrex constructs the display dynamically from vectors.
+- mapper cartuccia e periferiche non universali;
+- espansioni e MSX2 sono fuori dal core corrente;
+- timing VDP/audio da validare più sistematicamente.
 
-Capture can record up to approximately 300 samples (~10 seconds at 1×) and export:
+### Intellivision
 
-- a frame as SVG;
-- vector sequence JSON;
-- AY register JSON;
-- reconstructed WAV from the three tone channels.
+`intellijsd.html`
 
-### Implementation / limitations
+Punti forti:
 
-Vectrex uses the independent local `vectrex-clean-core.js` implementation written for this project. It directly implements the Motorola 6809 execution core, the Vectrex memory map, VIA 6522 registers/timers/shift register, the AY-3-8912 bus, reset through vector `$FFFE`, and an approximate analogue vector-beam model.
+- CP1610;
+- STIC;
+- Executive ROM + GROM;
+- estrazione grafica/audio;
+- disassembler e analisi codice/dati.
 
-The implementation is experimental. VIA/analogue timing, less-common 6809 cases and cycle-sensitive vector effects may still need work, so compatibility can be lower than mature emulators.
+Limiti principali:
 
-Commercial BIOS and ROM files are not included and must be provided by the user. WAV export represents the current audio emulation model and does not reconstruct original music source files.
+- accuratezza controller/keypad da consolidare;
+- casi STIC e timing meno comuni da testare su una libreria più ampia.
 
----
+### Vectrex
 
-## Intellivision
+`vectrex_emulator.html`
 
-**File:** `intellijsd.html`
+La build corrente usa il **core JavaScript originale JSD**, non il precedente core VecX compilato in WebAssembly.
 
-The package contains the **complete standalone M5.0 core**. It no longer opens the previously deployed remote site and can run locally/offline like the other emulator files.
+Punti forti:
 
-### Files
+- MC6809;
+- VIA 6522;
+- AY-3-8912;
+- display vettoriale;
+- disassembler 6809;
+- esportazione forme SVG/JSON;
+- esportazione audio/registri;
+- nessuna libreria runtime esterna.
 
-#### Executive ROM
+Limiti principali:
 
-- 4K words / **8 KiB**
-- mapped at `$1000`
+- core ancora sperimentale;
+- VIA, analog integrators e timing vettoriale devono essere verificati su più ROM;
+- accuratezza audio e comportamento dei titoli più sensibili resta da migliorare.
 
-#### GROM
+## LaserDiscJSD — laboratorio separato
 
-- **2 KiB**
-- mapped at `$3000`
+`laserdiscjsd_v1_0_daphne_timeline.html`
 
-#### Cartridge
+Prototipo standalone per Dragon's Lair / Space Ace. Il file implementa Z80, scheda Cinematronics e player LaserDisc virtuale con mapping della timeline MP4/Daphne. Il video resta locale nel browser.
 
-The launcher recognises **`.int`** files as Intellivision game cartridges.
+Non viene ancora avviato automaticamente dall'Hub perché il suo input è diverso dagli altri sistemi: richiede **ROM + file video**, e il launcher deve imparare a trattare il video come media associato e non come ROM/BIOS.
 
-Generic `.bin` or `.rom` files are **not** treated as game cartridges. They are considered Intellivision files only when they match EXEC or GROM by expected name and exact size.
+## Universal Debugger
 
-### Main controls
+Il debugger universale può essere riutilizzato come sorgente comune, ma nella release deve essere **inlined nel singolo HTML**. L’obiettivo è mantenere breakpoint/watchpoint/memory dump/trace coerenti senza creare una dipendenza runtime condivisa.
 
-| Key | Function |
-|---|---|
-| `WASD` | Directional disc |
-| `0–9` | Numeric keypad |
-| `Z` / `X` / `C` | Side actions |
+Il TODO generale descrive come farlo senza rallentare gli emulatori durante il normale Run.
 
-Virtual controls expose:
-
-- the directional disc;
-- numeric keypad;
-- CLR;
-- ENT;
-- side buttons.
-
-### Analysis
-
-M5.0 exposes:
-
-- CP1610 state;
-- memory inspection;
-- execution events;
-- AY-3-8914 PSG information;
-- reverse-engineering tools.
-
-Intellicart images may contain:
-
-- segments;
-- RAM/ROM attributes;
-- fine access restrictions;
-- bank switching.
-
-### Reverse engineering
-
-The analysis tools can reconstruct CP1610 assembly and identify code, data and entry points where possible.
-
-As with the other systems, this does not recover the original source project.
-
----
-
-# Common interface commands
-
-| Command | Meaning |
-|---|---|
-| Power | Starts or stops the emulated machine when the core exposes power control |
-| Reset | Resets CPU and peripherals without necessarily reloading files |
-| Pause / Resume | Stops emulation progress while preserving the current state |
-| Step | Runs one instruction or one frame depending on the core |
-| Audio | Web Audio usually requires an explicit user gesture before playback is allowed |
-| Fullscreen | Core fullscreen enlarges the emulator display; launcher fullscreen enlarges the entire emulator |
-| State | Save states are emulator/version-specific and are not interchangeable |
-
-Press `Esc` to leave browser fullscreen.
-
----
-
-# Project limitations
-
-JSD Emulator Hub is an experimental independent project.
-
-In general:
-
-- the emulators are not guaranteed to be cycle-perfect;
-- timing-sensitive titles may expose inaccuracies;
-- individual mapper/peripheral support varies between systems;
-- static disassembly can confuse data with code;
-- runtime traces only reveal code that actually executes;
-- reconstructed graphics and audio are based on the emulated hardware state rather than original development assets;
-- save states should not be assumed compatible between emulator versions.
-
-No BIOS or commercial game is included in this repository.
-
-Use ROMs, BIOS files and other software only when you are legally entitled to do so.
-
----
-
-# GitHub Pages
-
-This repository is ready to be hosted as a static GitHub Pages site.
-
-The root `index.html` acts as the entry point.
-
-A `.nojekyll` file is included so GitHub Pages serves the project as plain static files.
-
-Typical repository structure:
+## Struttura del progetto
 
 ```text
-.
-├── index.html
-├── landing.html
-├── help.html
+JSD Emulator Hub/
+├── index.html                  launcher / unico entry point
+├── help.html                   guida UI
+├── savegame-manager.html       Save Bank manuale
+├── README.md
+├── TODO.md
+├── DEPENDENCIES.md
 ├── gbjsd.html
-├── gba-clean-core.js
 ├── segajsd.html
+├── megadrivejsd.html
 ├── neogeojsd.html
+├── nesjsd.html
+├── snesjsd.html
+├── pcejsd.html
 ├── colecojsd.html
 ├── zx48jsd.html
 ├── msx1jsd.html
-├── vectrex_emulator.html
-├── vectrex-clean-core.js
 ├── intellijsd.html
-├── emulator-autoload.js
-├── .nojekyll
-└── README.md
+├── vectrex_emulator.html
+└── laserdiscjsd_v1_0_daphne_timeline.html   laboratorio standalone
 ```
 
----
+Il laboratorio LaserDisc può essere distribuito accanto all'Hub, ma per ora resta separato dal conteggio dei target launcher.
 
-## Purpose of the project
+## Roadmap
 
-The primary aim is to make classic-console emulation useful as an **interactive technical workbench**.
+La roadmap dettagliata e motivata è in [`TODO.md`](TODO.md).
 
-Running the software is only one part of the goal. The other part is to make the machine observable: code, memory, graphics and sound should be inspectable and exportable whenever the underlying hardware model allows it.
+Priorità trasversali immediate:
+
+1. **P0 — regressione automatica** su un set di ROM note per ogni core;
+2. **P0 — debugger universale inlined per core**, con adapter coerenti ma nessuna dipendenza runtime esterna;
+3. **P0 — SRAM SNES** con `localStorage` + download/upload;
+4. **P0 — sistemazione dei casi di blocco Neo Geo e timing SNES**;
+5. **P1 — unificazione Save Manager / save-state / metadati ROM**;
+6. **P1 — libreria/riconoscimento nel launcher** con handoff opzionale ROM/BIOS, senza rendere i core dipendenti dall’Hub;
+7. **P1 — performance profiling comune** per CPU/PPU/VDP/audio;
+8. **P2 — call graph, ROM map, live patching e workspace `.jsd`**.
+
+## Compatibilità e contributi
+
+Il progetto è sperimentale. Un gioco che “parte” non implica necessariamente:
+
+- timing corretto;
+- audio corretto;
+- collisioni corrette;
+- raster effect corretti;
+- supporto completo di mapper/coprocessori;
+- assenza di blocchi più avanti nel gioco.
+
+Per una regressione utile, quando si segnala un problema conviene indicare:
+
+- sistema;
+- nome ROM;
+- regione/revisione se nota;
+- punto esatto del blocco;
+- ultimo PC/opcode o messaggio del debugger;
+- screenshot del rendering errato;
+- se il problema compare con audio/debugger attivi o disattivi.
+
+## Note legali
+
+Nessuna ROM o BIOS commerciale è incluso nel progetto.
+
+Usare ROM, BIOS e media ottenuti legalmente. Marchi e nomi delle piattaforme appartengono ai rispettivi proprietari.
+
+## Riconoscimento ROM del launcher
+
+`index.html` usa firme/header, estensioni, struttura degli ZIP e contesto BIOS+cartuccia; i dettagli sono in `ROM_DETECTION.md`. Il pannello **Diagnostica riconoscimento** mostra punteggi e motivazioni e le sue righe possono anche forzare manualmente il sistema quando il rilevamento è ambiguo. I raw `.bin/.rom` privi di firma universale restano volutamente trattati con cautela e possono essere associati manualmente.
+
+
+## v0.1.8 — launcher minimale, handoff e cache cartella
+
+- `landing.html` rimosso: resta solo `index.html`.
+- La colonna di riconoscimento mostra solo sistema rilevato e diagnostica.
+- La selezione del gioco e i pulsanti di avvio/refresh sono nella sezione cartella.
+- **Apri gioco** apre l’emulatore in una nuova scheda e consegna ROM/BIOS con un protocollo `postMessage` incorporato nei singoli HTML.
+- Ogni emulatore resta standalone: il ricevitore non è necessario per l’uso diretto.
+- L’analisi della cartella viene salvata in `localStorage` come manifest/metadati, mai come copia delle ROM.
+- Se si riseleziona la stessa cartella con stesso elenco, dimensioni e `lastModified`, l’analisi viene ricostruita dalla cache.
+- **Refresh analisi** forza una nuova scansione e aggiorna la cache.
+- Le ROM contenute in ZIP annidati vengono materializzate soltanto quando il gioco viene lanciato.

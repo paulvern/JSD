@@ -1422,7 +1422,7 @@ class M68K{
   }
 }
 
-let ng=null,ngRunning=false,ngRAF=0,ngCpuTimer=0,ngFrame=0,ngLastTraceCount=0;
+let ng=null,ngRunning=false,ngDebugPaused=false,ngRAF=0,ngCpuTimer=0,ngFrame=0,ngLastTraceCount=0;
 let ngUiLast=0,ngRenderLast=0,ngSpeedPct=0,ngTraceMode='pause',ngPerfMode='auto';
 let ngRunWallBase=0,ngRunCycleBase=0,ngSpeedWall=0,ngSpeedCycles=0,ngRunSpeedMul=1;
 let ngBootComplete=true,ngCartStableFrames=0,ngPumpChannel=null,ngPumpQueued=false,ngPumpSerial=0,machineModeUserSet=false;
@@ -1621,7 +1621,7 @@ function ngStep(n=1){
 function ngRunFrameCore(){
   if(!ng)return false;
   const targetFrame=ng.bus.frame+1;let guard=0;
-  while(ng.bus.frame<targetFrame&&!ng.cpu.halted&&guard++<250000)ng.cpu.step();
+  while(ng.bus.frame<targetFrame&&!ng.cpu.halted&&!ngDebugPaused&&guard++<250000)ng.cpu.step();
   ngFrame=ng.bus.frame;
   biosInputAssist();captureVideoState();
   return !ng.cpu.halted
@@ -1645,7 +1645,7 @@ function ngCpuPump(){
   }
   const ahead=NG_CYCLES_PER_MS*2*boost;let lastFrame=ng.bus.frame;
 
-  while(performance.now()<deadline&&!ng.cpu.halted){
+  while(performance.now()<deadline&&!ng.cpu.halted&&ngRunning&&!ngDebugPaused){
     if(mode!=='turbo'&&ng.cpu.cycles>=target+ahead)break;
     ng.cpu.step();
     if(ng.bus.frame!==lastFrame){
@@ -1695,7 +1695,7 @@ function startRuntimeSchedulers(){
 function ngToggleRun(){
   if(!ng)ngPower();if(!ng)return;
   ngRunning=!ngRunning;
-  if(ngRunning)startRuntimeSchedulers();
+  if(ngRunning){ngDebugPaused=false;startRuntimeSchedulers();}
   else{
     if(ngCpuTimer)clearTimeout(ngCpuTimer);
     if(ngRAF)cancelAnimationFrame(ngRAF);
@@ -1958,6 +1958,235 @@ $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.toggle('a
 refreshAll();
 log('neogeojsd v1.2.5 · ABCD/SBCD credits + corrected LSPC sprite scanlines ready');
 </script>
-<script src="emulator-autoload.js"></script>
+
+
+<script>
+/* JSD Universal Debugger v0.1
+ * Shared debugger UI/runtime for JSD Emulator Hub.
+ * Breakpoints, R/W watchpoints, register view, live memory, poke and execution trace.
+ */
+(() => {
+'use strict';
+const U32 = v => Number(v) >>> 0;
+const hex = (v,w=4) => (U32(v)).toString(16).toUpperCase().padStart(w,'0');
+const parseHex = (s, fallback=NaN) => {
+  if(typeof s==='number') return s;
+  const t=String(s??'').trim().replace(/^\$/,'').replace(/^0x/i,'');
+  if(!t) return fallback;
+  const n=parseInt(t,16);return Number.isFinite(n)?n:fallback;
+};
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+
+class Debugger {
+  constructor(cfg){
+    this.cfg=cfg||{};
+    this.name=this.cfg.name||'JSD';
+    this.breakpoints=new Set();
+    this.watchpoints=[];
+    this.trace=[];
+    this.traceMax=this.cfg.traceMax||256;
+    this.pendingWatch=null;
+    this.internal=false;
+    this.skipPCOnce=null;
+    this.enabled=true;
+    this.lastHit='';
+    this._wrapped=[];
+    this._stepWrappers=new WeakSet();
+    this._memoryWrappers=new WeakMap();
+    this.makeUI();
+    this.install();
+    this.timer=setInterval(()=>{this.installDynamic?.();this.render(false)},120);
+    addEventListener('keydown',e=>{
+      if(e.code==='F8'){e.preventDefault();this.toggle();}
+      if(e.code==='F10'&&this.open){e.preventDefault();this.step();}
+      if(e.code==='F5'&&this.open){e.preventDefault();this.continue();}
+    },true);
+  }
+  pc(){try{return U32(this.cfg.getPC?.()??0)}catch{return 0}}
+  paused(){try{return !!this.cfg.isPaused?.()}catch{return true}}
+  setPaused(v){try{this.cfg.setPaused?.(!!v)}catch(e){console.warn('JSD debugger pause',e)}}
+  addrMask(){if(this.cfg.addressMask!==undefined)return U32(this.cfg.addressMask);const bits=this.cfg.addressBits||16;return bits>=32?0xFFFFFFFF:(2**bits-1)>>>0}
+  normAddr(v){return U32(U32(v)&this.addrMask())}
+  addrWidth(){return this.cfg.addrWidth||Math.ceil((this.cfg.addressBits||16)/4)}
+  valueWidth(){return this.cfg.valueWidth||2}
+  valueMask(){return this.cfg.valueMask===undefined?0xFF:U32(this.cfg.valueMask)}
+  install(){
+    if(this.cfg.stepTargets) for(const spec of this.cfg.stepTargets) this.wrapStep(spec);
+    if(this.cfg.memoryTargets) for(const spec of this.cfg.memoryTargets) this.wrapMemory(spec);
+    if(this.cfg.dynamicTargets){
+      this.installDynamic=()=>{
+        const d=this.cfg.dynamicTargets?.()||{};
+        for(const spec of d.stepTargets||[])this.wrapStep(spec);
+        for(const spec of d.memoryTargets||[])this.wrapMemory(spec);
+      };
+      this.installDynamic();
+    }
+  }
+  wrapStep(spec){
+    const obj=spec?.target,method=spec?.method||'step';
+    if(!obj||typeof obj[method]!=='function')return;
+    let map=obj.__jsdDebuggerWrappedSteps;
+    if(!map){Object.defineProperty(obj,'__jsdDebuggerWrappedSteps',{value:new Set(),configurable:true});map=obj.__jsdDebuggerWrappedSteps;}
+    if(map.has(method))return;
+    const orig=obj[method],dbg=this;
+    obj[method]=function(...args){
+      if(!dbg.enabled)return orig.apply(this,args);
+      const pc0=dbg.pc();
+      const running=!dbg.paused();
+      if(running && dbg.breakpoints.has(pc0) && dbg.skipPCOnce!==pc0){
+        dbg.hit(`BREAK $${hex(pc0,dbg.addrWidth())}`);
+        return spec.stopReturn??0;
+      }
+      if(dbg.skipPCOnce===pc0)dbg.skipPCOnce=null;
+      let op='';
+      try{if(dbg.cfg.traceOpcode){dbg.internal=true;op=dbg.cfg.traceOpcode(pc0)||''}}catch{}finally{dbg.internal=false}
+      const out=orig.apply(this,args);
+      const pc1=dbg.pc();
+      dbg.trace.push({pc:pc0,next:pc1,op});
+      if(dbg.trace.length>dbg.traceMax)dbg.trace.splice(0,dbg.trace.length-dbg.traceMax);
+      if(dbg.pendingWatch){const w=dbg.pendingWatch;dbg.pendingWatch=null;dbg.hit(`${w.kind} $${hex(w.addr,dbg.addrWidth())}${w.value!==undefined?' = $'+hex(w.value,dbg.valueWidth()):''}`)}
+      return out;
+    };
+    map.add(method);
+    this._wrapped.push(()=>{obj[method]=orig;map.delete(method)});
+  }
+  wrapMemory(spec){
+    const obj=spec?.target;if(!obj)return;
+    const read=spec.read,write=spec.write,dbg=this;
+    if(read&&typeof obj[read]==='function'){
+      let key='r:'+read,marks=obj.__jsdDebuggerWrappedMem;
+      if(!marks){Object.defineProperty(obj,'__jsdDebuggerWrappedMem',{value:new Set(),configurable:true});marks=obj.__jsdDebuggerWrappedMem;}
+      if(!marks.has(key)){
+        const orig=obj[read];
+        obj[read]=function(a,...rest){const v=orig.call(this,a,...rest);dbg.memoryEvent('R',a,v,spec);return v};
+        marks.add(key);this._wrapped.push(()=>{obj[read]=orig;marks.delete(key)});
+      }
+    }
+    if(write&&typeof obj[write]==='function'){
+      let key='w:'+write,marks=obj.__jsdDebuggerWrappedMem;
+      if(!marks){Object.defineProperty(obj,'__jsdDebuggerWrappedMem',{value:new Set(),configurable:true});marks=obj.__jsdDebuggerWrappedMem;}
+      if(!marks.has(key)){
+        const orig=obj[write];
+        obj[write]=function(a,v,...rest){const out=orig.call(this,a,v,...rest);dbg.memoryEvent('W',a,v,spec);return out};
+        marks.add(key);this._wrapped.push(()=>{obj[write]=orig;marks.delete(key)});
+      }
+    }
+  }
+  memoryEvent(kind,a,v,spec){
+    if(this.internal||!this.enabled||this.paused())return;
+    const addr=this.normAddr(spec?.normalize?spec.normalize(a):a);
+    for(const w of this.watchpoints){
+      if(addr>=w.start&&addr<=w.end&&((kind==='R'&&w.r)||(kind==='W'&&w.w))){this.pendingWatch={kind:`WATCH ${kind}`,addr,value:U32(v)&(spec?.valueMask??this.valueMask())};break}
+    }
+  }
+  hit(text){
+    this.lastHit=text;this.setPaused(true);this.openPanel(true);
+    try{this.cfg.onBreak?.(text)}catch{}
+    this.render(true);
+  }
+  step(){
+    this.setPaused(true);this.skipPCOnce=this.pc();
+    try{this.cfg.step?.()}catch(e){this.lastHit='STEP ERROR: '+e.message}
+    this.render(true);
+  }
+  continue(){
+    this.skipPCOnce=this.pc();this.lastHit='';this.setPaused(false);
+    try{this.cfg.onContinue?.()}catch{}
+    this.render(true);
+  }
+  pause(){this.setPaused(true);this.lastHit='PAUSE';this.render(true)}
+  addBreakpoint(s){const n=parseHex(s,NaN);if(!Number.isFinite(n))return;const a=this.normAddr(n);this.breakpoints.add(a);this.render(true)}
+  addWatch(start,end,type){let a=parseHex(start,NaN),b=parseHex(end,NaN);if(!Number.isFinite(a))return;if(!Number.isFinite(b))b=a;a=this.normAddr(a);b=this.normAddr(b);if(b<a)[a,b]=[b,a];this.watchpoints.push({start:a,end:b,r:type!=='W',w:type!=='R'});this.render(true)}
+  read(addr){try{this.internal=true;return U32(this.cfg.read?.(this.normAddr(addr))??0)&this.valueMask()}finally{this.internal=false}}
+  write(addr,val){try{this.internal=true;this.cfg.write?.(this.normAddr(addr),U32(val)&this.valueMask())}finally{this.internal=false}}
+  makeUI(){
+    const host=document.createElement('div');host.id='jsd-universal-debugger';document.documentElement.appendChild(host);const s=host.attachShadow({mode:'open'});this.shadow=s;
+    s.innerHTML=`<style>
+:host{all:initial}.dock{position:fixed;right:14px;bottom:14px;z-index:2147483646;font:12px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;color:#d9fff2}.fab{width:54px;height:32px;border-radius:10px;border:1px solid #3a806d;background:#0b211b;color:#72ffd1;font-weight:900;cursor:pointer;box-shadow:0 8px 30px #0009}.panel{display:none;width:min(620px,calc(100vw - 28px));height:min(610px,calc(100vh - 70px));background:#07120fF7;border:1px solid #275a4d;border-radius:14px;box-shadow:0 20px 70px #000c;overflow:hidden;margin-bottom:8px}.panel.open{display:flex;flex-direction:column}.head{display:flex;align-items:center;gap:8px;padding:9px 10px;background:#0d201a;border-bottom:1px solid #20483e}.title{font-weight:900;color:#76ffd3}.state{margin-left:auto;color:#9bb8af}.hit{color:#ffd479;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.controls{display:flex;gap:6px;padding:8px;border-bottom:1px solid #17392f;flex-wrap:wrap}button,input,select{font:inherit}button{border:1px solid #2d6354;background:#102c24;color:#d9fff2;border-radius:7px;padding:5px 8px;cursor:pointer}button:hover{background:#173b31}.primary{background:#65e8bb;color:#052018;border-color:#65e8bb;font-weight:900}.tabs{display:flex;gap:4px;padding:6px 8px 0;border-bottom:1px solid #17392f}.tab{border-bottom-left-radius:0;border-bottom-right-radius:0}.tab.on{color:#68f2c4;background:#153b30}.body{min-height:0;flex:1;overflow:auto;padding:9px}.page{display:none}.page.on{display:block}.regs{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:6px}.reg{background:#0b1d18;border:1px solid #1f4439;border-radius:7px;padding:6px}.reg span{color:#77978d;font-size:10px}.reg b{display:block;font-size:13px;color:#aaffdf}.row{display:flex;gap:6px;align-items:center;margin-bottom:7px;flex-wrap:wrap}.row input,.row select{background:#06100d;color:#dff8f0;border:1px solid #285a4d;border-radius:6px;padding:5px 6px}.row input{width:92px}.list{border:1px solid #1c4036;border-radius:8px;overflow:auto;max-height:190px}.item{display:flex;gap:7px;align-items:center;padding:6px 7px;border-bottom:1px solid #17352d}.item:last-child{border-bottom:0}.item .grow{flex:1}.x{color:#ffafb6}.mono{white-space:pre;overflow:auto;background:#030806;border:1px solid #17372e;border-radius:8px;padding:8px;color:#a9c9bf;min-height:260px}.trace{min-height:360px}.hint{color:#739187;font-size:10px;margin:5px 0 8px}.small{font-size:10px}.statusline{padding:5px 9px;border-top:1px solid #17372e;color:#6f9487;background:#081713}
+</style><div class="dock"><div class="panel"><div class="head"><span class="title"></span><span class="hit"></span><span class="state"></span></div><div class="controls"><button class="primary" data-a="cont">▶ F5</button><button data-a="pause">Ⅱ</button><button data-a="step">STEP F10</button><button data-a="cleartrace">Clear trace</button></div><div class="tabs"><button class="tab on" data-tab="cpu">CPU</button><button class="tab" data-tab="break">Break/Watch</button><button class="tab" data-tab="mem">Memory</button><button class="tab" data-tab="trace">Trace</button></div><div class="body"><section class="page on" data-page="cpu"><div class="regs"></div></section><section class="page" data-page="break"><div class="row"><input data-f="bp" placeholder="PC hex"><button data-a="addbp">+ breakpoint</button></div><div class="list bplist"></div><div class="hint">Watchpoint: intervallo inclusivo. R = lettura, W = scrittura, RW = entrambi.</div><div class="row"><input data-f="ws" placeholder="start"><input data-f="we" placeholder="end"><select data-f="wt"><option>RW</option><option>R</option><option>W</option></select><button data-a="addwatch">+ watch</button></div><div class="list watchlist"></div></section><section class="page" data-page="mem"><div class="row"><input data-f="ma" value="0000"><button data-a="memgo">Go</button><span>poke</span><input data-f="pa" placeholder="addr"><input data-f="pv" placeholder="value"><button data-a="poke">Write</button></div><div class="mono mem"></div></section><section class="page" data-page="trace"><div class="mono trace"></div></section></div><div class="statusline">F8 apre/chiude · breakpoint sul PC · watchpoint R/W · debugger condiviso JSD</div></div><button class="fab">DBG</button></div>`;
+    this.el=q=>s.querySelector(q);this.els=q=>[...s.querySelectorAll(q)];this.open=false;
+    this.el('.title').textContent=`${this.name} · UNIVERSAL DEBUGGER`;
+    this.el('.fab').onclick=()=>this.toggle();
+    this.els('.tab').forEach(b=>b.onclick=()=>{this.els('.tab').forEach(x=>x.classList.toggle('on',x===b));this.els('.page').forEach(p=>p.classList.toggle('on',p.dataset.page===b.dataset.tab));this.render(true)});
+    const act=a=>this.el(`[data-a="${a}"]`);
+    act('cont').onclick=()=>this.continue();act('pause').onclick=()=>this.pause();act('step').onclick=()=>this.step();act('cleartrace').onclick=()=>{this.trace=[];this.render(true)};
+    act('addbp').onclick=()=>{this.addBreakpoint(this.el('[data-f="bp"]').value);this.el('[data-f="bp"]').value=''};
+    act('addwatch').onclick=()=>{this.addWatch(this.el('[data-f="ws"]').value,this.el('[data-f="we"]').value,this.el('[data-f="wt"]').value)};
+    act('memgo').onclick=()=>this.renderMemory();act('poke').onclick=()=>{const a=parseHex(this.el('[data-f="pa"]').value,NaN),v=parseHex(this.el('[data-f="pv"]').value,NaN);if(Number.isFinite(a)&&Number.isFinite(v)){this.write(a,v);this.renderMemory()}};
+    for(const f of ['bp','ma','pa','pv'])this.el(`[data-f="${f}"]`).addEventListener('keydown',e=>{if(e.key==='Enter'){if(f==='bp')act('addbp').click();else if(f==='ma')act('memgo').click();else act('poke').click()}});
+  }
+  toggle(){this.openPanel(!this.open)}
+  openPanel(v){this.open=!!v;this.el('.panel').classList.toggle('open',this.open);this.el('.fab').textContent=this.open?'× DBG':'DBG';if(this.open)this.render(true)}
+  render(force){
+    if(!this.open&&!force)return;
+    this.el('.state').textContent=this.paused()?'PAUSED':'RUN';this.el('.hit').textContent=this.lastHit;
+    let regs={};try{regs=this.cfg.getRegisters?.()||{}}catch(e){regs={ERR:e.message}}
+    this.el('.regs').innerHTML=Object.entries(regs).map(([k,v])=>{let n=typeof v==='object'&&v? v.value:v,w=typeof v==='object'&&v?.width?v.width:(Math.abs(Number(n))>0xFFFF?8:4);return `<div class="reg"><span>${k}</span><b>${typeof n==='number'?'$'+hex(n,w):String(n)}</b></div>`}).join('');
+    this.el('.bplist').innerHTML=[...this.breakpoints].sort((a,b)=>a-b).map(a=>`<div class="item"><span class="grow">PC = $${hex(a,this.addrWidth())}</span><button class="x" data-rbp="${a}">×</button></div>`).join('')||'<div class="item">nessun breakpoint</div>';
+    this.els('[data-rbp]').forEach(b=>b.onclick=()=>{this.breakpoints.delete(+b.dataset.rbp);this.render(true)});
+    this.el('.watchlist').innerHTML=this.watchpoints.map((w,i)=>`<div class="item"><span class="grow">${w.r&&w.w?'RW':w.r?'R':'W'} $${hex(w.start,this.addrWidth())}–$${hex(w.end,this.addrWidth())}</span><button class="x" data-rw="${i}">×</button></div>`).join('')||'<div class="item">nessun watchpoint</div>';
+    this.els('[data-rw]').forEach(b=>b.onclick=()=>{this.watchpoints.splice(+b.dataset.rw,1);this.render(true)});
+    const tp=this.el('.trace');if(tp.closest('.page').classList.contains('on'))tp.textContent=this.trace.slice().reverse().map(t=>`$${hex(t.pc,this.addrWidth())}${t.op?'  '+t.op:''}  → $${hex(t.next,this.addrWidth())}`).join('\n')||'trace vuoto';
+    if(this.el('.mem').closest('.page').classList.contains('on'))this.renderMemory();
+  }
+  renderMemory(){
+    const input=this.el('[data-f="ma"]');let base=parseHex(input.value,0);base=this.normAddr(base);input.value=hex(base,this.addrWidth());const words=this.cfg.memoryWordsPerRow||16,rows=this.cfg.memoryRows||16,stride=this.cfg.memoryStride||1;let out='';
+    for(let r=0;r<rows;r++){let a=this.normAddr(base+r*words*stride),vals=[];for(let i=0;i<words;i++)vals.push(hex(this.read(a+i*stride),this.valueWidth()));out+=`${hex(a,this.addrWidth())}  ${vals.join(' ')}\n`}
+    this.el('.mem').textContent=out;
+  }
+  destroy(){clearInterval(this.timer);for(const undo of this._wrapped.reverse())try{undo()}catch{};this.shadow.host.remove()}
+}
+window.JSDUniversalDebugger={attach(cfg){if(window.__jsdUniversalDebugger)try{window.__jsdUniversalDebugger.destroy()}catch{};return window.__jsdUniversalDebugger=new Debugger(cfg)},Debugger};
+})();
+
+</script>
+<script>
+JSDUniversalDebugger.attach({
+ name:'Neo Geo · Motorola 68000',addressBits:24,addrWidth:6,
+ getPC:()=>ng?.cpu?.PC||0,
+ getRegisters:()=>{if(!ng)return{PC:{value:0,width:6}};const c=ng.cpu,o={};for(let i=0;i<8;i++)o['D'+i]={value:c.D[i]>>>0,width:8};for(let i=0;i<8;i++)o['A'+i]={value:c.A[i]>>>0,width:8};o.PC={value:c.PC>>>0,width:6};o.SR={value:c.SR>>>0,width:4};return o},
+ isPaused:()=>ngDebugPaused||!ngRunning,
+ setPaused:v=>{if(!ng)return;ngDebugPaused=v;if(v){ngRunning=false;if(ngCpuTimer)clearTimeout(ngCpuTimer);if(ngRAF)cancelAnimationFrame(ngRAF);ngCpuTimer=0;ngRAF=0;renderMachine();updateRuntimeUI(true)}else{ngRunning=true;startRuntimeSchedulers();updateRuntimeUI(true)}},
+ step:()=>{if(!ng)ngPower();if(!ng)return;const hold=ngDebugPaused;ngDebugPaused=false;ngStep(1);ngDebugPaused=hold;updateRuntimeUI(true);renderMachine();},
+ read:a=>ng?.bus?.read8(a&0xFFFFFF)??0xFF,write:(a,v)=>ng?.bus?.write8(a&0xFFFFFF,v),
+ dynamicTargets:()=>ng?{stepTargets:[{target:ng.cpu}],memoryTargets:[{target:ng.bus,read:'read8',write:'write8'},{target:ng.bus,read:'read16',write:'write16',valueMask:0xFFFF},{target:ng.bus,read:'read32',write:'write32',valueMask:0xFFFFFFFF}]}:{},
+ traceOpcode:a=>ng?[0,1,2,3].map(i=>ng.bus.read8((a+i)&0xFFFFFF).toString(16).padStart(2,'0').toUpperCase()).join(' '):''
+});
+</script>
+
+<!-- JSD Hub optional launch receiver: standalone operation does not depend on it. -->
+<script>
+(function(){
+  'use strict';
+  var JSD_SYS='neogeo';
+  var m=(location.hash||'').match(/(?:^#|&)jsdlaunch=([^&]+)/);
+  var JSD_TOKEN=m?decodeURIComponent(m[1]):'';
+  function jsdPost(type,extra){try{if(window.opener)window.opener.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+  function jsdFile(x){return new File([x.bytes],x.name||'game.bin',{type:'application/octet-stream',lastModified:Date.now()})}
+  function jsdRole(p,r){return (p.files||[]).filter(function(x){return x.role===r})}
+  function jsdSet(id,files,fire){var el=document.querySelector(id);if(!el||!files.length)return null;var dt=new DataTransfer();files.forEach(function(f){dt.items.add(f)});el.files=dt.files;if(fire!==false)el.dispatchEvent(new Event('change',{bubbles:true}));return el}
+  function jsdSleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  async function jsdInject(p){
+    var games=jsdRole(p,'game').map(jsdFile),bios=jsdRole(p,'bios').map(jsdFile),execs=jsdRole(p,'exec').map(jsdFile),groms=jsdRole(p,'grom').map(jsdFile);
+    var game=games[0]||null;
+    if(JSD_SYS==='gameboy'){jsdSet('#romFile',games);await jsdSleep(450);var b=document.querySelector('#powerBtn');if(b)b.click()}
+    else if(JSD_SYS==='sega'){if(bios[0]){var bi=jsdSet('#biosFile',[bios[0]],false);await fileLoad(bi,'bios')}if(game){var ri=jsdSet('#romFile',[game],false);await fileLoad(ri,'rom')}}
+    else if(JSD_SYS==='megadrive'){if(game){await loadFile(game);machine.power(true);refreshUI()}}
+    else if(JSD_SYS==='neogeo'){if(bios.length)await loadPackage(bios,'bios');if(games.length)await loadPackage(games,'game');ngPower();if(typeof ngToggleRun==='function')ngToggleRun()}
+    else if(JSD_SYS==='nes'){if(game){await loadFile(game);if(!nes.powered)power()}}
+    else if(JSD_SYS==='snes'){if(game){jsdSet('#romFile',[game],false);await loadSelected();await jsdSleep(80);if(emu&&emu.cart&&!emu.running)document.querySelector('#runBtn')?.click()}}
+    else if(JSD_SYS==='pce'){if(game)await loadROM(game)}
+    else if(JSD_SYS==='coleco'){if(bios[0]){machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);document.querySelector('#biosInfo').textContent=bios[0].name}if(game){machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);document.querySelector('#romInfo').textContent=game.name}if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='spectrum'){if(bios[0])machine.setROM(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game){var u=new Uint8Array(await game.arrayBuffer()),x=(game.name.split('.').pop()||'').toLowerCase();if(x==='sna'||x==='z80')machine.loadSnapshot(x==='sna'?parseSNA(u):parseZ80(u));else if(x==='tap'){machine.tape=new Tape(parseTAP(u));machine.autoLoad()}else if(x==='scr'){machine.reset();machine.paused=true;machine.mem.set(u,0x4000);machine.drawFull()}document.querySelector('#gameName').textContent=game.name;render();refresh()}}
+    else if(JSD_SYS==='msx1'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='intellivision'){if(execs[0])await loadFile('exec',execs[0]);if(groms[0])await loadFile('grom',groms[0]);if(game)await loadFile('cart',game);if(!state.power)boot();reset();if(state.paused)togglePause()}
+    else if(JSD_SYS==='vectrex'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.biosLoaded&&machine.cartLoaded){machine.reset();machine.running=true}machine.updateUI();renderMachineText()}
+    jsdPost('jsd-launch-accepted',{files:(p.files||[]).length});
+  }
+  var jsdReadyTimer=0;window.addEventListener('message',function(ev){if(!JSD_TOKEN||ev.source!==window.opener||!ev.data||ev.data.type!=='jsd-launch'||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;if(jsdReadyTimer)clearInterval(jsdReadyTimer);jsdInject(ev.data).catch(function(err){console.error(err);jsdPost('jsd-launch-error',{error:err&&err.message?err.message:String(err)})})});
+  function ready(){if(JSD_TOKEN)jsdPost('jsd-emulator-ready')}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();jsdReadyTimer=setInterval(ready,500);setTimeout(function(){if(jsdReadyTimer)clearInterval(jsdReadyTimer)},30000);
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LaserDiscJSD · Dragon's Lair / Space Ace</title>
+<style>
+:root{color-scheme:dark;--bg:#0d0f13;--panel:#171a20;--panel2:#11141a;--line:#303642;--text:#eef1f6;--muted:#aab2c0;--accent:#ffcf57;--good:#73d69a;--bad:#ff8181;--blue:#73b7ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% -10%,#26201a 0,#0d0f13 34%);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,select{font:inherit}button,.filebtn,select,input[type=number],input[type=text]{border:1px solid #424956;background:#222630;color:var(--text);border-radius:8px;padding:9px 12px}button,.filebtn{cursor:pointer}button:hover,.filebtn:hover{border-color:#7e8796;background:#2b303b}.primary{background:var(--accent)!important;color:#17130a!important;border-color:var(--accent)!important;font-weight:800}.danger{color:#ffb0b0}.active{border-color:var(--accent)!important;color:var(--accent)}input[type=file]{display:none}input[type=range]{width:100%;accent-color:var(--accent)}input[type=checkbox]{accent-color:var(--accent)}header{border-bottom:1px solid var(--line);background:#0b0d10cc;backdrop-filter:blur(10px);position:sticky;top:0;z-index:20}.head{max-width:1500px;margin:auto;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px}.brand{font-size:28px;font-weight:900;letter-spacing:-1.2px}.brand span{color:var(--accent)}.sub{font:11px ui-monospace,monospace;color:var(--muted);letter-spacing:1.5px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}main{max-width:1500px;margin:auto;padding:22px 24px}.layout{display:grid;grid-template-columns:minmax(560px,1.9fr) minmax(330px,1fr);gap:18px}.panel{background:linear-gradient(180deg,#191c23,#15181e);border:1px solid var(--line);border-radius:13px;padding:17px;box-shadow:0 12px 35px #0003}.panel+.panel{margin-top:14px}.screen{position:relative;background:#020304;border:12px solid #07090c;border-radius:14px;overflow:hidden;aspect-ratio:4/3;box-shadow:inset 0 0 50px #000,0 16px 40px #0006}.screen video{width:100%;height:100%;object-fit:contain;background:#000;display:block}.screen.crt:after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,#0002 0,#0002 1px,transparent 1px,transparent 3px),radial-gradient(ellipse at center,transparent 55%,#0008 100%)}.screen:fullscreen{width:100vw;height:100vh;aspect-ratio:auto;border:0;border-radius:0;display:grid;place-items:center;background:#000}.screen:fullscreen video{max-width:100%;max-height:100%}.empty{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:25px;background:#090b0ef0;z-index:2;pointer-events:none}.empty b{font-size:26px}.empty p{max-width:430px;color:var(--muted)}.statusline{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}.badge{font:11px ui-monospace,monospace;padding:5px 8px;border:1px solid #404754;border-radius:6px;background:#11141a}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--good);margin-right:7px}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;border-top:1px solid var(--line);padding-top:13px;margin-top:14px}.stat{background:#11141a;border-radius:7px;padding:8px}.stat small{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.9px}.stat b{font:13px ui-monospace,monospace}.controls{display:grid;grid-template-columns:repeat(3,48px);gap:6px;justify-content:center}.controls button{padding:10px 5px}.controls .up{grid-column:2}.controls .left{grid-column:1}.controls .fire{grid-column:2;background:#43252a}.controls .right{grid-column:3}.controls .down{grid-column:2}.controls button.held,.cabbtn.held{background:var(--accent);color:#111}.cab{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}.cabbtn{min-height:42px}.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);padding-bottom:11px;margin-bottom:14px;overflow:auto}.tabs button{padding:7px 9px;font-size:11px;white-space:nowrap}.tab{display:none}.tab.active{display:block}.loadbox{padding:13px;background:#11141a;border:1px solid var(--line);border-radius:9px;margin-bottom:11px}.loadbox h3{margin:0 0 6px;font-size:13px}.loadbox p{margin:4px 0 10px;color:var(--muted);font-size:11px}.filename{display:block;color:var(--accent);font:11px ui-monospace,monospace;margin-top:8px;overflow-wrap:anywhere}.kv{display:grid;grid-template-columns:1fr 1.2fr;gap:5px 9px;font:11px ui-monospace,monospace}.kv div:nth-child(odd){color:var(--muted)}pre,textarea{width:100%;background:#0b0d11;color:#cfd7e4;border:1px solid var(--line);border-radius:7px;padding:9px;font:10.5px/1.55 ui-monospace,monospace;white-space:pre;overflow:auto}pre{height:220px}textarea{height:260px;resize:vertical}.regs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}.reg{background:#0d1015;padding:6px;border-radius:5px;font:10px ui-monospace,monospace}.reg b{display:block;color:#ffe09a;font-size:12px}.sectiontitle{font-size:13px;margin:14px 0 8px}.muted{color:var(--muted)}.small{font-size:11px}.warn{border-left:2px solid #d6a640;padding:7px 9px;color:#c8ced8;font-size:11px;background:#1b1812}.good{color:var(--good)}.bad{color:var(--bad)}.timeline{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;margin-top:10px}.logline{font:10px ui-monospace,monospace;color:#9fa9b8}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:100;background:#ffe3a0;color:#211b0d;padding:11px 18px;border-radius:8px;display:none;box-shadow:0 8px 30px #0009}.toast.err{background:#ffb1b1;color:#3a0c0c}footer{max-width:1500px;margin:auto;padding:0 24px 24px;color:var(--muted);font-size:10px}@media(max-width:980px){.layout{grid-template-columns:1fr}.screen{max-width:850px;margin:auto}.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:560px){main{padding:12px}.head{padding:13px}.panel{padding:11px}.stats{grid-template-columns:repeat(2,1fr)}.brand{font-size:23px}}
+</style>
+</head>
+<body>
+<header><div class="head"><div><div class="brand">LaserDisc<span>JSD</span></div><div class="sub">DRAGON'S LAIR · SPACE ACE · Z80 + VIRTUAL LASERDISC</div></div><div class="row"><button id="it" class="active">IT</button><button id="en">EN</button></div></div></header>
+<main><div class="layout">
+<section>
+<div class="panel">
+<div class="statusline"><span class="badge"><span class="dot"></span><span id="statusText">ROM assente</span></span><span class="badge" id="gameBadge">AUTO · US BOARD</span></div>
+<div id="screen" class="screen crt"><video id="video" playsinline preload="metadata"></video><div id="empty" class="empty"><b>LaserDiscJSD</b><p>Carica le ROM di Dragon's Lair / Space Ace e il relativo video. Il video resta locale nel browser.</p></div></div>
+<div class="row" style="justify-content:space-between;margin-top:12px"><div class="row"><button id="power" class="primary">POWER</button><button id="reset">RESET</button><button id="pause">PAUSA</button></div><div class="row"><button id="full">FULLSCREEN</button></div></div>
+<div class="timeline"><span class="small muted">0</span><input id="scrub" type="range" min="0" max="1" value="0" step="0.001"><span id="timeLabel" class="small muted">00:00.000</span></div>
+<div class="stats"><div class="stat"><small>CPU PC</small><b id="pcStat">$0000</b></div><div class="stat"><small>Laser frame</small><b id="frameStat">00000</b></div><div class="stat"><small>Video time</small><b id="videoStat">0.000</b></div><div class="stat"><small>LD status</small><b id="ldStat">$FC</b></div><div class="stat"><small>CPU cycles</small><b id="cycStat">0</b></div></div>
+</div>
+<div class="panel"><div class="row" style="justify-content:space-between"><div><b>CONTROLLI CABINET</b><div class="small muted">Frecce/WASD · Z/Spazio = Sword/Energize · Enter = Start · 5 = Coin 1 · 6 = Coin 2</div></div><div class="controls"><button class="up" data-key="up">↑</button><button class="left" data-key="left">←</button><button class="fire" data-key="fire">●</button><button class="right" data-key="right">→</button><button class="down" data-key="down">↓</button></div></div><div class="cab"><button class="cabbtn" data-key="coin">COIN 1 · 5</button><button class="cabbtn" data-key="coin2">COIN 2 · 6</button><button class="cabbtn" data-key="start1">START 1 · Enter</button><button class="cabbtn" data-key="start2">START 2</button></div><div class="row" style="margin-top:9px"><button id="creditBtn" class="primary">CREDIT · 2 COINS</button><span class="small muted">DIP originale: 2 monete = 1 credito</span></div><div class="warn" style="margin-top:10px">Dragon's Lair F2: profilo LD-V1000 reale. SYSTEM $C010: bit 6 = STATUS STROBE; bit 7 = COMMAND STROBE (impulso). Non è il READY del byte di stato.</div><div class="kv" style="margin-top:10px"><div>SYSTEM $C010</div><div id="sysInput">FF</div><div>Input visto</div><div id="inputSeen">—</div><div>DSW1 / DSW2</div><div id="dipSeen">—</div></div></div>
+</section>
+<aside>
+<div class="panel"><div class="tabs"><button class="active" data-tab="media">MEDIA</button><button data-tab="laser">LASERDISC</button><button data-tab="cpu">CPU</button><button data-tab="log">LOG</button></div>
+<div class="tab active" id="media">
+<div class="loadbox"><h3>01 · ROM arcade</h3><p>.zip con chip ROM, anche ZIP annidati, oppure .bin/.rom concatenata. Nessun file commerciale incluso.</p><label class="filebtn primary" for="romFile">CARICA ROM / ZIP</label><input id="romFile" type="file" accept=".zip,.bin,.rom"><span class="filename" id="romName">—</span></div>
+<div class="loadbox"><h3>02 · Video LaserDisc</h3><p>MP4/WebM/Ogg compatibile col browser. Per i video convertiti da Daphne usa il profilo corretto: il frame del LaserDisc non parte necessariamente dal frame 0 del file.</p><div class="row" style="margin-bottom:9px"><label>Profilo video <select id="mediaProfile"><option value="auto">Auto</option><option value="dlair-daphne">Dragon's Lair · Daphne</option><option value="direct">Direct 1:1</option></select></label><button id="applyMediaProfile" type="button">APPLICA</button></div><label class="filebtn" for="videoFile">CARICA VIDEO</label><input id="videoFile" type="file" accept="video/*,.mp4,.webm,.ogv"><span class="filename" id="videoName">—</span><div id="mediaWarn" class="warn" style="display:none;margin-top:9px"></div></div>
+<div class="loadbox"><h3>Profilo</h3><div class="row"><select id="gameSel"><option value="auto">Auto detect</option><option value="dlair">Dragon's Lair</option><option value="spaceace">Space Ace</option></select><select id="playerSel"><option value="ldv1000">Pioneer LD-V1000</option><option value="pr7820">Pioneer PR-7820 (compat.)</option></select></div><p id="romInfo">Nessuna ROM caricata.</p><p id="fwInfo">Firmware player: —</p></div>
+<div class="warn">Scheda USA Cinematronics. Dragon's Lair Rev. F2 e Space Ace A3 sono riconosciuti chip-per-chip. F2 usa 4 ROM da 8 KiB a $0000-$7FFF e LD-V1000 nel profilo corrente.</div>
+</div>
+<div class="tab" id="laser">
+<div class="kv"><div>Player</div><div id="ldPlayer">LD-V1000</div><div>Mode</div><div id="ldMode">PARK</div><div>Status</div><div id="ldStatus">$FC</div><div>Argument</div><div id="ldArg">—</div><div>Last byte</div><div id="ldByte">—</div><div>Last command</div><div id="ldCmd">—</div><div>Requested frame</div><div id="ldReq">—</div><div>Displayed frame</div><div id="ldDisp">0</div></div>
+<div class="sectiontitle">Mappatura Daphne / MP4</div><div class="row"><label>FPS fallback <input id="fps" type="number" value="29.97003" step="0.00001" min="1" max="120" style="width:100px"></label><label>LaserDisc frame iniziale <input id="offset" type="number" value="151" step="1" style="width:105px"></label></div><div class="small muted" style="margin-top:7px">Per <code>lair.txt</code>: <b>151 lair.m2v</b>. Con MP4, v1.0 legge direttamente la sample table del container: il frame LaserDisc 323 viene mappato al sample Daphne 172, poi al timestamp reale di quel sample. FPS è usato solo come fallback per file non-MP4 o MP4 non analizzabili.</div><div id="timelineInfo" class="notice" style="margin-top:9px">Timeline MP4: non caricata.</div>
+<div class="row" style="margin-top:9px"><button id="seekMinus">TEST −100</button><button id="seekPlus">TEST +100</button><button id="ldPlay">TEST PLAY</button><button id="ldStop">TEST STOP</button></div>
+<div class="warn" style="margin-top:10px"><b>ROM CONTROL</b> · il video viene riprodotto solo dopo un comando PLAY/FWD emesso dalla ROM. Reset/Park lo mette sempre in pausa.</div><div class="sectiontitle">Ultimi comandi LaserDisc</div><pre id="ldLog">—</pre>
+</div>
+<div class="tab" id="cpu"><div class="row"><button id="step">STEP</button><button id="irq">IRQ</button><label><input id="traceOn" type="checkbox"> TRACE</label><button id="exportDiag">REPORT JSON</button></div><div id="regs" class="regs"></div><div class="sectiontitle">Memory / mini listing</div><div class="row"><input id="memAddr" type="text" value="0000" maxlength="4" style="width:80px"><button id="memDumpBtn">DUMP</button></div><textarea id="memDump" readonly></textarea><div class="sectiontitle">Trace</div><pre id="traceOut">—</pre></div>
+<div class="tab" id="log"><div class="row"><button id="clearLog">PULISCI</button><button id="exportLog">ESPORTA LOG</button></div><pre id="sysLog" style="height:430px">LaserDiscJSD v1.0 Daphne Timeline pronto.</pre></div>
+</div>
+</aside>
+</div></main>
+<footer>LaserDiscJSD v1.0 · Dragon's Lair F2 · Daphne MP4 sample timeline · standalone HTML · nessuna libreria esterna</footer><div id="toast" class="toast"></div>
+<script>
+'use strict';
+const F={S:0x80,Z:0x40,Y:0x20,H:0x10,X:0x08,P:0x04,N:0x02,C:0x01};
+const parity=v=>{v&=255;v^=v>>4;v&=15;return ((0x6996>>v)&1)===0};
+const signed=v=>(v&128)?v-256:v;
+const hx=(v,n=2)=>'$'+((v>>>0).toString(16).toUpperCase().padStart(n,'0').slice(-n));
+class Z80{
+  constructor(read,write,input,output){this.read=read;this.write=write;this.input=input;this.output=output;this.reset()}
+  reset(){this.a=this.f=this.b=this.c=this.d=this.e=this.h=this.l=0;this.a2=this.f2=this.b2=this.c2=this.d2=this.e2=this.h2=this.l2=0;this.ix=this.iy=0;this.sp=0xffff;this.pc=0;this.i=this.r=0;this.iff1=this.iff2=0;this.im=0;this.halted=false;this.eiDelay=0;this.cycles=0;this.lastPC=0;this.lastOp=0}
+  get af(){return(this.a<<8)|this.f}set af(v){this.a=v>>8&255;this.f=v&255}get bc(){return(this.b<<8)|this.c}set bc(v){this.b=v>>8&255;this.c=v&255}get de(){return(this.d<<8)|this.e}set de(v){this.d=v>>8&255;this.e=v&255}get hl(){return(this.h<<8)|this.l}set hl(v){this.h=v>>8&255;this.l=v&255}
+  rb(a){return this.read(a&65535)&255}wb(a,v){this.write(a&65535,v&255)}rw(a){return this.rb(a)|(this.rb(a+1)<<8)}ww(a,v){this.wb(a,v);this.wb(a+1,v>>8)}
+  fetch(){const v=this.rb(this.pc);this.pc=(this.pc+1)&65535;this.r=(this.r&128)|((this.r+1)&127);return v}imm(){const v=this.rb(this.pc);this.pc=(this.pc+1)&65535;return v}imm16(){const l=this.imm(),h=this.imm();return l|(h<<8)}push(v){this.sp=(this.sp-1)&65535;this.wb(this.sp,v>>8);this.sp=(this.sp-1)&65535;this.wb(this.sp,v)}pop(){const l=this.rb(this.sp);this.sp=(this.sp+1)&65535;const h=this.rb(this.sp);this.sp=(this.sp+1)&65535;return l|(h<<8)}
+  cond(y){switch(y&7){case 0:return!(this.f&F.Z);case 1:return!!(this.f&F.Z);case 2:return!(this.f&F.C);case 3:return!!(this.f&F.C);case 4:return!(this.f&F.P);case 5:return!!(this.f&F.P);case 6:return!(this.f&F.S);default:return!!(this.f&F.S)}}
+  getRP(p,pfx){if(p===0)return this.bc;if(p===1)return this.de;if(p===2)return pfx==='ix'?this.ix:pfx==='iy'?this.iy:this.hl;return this.sp}setRP(p,v,pfx){v&=65535;if(p===0)this.bc=v;else if(p===1)this.de=v;else if(p===2){if(pfx==='ix')this.ix=v;else if(pfx==='iy')this.iy=v;else this.hl=v}else this.sp=v}
+  getRP2(p,pfx){return p===3?this.af:this.getRP(p,pfx)}setRP2(p,v,pfx){if(p===3)this.af=v;else this.setRP(p,v,pfx)}
+  getH(pfx){return pfx==='ix'?this.ix:pfx==='iy'?this.iy:this.hl}setH(v,pfx){v&=65535;if(pfx==='ix')this.ix=v;else if(pfx==='iy')this.iy=v;else this.hl=v}
+  getR(n,pfx,addr){switch(n){case 0:return this.b;case 1:return this.c;case 2:return this.d;case 3:return this.e;case 4:return pfx?this.getH(pfx)>>8:this.h;case 5:return pfx?this.getH(pfx)&255:this.l;case 6:return this.rb(addr===undefined?this.hl:addr);default:return this.a}}
+  setR(n,v,pfx,addr){v&=255;switch(n){case 0:this.b=v;break;case 1:this.c=v;break;case 2:this.d=v;break;case 3:this.e=v;break;case 4:if(pfx)this.setH((this.getH(pfx)&255)|(v<<8),pfx);else this.h=v;break;case 5:if(pfx)this.setH((this.getH(pfx)&0xff00)|v,pfx);else this.l=v;break;case 6:this.wb(addr===undefined?this.hl:addr,v);break;default:this.a=v}}
+  flagsSZ(v){v&=255;return(v&0xa8)|(v===0?F.Z:0)|(parity(v)?F.P:0)}
+  add8(v,carry=0){const a=this.a,c=carry&&(this.f&F.C)?1:0,r=a+v+c,x=r&255;this.f=(x&0xa8)|(x===0?F.Z:0)|(((a^v^x)&0x10)?F.H:0)|((~(a^v)&(a^x)&0x80)?F.P:0)|(r>255?F.C:0);this.a=x}
+  sub8(v,carry=0,compare=false){const a=this.a,c=carry&&(this.f&F.C)?1:0,r=a-v-c,x=r&255;this.f=F.N|(x&0x80)|(x===0?F.Z:0)|(((a^v^x)&0x10)?F.H:0)|(((a^v)&(a^x)&0x80)?F.P:0)|(r<0?F.C:0)|(compare?(v&0x28):(x&0x28));if(!compare)this.a=x}
+  logic(v,op){if(op===4){this.a&=v;this.f=F.H}else if(op===5){this.a^=v;this.f=0}else{this.a|=v;this.f=0}this.a&=255;this.f|=this.flagsSZ(this.a)}
+  alu(y,v){switch(y){case 0:this.add8(v);break;case 1:this.add8(v,1);break;case 2:this.sub8(v);break;case 3:this.sub8(v,1);break;case 4:case 5:case 6:this.logic(v,y);break;case 7:this.sub8(v,0,true)}}
+  inc8(v){const r=(v+1)&255;this.f=(this.f&F.C)|(r&0xa8)|(r===0?F.Z:0)|((v&15)===15?F.H:0)|(v===0x7f?F.P:0);return r}
+  dec8(v){const r=(v-1)&255;this.f=(this.f&F.C)|F.N|(r&0xa8)|(r===0?F.Z:0)|((v&15)===0?F.H:0)|(v===0x80?F.P:0);return r}
+  add16(a,b){const r=a+b,x=r&65535;this.f=(this.f&(F.S|F.Z|F.P))|((x>>8)&0x28)|(((a^b^x)&0x1000)?F.H:0)|(r>65535?F.C:0);return x}
+  adc16(a,b,sub=false){const c=(this.f&F.C)?1:0,r=sub?a-b-c:a+b+c,x=r&65535;this.f=(x>>8)&0xa8;if(x===0)this.f|=F.Z;if(((a^b^x)&0x1000)!==0)this.f|=F.H;if(sub){this.f|=F.N;if(((a^b)&(a^x)&0x8000)!==0)this.f|=F.P;if(r<0)this.f|=F.C}else{if((~(a^b)&(a^x)&0x8000)!==0)this.f|=F.P;if(r>65535)this.f|=F.C}return x}
+  daa(){let a=this.a,adj=0,c=this.f&F.C;if((this.f&F.H)||(a&15)>9)adj|=6;if(c||a>0x99){adj|=0x60;c=F.C}const old=a;a=(this.f&F.N)?a-adj:a+adj;a&=255;this.a=a;this.f=(this.f&F.N)|c|(a&0xa8)|(a===0?F.Z:0)|(parity(a)?F.P:0)|(((old^a)&0x10)?F.H:0)}
+  rotA(kind){let a=this.a,c;switch(kind){case 0:c=a>>7;a=((a<<1)|c)&255;break;case 1:c=a&1;a=(a>>1)|(c<<7);break;case 2:{const oc=this.f&F.C?1:0;c=a>>7;a=((a<<1)|oc)&255;break}default:{const oc=this.f&F.C?1:0;c=a&1;a=(a>>1)|(oc<<7)}}this.a=a;this.f=(this.f&(F.S|F.Z|F.P))|(a&0x28)|(c?F.C:0)}
+  rotate(v,y){let c=0,r=v;switch(y){case 0:c=v>>7;r=(v<<1)|c;break;case 1:c=v&1;r=(v>>1)|(c<<7);break;case 2:{const q=this.f&F.C?1:0;c=v>>7;r=(v<<1)|q;break}case 3:{const q=this.f&F.C?1:0;c=v&1;r=(v>>1)|(q<<7);break}case 4:c=v>>7;r=v<<1;break;case 5:c=v&1;r=(v>>1)|(v&0x80);break;case 6:c=v>>7;r=(v<<1)|1;break;case 7:c=v&1;r=v>>1}r&=255;this.f=this.flagsSZ(r)|(c?F.C:0);return r}
+  bit(v,b){const mask=1<<b;this.f=(this.f&F.C)|F.H|(v&0x28)|((v&mask)?0:(F.Z|F.P))|(b===7&&(v&0x80)?F.S:0)}
+  nmi(){if(this.halted)this.halted=false;this.iff2=this.iff1;this.iff1=0;this.push(this.pc);this.pc=0x66;this.cycles+=11;return 11}
+  irq(vector=0xff){if(!this.iff1||this.eiDelay)return 0;if(this.halted)this.halted=false;this.iff1=this.iff2=0;this.r=(this.r&128)|((this.r+1)&127);this.push(this.pc);if(this.im===2)this.pc=this.rw((this.i<<8)|vector);else this.pc=0x38;const c=this.im===2?19:13;this.cycles+=c;return c}
+  step(){if(this.halted){this.r=(this.r&128)|((this.r+1)&127);if(this.eiDelay>0)this.eiDelay--;this.cycles+=4;return 4}this.lastPC=this.pc;let op=this.fetch();this.lastOp=op;let c,prefixCycles=0;if(op===0xdd||op===0xfd){let p=op===0xdd?'ix':'iy',n=this.fetch();while(n===0xdd||n===0xfd){if(prefixCycles>=262140){this.cycles+=prefixCycles+8;return prefixCycles+8;}prefixCycles+=4;p=n===0xdd?'ix':'iy';n=this.fetch()}if(n===0xcb){const d=signed(this.imm()),q=this.imm();c=prefixCycles+this.execCB(q,p,(this.getH(p)+d)&65535,true)}else if(n===0xed)c=prefixCycles+4+this.execED(this.fetch());else c=prefixCycles+4+this.execBase(n,p)}else if(op===0xcb)c=this.execCB(this.fetch());else if(op===0xed)c=this.execED(this.fetch());else c=this.execBase(op);if(this.eiDelay>0)this.eiDelay--;this.cycles+=c;return c}
+  execBase(op,pfx){const x=op>>6,y=(op>>3)&7,z=op&7,p=y>>1,q=y&1;let a,v,n,disp,addr,extra=0;const idxAddr=()=>{if(!pfx)return this.hl;if(addr===undefined){disp=signed(this.imm());addr=(this.getH(pfx)+disp)&65535;extra=8}return addr};
+    if(x===0){switch(z){
+      case 0:if(y===0)return 4;if(y===1){[this.a,this.a2]=[this.a2,this.a];[this.f,this.f2]=[this.f2,this.f];return 4}if(y===2){n=signed(this.imm());this.b=(this.b-1)&255;if(this.b){this.pc=(this.pc+n)&65535;return 13}return 8}if(y===3){n=signed(this.imm());this.pc=(this.pc+n)&65535;return 12}n=signed(this.imm());if(this.cond(y-4)){this.pc=(this.pc+n)&65535;return 12}return 7;
+      case 1:if(!q){this.setRP(p,this.imm16(),pfx);return 10}this.setH(this.add16(this.getH(pfx),this.getRP(p,pfx)),pfx);return pfx?11:11;
+      case 2:if(!q){if(p===0)this.wb(this.bc,this.a);else if(p===1)this.wb(this.de,this.a);else if(p===2){a=this.imm16();this.ww(a,this.getH(pfx))}else{a=this.imm16();this.wb(a,this.a)}}else{if(p===0)this.a=this.rb(this.bc);else if(p===1)this.a=this.rb(this.de);else if(p===2){a=this.imm16();this.setH(this.rw(a),pfx)}else{a=this.imm16();this.a=this.rb(a)}}return p<2?7:(p===2?16:13);
+      case 3:this.setRP(p,(this.getRP(p,pfx)+(q?-1:1))&65535,pfx);return 6;
+      case 4:addr=y===6?idxAddr():undefined;v=this.getR(y,pfx,addr);this.setR(y,this.inc8(v),pfx,addr);return(y===6?11:4)+extra;
+      case 5:addr=y===6?idxAddr():undefined;v=this.getR(y,pfx,addr);this.setR(y,this.dec8(v),pfx,addr);return(y===6?11:4)+extra;
+      case 6:if(y===6&&pfx){addr=idxAddr();n=this.imm();this.setR(y,n,pfx,addr);return 15}else{n=this.imm();this.setR(y,n,pfx);return y===6?10:7}
+      case 7:switch(y){case 0:case 1:case 2:case 3:this.rotA(y);break;case 4:this.daa();break;case 5:this.a^=255;this.f=(this.f&(F.S|F.Z|F.P|F.C))|F.H|F.N|(this.a&0x28);break;case 6:this.f=(this.f&(F.S|F.Z|F.P))|(this.a&0x28)|F.C;break;case 7:{const c=this.f&F.C;this.f=(this.f&(F.S|F.Z|F.P))|(this.a&0x28)|(c?F.H:0)|(c?0:F.C)}}return 4}
+    }else if(x===1){if(op===0x76){this.halted=true;return 4}if(pfx&&(y===6||z===6))addr=idxAddr();const rpfx=pfx&&y!==6&&z!==6?pfx:null;v=this.getR(z,rpfx,addr);this.setR(y,v,rpfx,addr);return(y===6||z===6?7:4)+extra
+    }else if(x===2){if(pfx&&z===6)addr=idxAddr();this.alu(y,this.getR(z,pfx,addr));return(z===6?7:4)+extra
+    }else switch(z){
+      case 0:if(this.cond(y)){this.pc=this.pop();return 11}return 5;
+      case 1:if(!q){this.setRP2(p,this.pop(),pfx);return 10}switch(y){case 1:this.pc=this.pop();return 10;case 3:[this.b,this.b2]=[this.b2,this.b];[this.c,this.c2]=[this.c2,this.c];[this.d,this.d2]=[this.d2,this.d];[this.e,this.e2]=[this.e2,this.e];[this.h,this.h2]=[this.h2,this.h];[this.l,this.l2]=[this.l2,this.l];return 4;case 5:this.pc=this.getH(pfx);return 4;case 7:this.sp=this.getH(pfx);return 6}return 4;
+      case 2:a=this.imm16();if(this.cond(y))this.pc=a;return 10;
+      case 3:switch(y){case 0:this.pc=this.imm16();return 10;case 2:n=this.imm();this.output((this.a<<8)|n,this.a);return 11;case 3:n=this.imm();this.a=this.input((this.a<<8)|n)&255;return 11;case 4:a=this.rw(this.sp);this.ww(this.sp,this.getH(pfx));this.setH(a,pfx);return 19;case 5:[this.de,this.hl]=[this.hl,this.de];return 4;case 6:this.iff1=this.iff2=0;return 4;case 7:this.iff1=this.iff2=1;this.eiDelay=2;return 4}return 4;
+      case 4:a=this.imm16();if(this.cond(y)){this.push(this.pc);this.pc=a;return 17}return 10;
+      case 5:if(!q){this.push(this.getRP2(p,pfx));return 11}if(y===1){a=this.imm16();this.push(this.pc);this.pc=a;return 17}return 4;
+      case 6:this.alu(y,this.imm());return 7;
+      case 7:this.push(this.pc);this.pc=y*8;return 11
+    }return 4
+  }
+  execCB(op,pfx,addr,indexed=false){const x=op>>6,y=(op>>3)&7,z=op&7;let a,v,r;if(indexed){a=addr;v=this.rb(a)}else{a=z===6?this.hl:undefined;v=this.getR(z,null,a)}if(x===0){r=this.rotate(v,y);if(indexed){this.wb(a,r);if(z!==6)this.setR(z,r)}else this.setR(z,r,null,a)}else if(x===1){this.bit(v,y);if(indexed)this.f=(this.f&~0x28)|((a>>8)&0x28)}else{r=x===2?v&~(1<<y):v|(1<<y);if(indexed){this.wb(a,r);if(z!==6)this.setR(z,r)}else this.setR(z,r,null,a)}if(indexed)return x===1?20:23;return z===6?(x===1?12:15):8}
+  execED(op){const x=op>>6,y=(op>>3)&7,z=op&7,p=y>>1,q=y&1;let a,v,r;if(x===1){switch(z){
+      case 0:v=this.input(this.bc)&255;if(y!==6)this.setR(y,v);this.f=(this.f&F.C)|this.flagsSZ(v);return 12;
+      case 1:this.output(this.bc,y===6?0:this.getR(y));return 12;
+      case 2:this.hl=this.adc16(this.hl,this.getRP(p),!q);return 15;
+      case 3:a=this.imm16();if(!q)this.ww(a,this.getRP(p));else this.setRP(p,this.rw(a));return 20;
+      case 4:v=this.a;this.a=0;this.sub8(v);return 8;
+      case 5:this.pc=this.pop();this.iff1=this.iff2;return 14;
+      case 6:this.im=[0,0,1,2,0,0,1,2][y];return 8;
+      case 7:switch(y){case 0:this.i=this.a;return 9;case 1:this.r=this.a;return 9;case 2:this.a=this.i;this.f=(this.f&F.C)|(this.flagsSZ(this.a)&~F.P)|(this.iff2?F.P:0);return 9;case 3:this.a=this.r;this.f=(this.f&F.C)|(this.flagsSZ(this.a)&~F.P)|(this.iff2?F.P:0);return 9;case 4:{a=this.hl;v=this.rb(a);r=((this.a&15)<<4)|(v>>4);this.a=(this.a&0xf0)|(v&15);this.wb(a,r);this.f=(this.f&F.C)|this.flagsSZ(this.a);return 18}case 5:{a=this.hl;v=this.rb(a);r=((v<<4)|(this.a&15))&255;this.a=(this.a&0xf0)|(v>>4);this.wb(a,r);this.f=(this.f&F.C)|this.flagsSZ(this.a);return 18}}return 8}
+    }if(x===2&&y>=4){const dec=y&1,rep=y>=6;switch(z){case 0:return this.blockLD(dec,rep);case 1:return this.blockCP(dec,rep);case 2:return this.blockIN(dec,rep);case 3:return this.blockOUT(dec,rep)} }return 8}
+  blockLD(dec,rep){const v=this.rb(this.hl);this.wb(this.de,v);this.hl=(this.hl+(dec?-1:1))&65535;this.de=(this.de+(dec?-1:1))&65535;this.bc=(this.bc-1)&65535;const q=(this.a+v)&255;this.f=(this.f&(F.S|F.Z|F.C))|(this.bc?F.P:0)|(q&F.X)|((q<<4)&F.Y);if(rep&&this.bc){this.pc=(this.pc-2)&65535;return 21}return 16}
+  blockCP(dec,rep){const v=this.rb(this.hl),a=this.a,r=(a-v)&255,c=this.f&F.C,h=((a^v^r)&16)?F.H:0,n=(r-(h?1:0))&255;this.hl=(this.hl+(dec?-1:1))&65535;this.bc=(this.bc-1)&65535;this.f=c|F.N|(r&F.S)|(r===0?F.Z:0)|h|(this.bc?F.P:0)|(n&F.X)|((n&2)<<4);if(rep&&this.bc&&r){this.pc=(this.pc-2)&65535;return 21}return 16}
+  blockIN(dec,rep){const port=this.bc,v=this.input(port)&255;this.wb(this.hl,v);this.hl=(this.hl+(dec?-1:1))&65535;this.b=(this.b-1)&255;const sum=v+((this.c+(dec?-1:1))&255),pv=((sum&7)^this.b)&255;this.f=(this.b&0xa8)|(this.b===0?F.Z:0)|(v&0x80?F.N:0)|(sum>255?(F.H|F.C):0)|(parity(pv)?F.P:0);if(rep&&this.b){this.pc=(this.pc-2)&65535;return 21}return 16}
+  blockOUT(dec,rep){const v=this.rb(this.hl);this.b=(this.b-1)&255;this.output(this.bc,v);this.hl=(this.hl+(dec?-1:1))&65535;const sum=v+(this.hl&255),pv=((sum&7)^this.b)&255;this.f=(this.b&0xa8)|(this.b===0?F.Z:0)|(v&0x80?F.N:0)|(sum>255?(F.H|F.C):0)|(parity(pv)?F.P:0);if(rep&&this.b){this.pc=(this.pc-2)&65535;return 21}return 16}
+  state(){return{a:this.a,f:this.f,b:this.b,c:this.c,d:this.d,e:this.e,h:this.h,l:this.l,a2:this.a2,f2:this.f2,b2:this.b2,c2:this.c2,d2:this.d2,e2:this.e2,h2:this.h2,l2:this.l2,ix:this.ix,iy:this.iy,sp:this.sp,pc:this.pc,i:this.i,r:this.r,iff1:this.iff1,iff2:this.iff2,im:this.im,halted:this.halted,eiDelay:this.eiDelay,cycles:this.cycles}}
+  loadState(s){for(const k of Object.keys(this.state()))if(k in s)this[k]=s[k]}
+}
+
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const video=$('#video');
+const ROM_SIZE=0xA000, CPU_HZ=4_000_000, IRQ_PERIOD=131072;
+let objectUrl=null, lang='it', running=false, paused=false, raf=0, lastT=0, cycleFrac=0;
+let mp4Timeline=null, mp4TimelineInfo=null;
+let syslog=['LaserDiscJSD v1.0 Daphne Timeline pronto.'], trace=[], romEntries=[], romProfile='unknown', playerFirmware=null;
+const keys={up:false,down:false,left:false,right:false,fire:false,start1:false,start2:false,coin:false,coin2:false};
+const inputPulseUntil={coin:0,coin2:0,start1:0,start2:0};
+const inputQueue=[];
+const CAB_PULSE_CYCLES=Math.round(CPU_HZ*0.120); // ~120 ms, long enough to cross several emulation frames
+const CAB_GAP_CYCLES=Math.round(CPU_HZ*0.100);
+let lastInputSeen='—';
+function inputActive(k){return !!keys[k] || ((inputPulseUntil[k]||0)>machine.cpu.cycles)}
+function pulseCabinet(k){
+  if(!(k in inputPulseUntil))return;
+  inputPulseUntil[k]=Math.max(inputPulseUntil[k]||0,machine.cpu.cycles+CAB_PULSE_CYCLES);
+  lastInputSeen=(k==='coin'?'COIN1':k==='coin2'?'COIN2':k==='start1'?'START1':'START2')+' pulse';
+  log(`INPUT ${lastInputSeen} · SYSTEM $${hx(machine.system())}`);
+}
+function queueCredit(){
+  // The factory DIP used by Dragon's Lair / Space Ace is 2C_1C. Emit two distinct cabinet pulses.
+  const now=machine.cpu.cycles;
+  inputQueue.push({k:'coin',at:now},{k:'coin',at:now+CAB_PULSE_CYCLES+CAB_GAP_CYCLES});
+  lastInputSeen='CREDIT queued (2×COIN1)';
+  log('INPUT CREDIT · queued two COIN1 pulses (2C_1C)');
+}
+function serviceInputQueue(){
+  while(inputQueue.length && inputQueue[0].at<=machine.cpu.cycles){const q=inputQueue.shift();pulseCabinet(q.k)}
+}
+function log(s){const t=new Date().toLocaleTimeString();syslog.push(`[${t}] ${s}`);if(syslog.length>600)syslog.shift();$('#sysLog').textContent=syslog.join('\n');$('#sysLog').scrollTop=$('#sysLog').scrollHeight}
+function toast(s,err=false){const e=$('#toast');e.textContent=s;e.classList.toggle('err',err);e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2200)}
+function download(name,data,type='application/octet-stream'){const b=data instanceof Blob?data:new Blob([data],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmtTime(s){if(!isFinite(s))s=0;const m=Math.floor(s/60),q=s-m*60;return `${String(m).padStart(2,'0')}:${q.toFixed(3).padStart(6,'0')}`}
+
+// ZIP reader: Store + Deflate using the browser's built-in DecompressionStream. No JS library.
+async function inflateRaw(bytes){if(typeof DecompressionStream==='undefined')throw new Error('Il browser non espone DecompressionStream');const ds=new DecompressionStream('deflate-raw');return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer())}
+function u16(d,o){return d[o]|d[o+1]<<8} function u32(d,o){return (d[o]|d[o+1]<<8|d[o+2]<<16|d[o+3]<<24)>>>0}
+async function unzip(buf,depth=0,prefix=''){if(depth>3)throw new Error('ZIP annidato oltre 3 livelli');const d=new Uint8Array(buf);let eocd=-1;for(let i=d.length-22;i>=Math.max(0,d.length-65557);i--){if(u32(d,i)===0x06054b50){eocd=i;break}}if(eocd<0)throw new Error('ZIP: directory centrale non trovata');const n=u16(d,eocd+10),cd=u32(d,eocd+16);let p=cd,out=[];for(let i=0;i<n;i++){if(u32(d,p)!==0x02014b50)break;const method=u16(d,p+10),cs=u32(d,p+20),us=u32(d,p+24),nl=u16(d,p+28),xl=u16(d,p+30),cl=u16(d,p+32),lo=u32(d,p+42);const name=new TextDecoder().decode(d.slice(p+46,p+46+nl));p+=46+nl+xl+cl;if(name.endsWith('/'))continue;if(u32(d,lo)!==0x04034b50)continue;const lnl=u16(d,lo+26),lxl=u16(d,lo+28),st=lo+30+lnl+lxl,comp=d.slice(st,st+cs);let raw;if(method===0)raw=comp;else if(method===8)raw=await inflateRaw(comp);else{log(`ZIP: metodo ${method} non supportato: ${name}`);continue}if(us && raw.length!==us)log(`ZIP: size mismatch ${name}: ${raw.length}/${us}`);const full=prefix+name;if(/\.zip$/i.test(name)){try{out.push(...await unzip(raw.buffer,depth+1,full+'::'))}catch(e){log(`ZIP annidato ignorato ${full}: ${e.message}`)}}else out.push({name:full,data:raw})}return out}
+async function loadRomFile(file){
+ let entries=[];const name=file.name.toLowerCase();
+ if(name.endsWith('.zip'))entries=await unzip(await file.arrayBuffer());else entries=[{name:file.name,data:new Uint8Array(await file.arrayBuffer())}];
+ entries=entries.filter(e=>/\.(bin|rom)$/i.test(e.name));if(!entries.length)throw new Error('Nessuna ROM .bin/.rom trovata');
+ romEntries=entries;playerFirmware=entries.find(e=>/(^|::|\/)z03_1001_vyw-053_v1-0\.bin$/i.test(e.name))||null;
+ const base=n=>n.split('::').pop().split('/').pop().toLowerCase();
+ const a3=[];for(let i=1;i<=5;i++){const e=entries.find(x=>base(x.name)===`sa_a3_u${i}.bin`);if(e&&e.data.length===0x2000)a3.push(e)}
+ const f2=[];for(let i=1;i<=4;i++){const e=entries.find(x=>base(x.name)===`dl_f2_u${i}.bin`);if(e&&e.data.length===0x2000)f2.push(e)}
+ const rom=new Uint8Array(ROM_SIZE);rom.fill(0xff);let mapped=[];
+ if(f2.length===4){
+   for(let i=0;i<4;i++){rom.set(f2[i].data,i*0x2000);mapped.push(f2[i])}
+   romProfile='dlair-f2';machine.game='dlair';$('#gameSel').value='auto';$('#playerSel').value='ldv1000';
+   $('#mediaProfile').value='dlair-daphne';
+ }else if(a3.length===5){
+   for(let i=0;i<5;i++){rom.set(a3[i].data,i*0x2000);mapped.push(a3[i])}
+   romProfile='spaceace-a3';machine.game='spaceace';$('#gameSel').value='auto';$('#playerSel').value='ldv1000';
+ }else{
+   const gameEntries=entries.filter(e=>e!==playerFirmware).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+   let off=0;for(const e of gameEntries){if(off>=ROM_SIZE)break;const part=e.data.slice(0,Math.min(e.data.length,ROM_SIZE-off));rom.set(part,off);mapped.push(e);off+=part.length}
+   romProfile='generic';
+ }
+ machine.loadROM(rom);const detected=romProfile==='dlair-f2'?'dlair':romProfile==='spaceace-a3'?'spaceace':detectGame(mapped,rom);if($('#gameSel').value==='auto')machine.game=detected;updateGame();
+ const all=mapped.reduce((n,e)=>n+e.data.length,0);$('#romName').textContent=file.name;
+ $('#romInfo').textContent=romProfile==='dlair-f2'?`Dragon's Lair US Rev. F2 · 4 × 8192 byte · $0000-$7FFF · Pioneer LD-V1000`:romProfile==='spaceace-a3'?`Space Ace US Rev. A3 · 5 × 8192 byte · $0000-$9FFF · Pioneer LD-V1000`:`${mapped.length} file ROM · ${all} byte · profilo generico · ${machine.game}`;
+ $('#fwInfo').textContent=playerFirmware?`Firmware player: ${base(playerFirmware.name)} · ${playerFirmware.data.length} byte · separato dalla CPU principale`:'Firmware player: non presente (HLE disponibile)';
+ log(`ROM: ${file.name} → ${mapped.map(e=>e.name).join(', ')}`);if(playerFirmware)log(`LD FIRMWARE: ${playerFirmware.name} (${playerFirmware.data.length} byte), riconosciuto e non mappato nella ROM Z80 del gioco`);
+ log(`PROFILE: ${romProfile}`);toast(romProfile==='dlair-f2'?"Dragon's Lair F2 riconosciuto":romProfile==='spaceace-a3'?'Space Ace A3 riconosciuto':'ROM caricata')
+}
+function detectGame(entries,rom){const s=entries.map(e=>e.name.toLowerCase()).join(' ');if(/space|ace|sa_/.test(s))return'spaceace';if(/dlair|dragon|dl_/.test(s))return'dlair';const ascii=new TextDecoder('latin1').decode(rom);if(/SPACE\s*ACE/i.test(ascii))return'spaceace';if(/DRAGON/i.test(ascii))return'dlair';return'unknown'}
+
+// ---- MP4 sample-table parser -------------------------------------------------
+// Daphne's framefile maps logical LaserDisc frames to decoded VIDEO FRAMES, not
+// to arbitrary seconds.  For converted MP4 files we therefore read the MP4
+// stts/ctts tables and build the actual presentation timestamp for each sample.
+function mp4Type(u8,o){return String.fromCharCode(u8[o],u8[o+1],u8[o+2],u8[o+3])}
+function mp4Boxes(u8,start=0,end=u8.length){
+  const out=[];let p=start;
+  while(p+8<=end){
+    let size=(u8[p]*0x1000000)+(u8[p+1]<<16)+(u8[p+2]<<8)+u8[p+3],head=8;
+    const type=mp4Type(u8,p+4);
+    if(size===1){if(p+16>end)break;const dv=new DataView(u8.buffer,u8.byteOffset+p+8,8);const hi=dv.getUint32(0),lo=dv.getUint32(4);size=hi*4294967296+lo;head=16}
+    else if(size===0)size=end-p;
+    if(!Number.isFinite(size)||size<head||p+size>end)break;
+    out.push({type,start:p,end:p+size,data:p+head,size,head});p+=size;
+  }
+  return out;
+}
+function mp4Child(u8,b,type){return mp4Boxes(u8,b.data,b.end).find(x=>x.type===type)||null}
+function mp4ReadU32(u8,o){return new DataView(u8.buffer,u8.byteOffset+o,4).getUint32(0)}
+function mp4ReadI32(u8,o){return new DataView(u8.buffer,u8.byteOffset+o,4).getInt32(0)}
+async function readTopLevelBox(file,want){
+  let p=0;
+  while(p+8<=file.size){
+    const h=new Uint8Array(await file.slice(p,Math.min(file.size,p+16)).arrayBuffer());if(h.length<8)break;
+    let size=(h[0]*0x1000000)+(h[1]<<16)+(h[2]<<8)+h[3],head=8;const type=mp4Type(h,4);
+    if(size===1){if(h.length<16)break;const dv=new DataView(h.buffer);size=dv.getUint32(8)*4294967296+dv.getUint32(12);head=16}
+    else if(size===0)size=file.size-p;
+    if(type===want){const ab=await file.slice(p,p+size).arrayBuffer();return new Uint8Array(ab)}
+    if(!Number.isFinite(size)||size<head)break;p+=size;
+  }
+  return null;
+}
+async function parseMp4Timeline(file){
+  if(!/\.mp4$|\.m4v$/i.test(file.name))return null;
+  const moovFile=await readTopLevelBox(file,'moov');if(!moovFile)throw new Error('box moov non trovato');
+  const moov=mp4Boxes(moovFile,0,moovFile.length)[0];if(!moov||moov.type!=='moov')throw new Error('moov non valido');
+  const traks=mp4Boxes(moovFile,moov.data,moov.end).filter(x=>x.type==='trak');
+  for(const trak of traks){
+    const mdia=mp4Child(moovFile,trak,'mdia');if(!mdia)continue;
+    const hdlr=mp4Child(moovFile,mdia,'hdlr');if(!hdlr||hdlr.data+12>hdlr.end)continue;
+    if(mp4Type(moovFile,hdlr.data+8)!=='vide')continue;
+    const mdhd=mp4Child(moovFile,mdia,'mdhd'),minf=mp4Child(moovFile,mdia,'minf');if(!mdhd||!minf)continue;
+    const stbl=mp4Child(moovFile,minf,'stbl');if(!stbl)continue;
+    const stts=mp4Child(moovFile,stbl,'stts'),ctts=mp4Child(moovFile,stbl,'ctts');if(!stts)continue;
+    const version=moovFile[mdhd.data], timescale=mp4ReadU32(moovFile,mdhd.data+(version===1?20:12));if(!timescale)continue;
+    const nEntries=mp4ReadU32(moovFile,stts.data+4);let q=stts.data+8,total=0;
+    const st=[];for(let i=0;i<nEntries&&q+8<=stts.end;i++,q+=8){const n=mp4ReadU32(moovFile,q),d=mp4ReadU32(moovFile,q+4);st.push([n,d]);total+=n}
+    if(!total)continue;
+    const dts=new Float64Array(total);let idx=0,t=0;
+    for(const [n,d] of st)for(let j=0;j<n;j++){dts[idx++]=t;t+=d}
+    const pts=new Float64Array(total);pts.set(dts);
+    if(ctts){const cv=moovFile[ctts.data],cn=mp4ReadU32(moovFile,ctts.data+4);q=ctts.data+8;idx=0;
+      for(let i=0;i<cn&&q+8<=ctts.end&&idx<total;i++,q+=8){const n=mp4ReadU32(moovFile,q),off=cv===1?mp4ReadI32(moovFile,q+4):mp4ReadU32(moovFile,q+4);for(let j=0;j<n&&idx<total;j++,idx++)pts[idx]+=off}
+    }
+    const arr=Array.from(pts,x=>x/timescale).sort((a,b)=>a-b);const first=arr[0];for(let i=0;i<arr.length;i++)arr[i]-=first;
+    const span=arr.length>1?arr[arr.length-1]-arr[0]:0;const fps=span>0?(arr.length-1)/span:0;
+    return {times:arr,timescale,samples:arr.length,fps,duration:span};
+  }
+  throw new Error('traccia video/stts non trovata');
+}
+function timelineIndexAtTime(t){
+  if(!mp4Timeline||!mp4Timeline.length)return null;let lo=0,hi=mp4Timeline.length-1;
+  while(lo<hi){const m=(lo+hi+1)>>1;if(mp4Timeline[m]<=t+0.0005)lo=m;else hi=m-1}return lo;
+}
+function timelineTimeForLaserFrame(frame,offset){
+  if(!mp4Timeline)return null;const i=Math.max(0,Math.min(mp4Timeline.length-1,(frame|0)-(offset|0)));return {index:i,time:mp4Timeline[i]};
+}
+
+class VirtualLaserDisc{
+ constructor(){this.reset()}
+ reset(){try{video.pause()}catch(_){};this.mode='PARK';this.status=0xfc;this.args=[];this.lastByte=null;this.lastCommand='—';this.requestedFrame=null;this.logicalFrame=0;this.audio=[true,true];this.commandLog=[];this.searchToken=0;this.stopFrame=null;this.playSpeed=0;this.strobeOrigin=0;this.dataReads=0;this.dataWrites=0;this.lastDataRead=null}
+ get fps(){return mp4TimelineInfo?.fps||clamp(parseFloat($('#fps').value)||29.97003,1,120)} get offset(){return parseInt($('#offset').value)||0}
+ get frame(){if(video.readyState>=1&&Number.isFinite(video.currentTime)){const i=timelineIndexAtTime(video.currentTime);if(i!==null)return Math.max(0,i+this.offset);return Math.max(0,Math.round(video.currentTime*this.fps)+this.offset)}return this.logicalFrame|0}
+ add(s){this.commandLog.push(`${performance.now().toFixed(1).padStart(9)}  ${s}`);if(this.commandLog.length>220)this.commandLog.shift();$('#ldLog').textContent=this.commandLog.join('\n')||'—';log('LD · '+s)}
+ isDigit(b){return Object.prototype.hasOwnProperty.call(VirtualLaserDisc.digits,b)}
+ send(b){
+   b&=255;this.dataWrites++;this.lastByte=b;const digit=VirtualLaserDisc.digits[b],ready=!!(this.status&0x80);
+   if(ready){
+     this.status&=0x7f;
+     if(digit!==undefined){if(this.args.length<8)this.args.push(digit);this.lastCommand=`DIGIT ${digit}`;this.add(`${this.lastCommand} [$${b.toString(16).padStart(2,'0').toUpperCase()}]`);this.refresh();return}
+     const arg=this.argNumber();this.executeReady(b,arg);if(!this.isDigit(b))this.clearArgs();this.refresh();return;
+   }
+   if(b===0xff){this.status|=0x80;this.lastCommand='READY / NO ENTRY';this.add(`READY handshake · numeric buffer ${this.args.length?this.args.join(''):'—'}`)}
+   else this.add(`BUSY · ignored $${b.toString(16).padStart(2,'0').toUpperCase()}`);
+   this.refresh()
+ }
+ argNumber(){return this.args.length?parseInt(this.args.join(''),10)||0:0}
+ clearArgs(){this.args=[]}
+ executeReady(c,arg){const h='$'+c.toString(16).padStart(2,'0').toUpperCase();switch(c){
+   case 0xbf:this.lastCommand='CLEAR';this.add('CLEAR');break;
+   case 0xfd:this.play();this.lastCommand='PLAY';this.add('PLAY');break;
+   case 0xfb:this.stop(arg);this.lastCommand='STOP';this.add(`STOP${this.args.length?' '+arg:''}`);break;
+   case 0xf7:this.lastCommand='SEARCH';this.search(arg);break;
+   case 0xf3:this.lastCommand='AUTOSTOP';this.stopFrame=arg;this.requestedFrame=arg;this.mode='PLAY';this.status=0x54;this.playSpeed=1;video.playbackRate=1;video.play().catch(()=>{});this.add(`AUTOSTOP ${arg}`);break;
+   case 0xf0:this.lastCommand='SCAN FWD';this.mode='SCAN FWD';this.status=0x4c;this.scan(+1);this.add('SCAN FWD');break;
+   case 0xf8:this.lastCommand='SCAN REV';this.mode='SCAN REV';this.status=0x4c;this.scan(-1);this.add('SCAN REV');break;
+   case 0xf6:this.lastCommand='STEP FWD';this.step(1);break;
+   case 0xfe:this.lastCommand='STEP REV';this.step(-1);break;
+   case 0xf9:this.stop();this.mode='PARK';this.status=0x60;this.lastCommand='REJECT';this.add('REJECT / PARK');break;
+   case 0xff:this.status|=0x80;this.lastCommand='NO ENTRY';this.add('NO ENTRY');break;
+   case 0xf4:this.audio[0]=this.args.length?!!(arg&1):!this.audio[0];this.lastCommand='AUDIO 1';this.updateMute();this.add(`AUDIO1 ${this.audio[0]?'ON':'OFF'}`);break;
+   case 0xfc:this.audio[1]=this.args.length?!!(arg&1):!this.audio[1];this.lastCommand='AUDIO 2';this.updateMute();this.add(`AUDIO2 ${this.audio[1]?'ON':'OFF'}`);break;
+   case 0xc2:this.lastCommand='GET FRAME';this.add(`GET FRAME ${this.frame} (status-only HLE)`);break;
+   default:
+     if(c>=0xa0&&c<=0xa7){const sp=[0,.25,.5,1,2,3,4,5][c-0xa0];this.mode='PLAY';this.status=0x2e;this.playSpeed=sp;video.playbackRate=sp||1;if(sp===0)video.pause();else video.play().catch(()=>{});this.lastCommand=`FWD x${sp}`;this.add(this.lastCommand)}
+     else if(c>=0xb1&&c<=0xba){const n=(c-0xb0)*10;this.lastCommand=`SKIP +${n}`;this.seekFrame(this.frame+n,false);this.mode='SEARCH';this.add(this.lastCommand)}
+     else{this.lastCommand=`UNKNOWN ${h}`;this.add(this.lastCommand)}
+ }
+ }
+ play(){this.mode='PLAY';this.status=0x64;this.playSpeed=1;this.stopFrame=null;video.playbackRate=1;video.play().catch(()=>{});this.updateMute()}
+ stop(arg=0){this.mode='STOP';this.status=0x65;this.playSpeed=0;video.pause();this.updateMute();if(arg>0)this.add(`Timed stop ${arg/10}s non bloccante in HLE browser`)}
+ step(n){this.seekFrame(this.frame+n,false);this.mode='STOP';this.status=0x65;this.playSpeed=0;this.lastCommand=n>0?'STEP FWD':'STEP REV';this.add(this.lastCommand)}
+ scan(dir){this.seekFrame(Math.max(0,this.frame+dir*Math.round(this.fps*.5)),false)}
+ search(frame){this.mode='SEARCH';this.status=0x50;this.requestedFrame=frame;this.stopFrame=null;this.add(`SEARCH ${frame}`);this.seekFrame(frame,true)}
+ finishSearch(frame,token){if(token!==this.searchToken)return;this.logicalFrame=frame;this.mode='STOP';this.status=0xd0;this.playSpeed=0;this.add(`SEARCH FINISH ${frame} · status $D0`);this.refresh()}
+ seekFrame(frame,finish=true){
+   frame=Math.max(0,frame|0);this.requestedFrame=frame;this.logicalFrame=frame;
+   const exact=timelineTimeForLaserFrame(frame,this.offset);const sec=exact?exact.time:Math.max(0,(frame-this.offset)/this.fps);const token=++this.searchToken;
+   if(exact)this.add(`MAP LD ${frame} → Daphne sample ${exact.index} → ${sec.toFixed(6)} s`);
+   if(video.readyState>=1){
+     try{video.currentTime=isFinite(video.duration)?clamp(sec,0,Math.max(0,video.duration-.000001)):sec}catch(_){ }
+     video.pause();
+     if(finish){let ended=false;const done=()=>{if(ended)return;ended=true;video.removeEventListener('seeked',done);const complete=()=>this.finishSearch(frame,token);if('requestVideoFrameCallback'in video)video.requestVideoFrameCallback(()=>complete());else complete()};video.addEventListener('seeked',done,{once:true});setTimeout(done,350)}
+   } else if(finish)setTimeout(()=>this.finishSearch(frame,token),50);
+   this.refresh()
+ }
+ updateMute(){video.muted=!(this.audio[0]||this.audio[1])}
+ strobeBits(cycles){
+   // Real LD-V1000 handshake as exposed by the Cinematronics board:
+   //   SYSTEM $C010 bit 6 = status_strobe_r() (normally HIGH, LOW for ~26 us)
+   //   SYSTEM $C010 bit 7 = !ready_r(); in the HLE ready_r() is the COMMAND STROBE
+   //                         (normally HIGH, LOW for ~25 us), so bit 7 is normally 0
+   //                         and pulses HIGH ~54 us after the status pulse begins.
+   // Important: neither line is the STATUS_READY bit ($80) inside the LD status byte.
+   const park=this.mode==='PARK';
+   const period=park?Math.round(CPU_HZ*0.021):Math.round(CPU_HZ/59.94);
+   const p=((cycles-this.strobeOrigin)%period+period)%period;
+   const statusStart=park?0:Math.round(CPU_HZ*500e-6);
+   const statusEnd=statusStart+Math.round(CPU_HZ*26e-6);
+   const commandStart=statusStart+Math.round(CPU_HZ*54e-6);
+   const commandEnd=commandStart+Math.round(CPU_HZ*25e-6);
+   const statusHigh=!(p>=statusStart&&p<statusEnd);
+   const commandPulse=(p>=commandStart&&p<commandEnd); // host sees bit7 HIGH only here
+   return (statusHigh?0x40:0) | (commandPulse?0x80:0)
+ }
+ tick(){if(this.mode==='PLAY'&&this.stopFrame!==null&&this.frame>=this.stopFrame){this.logicalFrame=this.stopFrame;this.stopFrame=null;this.stop();this.status=0x65;this.add('AUTOSTOP reached')}}
+ read(){this.dataReads++;this.lastDataRead=this.status&255;return this.lastDataRead}
+ refresh(){ $('#ldMode').textContent=this.mode;$('#ldStatus').textContent=hx(this.status);$('#ldStat').textContent=hx(this.status);$('#ldArg').textContent=this.args.length?this.args.join(''):'—';$('#ldByte').textContent=this.lastByte===null?'—':hx(this.lastByte);$('#ldCmd').textContent=this.lastCommand;$('#ldReq').textContent=this.requestedFrame===null?'—':this.requestedFrame;$('#ldDisp').textContent=this.frame;$('#frameStat').textContent=String(this.frame).padStart(5,'0');$('#ldPlayer').textContent=$('#playerSel').value==='ldv1000'?'LD-V1000 HLE':'PR-7820 compat.'}
+}
+VirtualLaserDisc.digits={0x3f:0,0x0f:1,0x8f:2,0x4f:3,0x2f:4,0xaf:5,0x6f:6,0x1f:7,0x9f:8,0x5f:9};
+const ld=new VirtualLaserDisc();
+
+class DLAirMachine{
+ constructor(){this.mem=new Uint8Array(65536);this.rom=null;this.ram=new Uint8Array(0x2000);this.ay=new Uint8Array(16);this.ayAddr=0;this.misc=0x00;this.ldLatch=0;this.led=new Uint8Array(16);this.game='unknown';this.traceOn=false;this.trace=[];this.irqCounter=0;this.cpu=new Z80(a=>this.read(a), (a,v)=>this.write(a,v), p=>this.input(p), (p,v)=>this.output(p,v))}
+ reset(){this.ram.fill(0);this.ay.fill(0);this.ayAddr=0;this.misc=0x00;this.ldLatch=0;this.led.fill(0);this.irqCounter=0;this.cpu.reset();ld.reset();inputQueue.length=0;inputPulseUntil.coin=inputPulseUntil.coin2=inputPulseUntil.start1=inputPulseUntil.start2=0;this.trace=[];refresh()}
+ loadROM(rom){this.rom=rom;this.reset()}
+ read(a){a&=0xffff;if(a<0xa000)return this.rom?this.rom[a]:0xff;if(a>=0xa000&&a<0xc000)return this.ram[a&0x7ff];const k=a&0xe038;if(k===0xc000)return this.ayRead();if(k===0xc008)return this.p1();if(k===0xc010)return this.system();if(k===0xc020)return ld.read();return 0xff}
+ write(a,v){a&=0xffff;v&=255;if(a>=0xa000&&a<0xc000){this.ram[a&0x7ff]=v;return}const k=a&0xe038;if(k===0xe000){this.ayWrite(v);return}if(k===0xe008){const diff=v^this.misc;this.misc=v;if((diff&0x20)&&!(v&0x20))ld.send(this.ldLatch);if((diff&0x40)&&!(v&0x40)&&$('#playerSel').value==='pr7820')ld.add('PR-7820 ENTER pulse');return}if(k===0xe010){this.ayAddr=v&15;return}if(k===0xe020){this.ldLatch=v;return}if((a&0xe038)===0xe030){this.led[8|(a&7)]=v&15;return}if((a&0xe038)===0xe038){this.led[a&7]=v&15;return}}
+ ayRead(){if(this.ayAddr===14)return this.dsw1();if(this.ayAddr===15)return this.dsw2();return this.ay[this.ayAddr]}
+ ayWrite(v){this.ay[this.ayAddr]=v}
+ dsw1(){return this.game==='spaceace'?0x10:0x20}
+ dsw2(){if(this.game==='spaceace')return ($('#playerSel').value==='ldv1000'?0x00:0x01);if(this.game==='dlair')return $('#playerSel').value==='ldv1000'?0x79:0x71;return 0x79}
+ p1(){let v=0xff;if(keys.up)v&=~1;if(keys.down)v&=~2;if(keys.left)v&=~4;if(keys.right)v&=~8;if(keys.fire)v&=~0x10;return v}
+ system(){let v=0x3f;if(inputActive('start1'))v&=~0x01;if(inputActive('start2'))v&=~0x02;if(inputActive('coin'))v&=~0x04;if(inputActive('coin2'))v&=~0x08;v=(v&0x3f)|ld.strobeBits(this.cpu.cycles);return v&255}
+ input(p){return 0xff} output(p,v){}
+ step(){if(!this.rom)return 0;serviceInputQueue();const pc=this.cpu.pc;if(this.traceOn){this.trace.push(`${hx(pc,4)}  ${hx(this.read(pc))}`);if(this.trace.length>220)this.trace.shift()}const c=this.cpu.step();this.irqCounter+=c;if(this.irqCounter>=IRQ_PERIOD){this.irqCounter-=IRQ_PERIOD;this.cpu.irq()}return c}
+ runCycles(target){let c=0,guard=250000;while(c<target&&guard-->0)c+=this.step();return c}
+}
+const machine=new DLAirMachine();
+
+function updateGame(){let g=$('#gameSel').value;if(g==='auto')g=machine.game;else machine.game=g;$('#gameBadge').textContent=`${g==='spaceace'?'SPACE ACE':g==='dlair'?"DRAGON'S LAIR":'AUTO'} · US BOARD`;}
+function refresh(){const c=machine.cpu;$('#pcStat').textContent=hx(c.pc,4);$('#cycStat').textContent=c.cycles.toLocaleString();const regs=[['AF',c.af],['BC',c.bc],['DE',c.de],['HL',c.hl],['IX',c.ix],['IY',c.iy],['SP',c.sp],['PC',c.pc],['I',c.i],['R',c.r],['IM',c.im],['IFF',c.iff1]];$('#regs').innerHTML=regs.map(([n,v])=>`<div class="reg">${n}<b>${n==='I'||n==='R'||n==='IM'||n==='IFF'?hx(v):hx(v,4)}</b></div>`).join('');$('#traceOut').textContent=machine.trace.join('\n')||'—';ld.refresh();$('#sysInput').textContent=hx(machine.system());$('#inputSeen').textContent=lastInputSeen;$('#dipSeen').textContent=hx(machine.dsw1())+' / '+hx(machine.dsw2())+ (machine.game==='spaceace'?' · DIAG '+((machine.dsw2()&0x80)?'ON':'OFF'):machine.game==='dlair'?' · SERVICE '+((machine.dsw1()&0x80)?'ON':'OFF')+' · LD '+($('#playerSel').value==='ldv1000'?'V1000':'PR7820'):'');$('#videoStat').textContent=video.currentTime.toFixed(3);$('#timeLabel').textContent=fmtTime(video.currentTime);if(video.duration){$('#scrub').max=video.duration;$('#scrub').value=video.currentTime}$('#statusText').textContent=!machine.rom?'ROM assente':running?(paused?'In pausa':'In esecuzione'):'Pronto';}
+function loop(t){if(!running){raf=0;return}const dt=lastT?Math.min(.05,(t-lastT)/1000):1/60;lastT=t;if(!paused&&machine.rom){cycleFrac+=CPU_HZ*dt;const n=Math.floor(cycleFrac);cycleFrac-=n;machine.runCycles(n)}ld.tick();refresh();raf=requestAnimationFrame(loop)}
+function setRunning(v){running=v;paused=false;lastT=0;cycleFrac=0;if(v&&!raf)raf=requestAnimationFrame(loop);refresh()}
+function hold(k,v){keys[k]=v;if(v&&(k==='coin'||k==='coin2'||k==='start1'||k==='start2'))pulseCabinet(k);$$(`[data-key="${k}"]`).forEach(b=>b.classList.toggle('held',v))}
+const keymap={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',KeyZ:'fire',Space:'fire',Enter:'start1',Digit5:'coin',Digit6:'coin2',Digit1:'start1',Digit2:'start2'};
+addEventListener('keydown',e=>{const k=keymap[e.code];if(k){e.preventDefault();hold(k,true)}});addEventListener('keyup',e=>{const k=keymap[e.code];if(k){e.preventDefault();hold(k,false)}});
+$$('[data-key]').forEach(b=>{const k=b.dataset.key;const on=e=>{e.preventDefault();hold(k,true)};const off=e=>{e.preventDefault();hold(k,false)};b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointerleave',off);b.addEventListener('pointercancel',off)});
+$('#creditBtn').onclick=e=>{e.preventDefault();queueCredit();refresh()};
+
+$('#romFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{await loadRomFile(f)}catch(x){log('ROM ERROR: '+x.message);toast(x.message,true)}};
+function mediaLooksLikeDragonLair(name){return /dragon|lair|dlair/i.test(name||'')}
+function applyMediaProfile(fromAuto=false){
+ let p=$('#mediaProfile').value,name=$('#videoName').textContent||'';
+ if(p==='auto')p=mediaLooksLikeDragonLair(name)?'dlair-daphne':'direct';
+ if(p==='dlair-daphne'){$('#offset').value='151';if(!mp4TimelineInfo)$('#fps').value='29.97003';log('MEDIA MAP: Daphne Dragon\'s Lair · laser frame 151 = video sample 0')}
+ else {$ ('#offset').value='0';log('MEDIA MAP: direct 1:1 · laser frame 0 = MP4 frame 0')}
+ const mismatch=machine.game==='spaceace' && p==='dlair-daphne';
+ const w=$('#mediaWarn');
+ if(mismatch){w.style.display='block';w.textContent='ATTENZIONE: è caricata una ROM Space Ace ma il video è Dragon\'s Lair. Il core può eseguire la ROM, ma i SEARCH punteranno inevitabilmente a scene sbagliate del filmato.';log('MEDIA MISMATCH: Space Ace ROM + Dragon\'s Lair video')}
+ else {w.style.display='none';w.textContent=''}
+ ld.refresh();refresh();
+ if(!fromAuto)toast(p==='dlair-daphne'?"Profilo Daphne Dragon's Lair: offset 151 + MP4 sample timeline":'Profilo video direct 1:1')
+}
+$('#applyMediaProfile').onclick=()=>applyMediaProfile(false);
+$('#mediaProfile').onchange=()=>applyMediaProfile(false);
+$('#videoFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(objectUrl)URL.revokeObjectURL(objectUrl);mp4Timeline=null;mp4TimelineInfo=null;$('#timelineInfo').textContent='Timeline MP4: analisi…';
+  try{const info=await parseMp4Timeline(f);if(info){mp4Timeline=info.times;mp4TimelineInfo=info;$('#fps').value=info.fps.toFixed(6);$('#timelineInfo').textContent=`Timeline MP4: ${info.samples.toLocaleString()} sample video · ${info.fps.toFixed(6)} fps medi · ${info.duration.toFixed(3)} s · mapping frame-esatto attivo`;log(`MP4 TIMELINE: ${info.samples} sample · fps ${info.fps.toFixed(6)} · duration ${info.duration.toFixed(6)} s`) }else $('#timelineInfo').textContent='Timeline MP4: file non MP4, uso FPS fallback.'}
+  catch(x){$('#timelineInfo').textContent='Timeline MP4: non analizzabile ('+x.message+'). Uso FPS fallback.';log('MP4 TIMELINE fallback: '+x.message)}
+  objectUrl=URL.createObjectURL(f);video.src=objectUrl;video.pause();ld.mode='PARK';ld.status=0xfc;ld.playSpeed=0;$('#videoName').textContent=f.name;$('#empty').style.display='none';applyMediaProfile(true);video.onloadedmetadata=()=>{log(`VIDEO: ${f.name} · ${video.duration.toFixed(3)} s`);refresh();toast(mp4Timeline?'Video + timeline Daphne caricati':'Video caricato')};video.onerror=()=>toast('Formato video non riproducibile dal browser',true)};
+$('#power').onclick=()=>{if(!machine.rom){toast('Carica prima la ROM',true);return}setRunning(!running);$('#power').textContent=running?'POWER OFF':'POWER'};
+$('#reset').onclick=()=>{machine.reset();log('RESET');setRunning(!!machine.rom)};
+$('#pause').onclick=()=>{paused=!paused;$('#pause').textContent=paused?'RIPRENDI':'PAUSA';if(paused)video.pause();refresh()};
+$('#full').onclick=()=>$('#screen').requestFullscreen?.();$('#screen').ondblclick=()=>$('#screen').requestFullscreen?.();$('#screen').classList.add('crt');
+$('#scrub').oninput=e=>{video.currentTime=+e.target.value;refresh()};
+$('#gameSel').onchange=()=>{if($('#gameSel').value!=='auto')machine.game=$('#gameSel').value;updateGame();applyMediaProfile(true)};$('#playerSel').onchange=()=>{ld.refresh();if(machine.game==='spaceace'||machine.game==='dlair')log(`${machine.game} LD player DIP → ${$('#playerSel').value}`)};
+$('#fps').onchange=()=>ld.refresh();$('#offset').onchange=()=>ld.refresh();
+$('#seekMinus').onclick=()=>ld.seekFrame(Math.max(0,ld.frame-100),false);$('#seekPlus').onclick=()=>ld.seekFrame(ld.frame+100,false);$('#ldPlay').onclick=()=>ld.play();$('#ldStop').onclick=()=>ld.stop();
+$('#step').onclick=()=>{if(!machine.rom)return;paused=true;machine.step();refresh()};$('#irq').onclick=()=>{machine.cpu.irq();refresh()};$('#traceOn').onchange=e=>machine.traceOn=e.target.checked;
+$('#memDumpBtn').onclick=()=>{let a=parseInt($('#memAddr').value,16);if(!Number.isFinite(a))a=0;let o=[];for(let r=0;r<24;r++){let bs=[];for(let i=0;i<16;i++)bs.push(machine.read((a+r*16+i)&0xffff).toString(16).padStart(2,'0').toUpperCase());o.push(`${(a+r*16&0xffff).toString(16).padStart(4,'0').toUpperCase()}: ${bs.join(' ')}`)}$('#memDump').value=o.join('\n')};
+$('#exportDiag').onclick=()=>download('laserdiscjsd-report.json',JSON.stringify({version:'1.0',profile:romProfile,game:machine.game,playerFirmware:playerFirmware?{name:playerFirmware.name,size:playerFirmware.data.length}:null,romFiles:romEntries.map(e=>({name:e.name,size:e.data.length})),cpu:machine.cpu.state?machine.cpu.state():{pc:machine.cpu.pc,sp:machine.cpu.sp,af:machine.cpu.af,bc:machine.cpu.bc,de:machine.cpu.de,hl:machine.cpu.hl},laserdisc:{player:$('#playerSel').value,mode:ld.mode,status:ld.status,frame:ld.frame,requestedFrame:ld.requestedFrame,lastByte:ld.lastByte,lastCommand:ld.lastCommand,fps:ld.fps,offset:ld.offset,dataReads:ld.dataReads,dataWrites:ld.dataWrites,commands:ld.commandLog,systemProtocol:'bit6=status strobe; bit7=inverted command-strobe pulse; independent from status READY bit'},video:{name:$('#videoName').textContent,time:video.currentTime,duration:video.duration||0,timeline:mp4TimelineInfo?{samples:mp4TimelineInfo.samples,fps:mp4TimelineInfo.fps,timescale:mp4TimelineInfo.timescale,duration:mp4TimelineInfo.duration}:null},trace:machine.trace},null,2),'application/json');
+$('#clearLog').onclick=()=>{syslog=[];$('#sysLog').textContent='—'};$('#exportLog').onclick=()=>download('laserdiscjsd-log.txt',syslog.join('\n'),'text/plain');
+$$('.tabs button').forEach(b=>b.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.remove('active'));$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.tab).classList.add('active')});
+$('#it').onclick=()=>{$('#it').classList.add('active');$('#en').classList.remove('active');lang='it'};$('#en').onclick=()=>{$('#en').classList.add('active');$('#it').classList.remove('active');lang='en';toast('English labels: partial in v0.8')};
+video.addEventListener('timeupdate',refresh);video.addEventListener('seeked',()=>{ld.refresh()});
+updateGame();refresh();
+</script>
+</body></html>

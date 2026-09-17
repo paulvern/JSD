@@ -7,19 +7,21 @@
 <style>
 :root{--bg:#07101a;--panel:#0d1825;--panel2:#111f30;--line:#25374d;--text:#eef6ff;--muted:#91a6bd;--cyan:#73e4ff;--green:#77efa5;--yellow:#ffd675;--red:#ff8191}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 20% -10%,#173a61 0,transparent 38rem),linear-gradient(#07101a,#050a11);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-body{padding:26px}.wrap{max-width:1180px;margin:auto}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px}.top h1{font-size:clamp(30px,5vw,60px);letter-spacing:-.045em;margin:0}.top p{color:var(--muted);line-height:1.55;margin:8px 0 0;max-width:760px}.chip{border:1px solid var(--line);background:#091522;color:var(--cyan);padding:8px 11px;border-radius:999px;font-size:12px;white-space:nowrap}.helpchip{text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:750}.helpchip:hover{border-color:#4f779d;background:#102338}.layout{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}.card{background:rgba(13,24,37,.94);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 18px 60px #0005}.drop{min-height:275px;border:1px dashed #395a7b;border-radius:16px;background:linear-gradient(#0d1d2f,#091522);display:grid;place-items:center;text-align:center;padding:28px;transition:.15s}.drop.drag{border-color:var(--cyan);box-shadow:0 0 0 3px #73e4ff18 inset}.drop .big{font-size:44px;margin-bottom:10px}.drop h2{font-size:24px;margin:0 0 8px}.drop p{margin:0 0 18px;color:var(--muted);line-height:1.45}.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}button,select{font:inherit}button{border-radius:11px;border:0;padding:11px 15px;font-weight:750;cursor:pointer}.primary{background:var(--cyan);color:#031018}.secondary{background:#17283b;color:var(--text);border:1px solid #2b435e}button:disabled{opacity:.45;cursor:not-allowed}input[type=file]{display:none}.systems{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:15px}.mini{border:1px solid var(--line);background:#091522;border-radius:11px;padding:9px 7px;text-align:center;color:var(--muted);font-size:11px}.mini b{display:block;color:var(--text);font-size:18px;margin-bottom:3px}.eyebrow{text-transform:uppercase;letter-spacing:.13em;font-size:11px;color:var(--muted);margin:0 0 10px}.detected{display:flex;align-items:center;gap:13px;padding:14px;border:1px solid var(--line);border-radius:15px;background:var(--panel2)}.icon{width:53px;height:53px;display:grid;place-items:center;border-radius:13px;border:1px solid var(--line);background:#08131f;font-size:26px}.detected h3{font-size:20px;margin:0 0 3px}.why{color:var(--muted);font-size:12px;line-height:1.35}.conf{margin-left:auto;border:1px solid var(--line);border-radius:999px;padding:5px 8px;font-size:11px}.conf.high{color:var(--green)}.conf.medium{color:var(--yellow)}.conf.low{color:var(--red)}.field{margin-top:13px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}.field select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#08131f;color:var(--text)}.biosbox{margin-top:13px;border:1px solid var(--line);border-radius:11px;padding:10px 11px;background:#091522;font-size:12px;line-height:1.55}.biosbox b{color:var(--green)}.filelist{margin-top:12px;border-top:1px solid var(--line);max-height:245px;overflow:auto}.file{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:9px 0;border-bottom:1px solid #25374d99}.fname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}.fmeta{font-size:10px;color:var(--muted);margin-top:2px}.tag{align-self:start;border-radius:999px;background:#17283b;color:#c4d5e8;padding:3px 7px;font-size:10px}.tag.bios{color:#9cf5b8}.tag.game{color:#9fefff}.bottom{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}.status{font-size:12px;color:var(--muted);line-height:1.45;margin-top:10px}.status.good{color:var(--green)}.status.bad{color:var(--red)}.toggle{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;margin-top:11px}.toggle input{accent-color:#73e4ff}
-#player{position:fixed;inset:0;z-index:50;background:#03070c;display:none;flex-direction:column}#player.show{display:flex}.playerbar{height:48px;flex:0 0 48px;display:flex;align-items:center;gap:10px;padding:0 11px;background:#0b1623;border-bottom:1px solid #263a50}.playerbar strong{font-size:13px}.playerbar .pstatus{color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.playerbar .spacer{flex:1}.playerbar button{padding:7px 10px;font-size:12px}#emuFrame{border:0;width:100%;height:calc(100vh - 48px);background:#050a10}#player:fullscreen .playerbar,#player:-webkit-full-screen .playerbar{display:none}#player:fullscreen #emuFrame,#player:-webkit-full-screen #emuFrame{height:100vh}.note{margin-top:12px;font-size:11px;color:var(--muted)}
+body{padding:26px}.wrap{max-width:1180px;margin:auto}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px}.top h1{font-size:clamp(30px,5vw,60px);letter-spacing:-.045em;margin:0}.top p{color:var(--muted);line-height:1.55;margin:8px 0 0;max-width:760px}.chip{border:1px solid var(--line);background:#091522;color:var(--cyan);padding:8px 11px;border-radius:999px;font-size:12px;white-space:nowrap}.helpchip{text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:750}.helpchip:hover{border-color:#4f779d;background:#102338}.layout{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}.card{background:rgba(13,24,37,.94);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 18px 60px #0005}.drop{min-height:275px;border:1px dashed #395a7b;border-radius:16px;background:linear-gradient(#0d1d2f,#091522);display:grid;place-items:center;text-align:center;padding:28px;transition:.15s}.drop.drag{border-color:var(--cyan);box-shadow:0 0 0 3px #73e4ff18 inset}.drop .big{font-size:44px;margin-bottom:10px}.drop h2{font-size:24px;margin:0 0 8px}.drop p{margin:0 0 18px;color:var(--muted);line-height:1.45}.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}button,select{font:inherit}button{border-radius:11px;border:0;padding:11px 15px;font-weight:750;cursor:pointer}.primary{background:var(--cyan);color:#031018}.secondary{background:#17283b;color:var(--text);border:1px solid #2b435e}button:disabled{opacity:.45;cursor:not-allowed}input[type=file]{display:none}.systems{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:15px}.mini{border:1px solid var(--line);background:#091522;border-radius:11px;padding:9px 7px;text-align:center;color:var(--muted);font-size:11px}.mini b{display:block;color:var(--text);font-size:18px;margin-bottom:3px}.eyebrow{text-transform:uppercase;letter-spacing:.13em;font-size:11px;color:var(--muted);margin:0 0 10px}.detected{display:flex;align-items:center;gap:13px;padding:14px;border:1px solid var(--line);border-radius:15px;background:var(--panel2)}.icon{width:53px;height:53px;display:grid;place-items:center;border-radius:13px;border:1px solid var(--line);background:#08131f;font-size:26px}.detected h3{font-size:20px;margin:0 0 3px}.why{color:var(--muted);font-size:12px;line-height:1.35}.conf{margin-left:auto;border:1px solid var(--line);border-radius:999px;padding:5px 8px;font-size:11px}.conf.high{color:var(--green)}.conf.medium{color:var(--yellow)}.conf.low{color:var(--red)}.field{margin-top:13px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}.field select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#08131f;color:var(--text)}.biosbox{margin-top:13px;border:1px solid var(--line);border-radius:11px;padding:10px 11px;background:#091522;font-size:12px;line-height:1.55}.biosbox b{color:var(--green)}.filelist{margin-top:12px;border-top:1px solid var(--line);max-height:245px;overflow:auto}.file{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:9px 0;border-bottom:1px solid #25374d99}.fname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}.fmeta{font-size:10px;color:var(--muted);margin-top:2px}.tag{align-self:start;border-radius:999px;background:#17283b;color:#c4d5e8;padding:3px 7px;font-size:10px}.tag.bios{color:#9cf5b8}.tag.game{color:#9fefff}.bottom{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}.status{font-size:12px;color:var(--muted);line-height:1.45;margin-top:10px}.status.good{color:var(--green)}.status.bad{color:var(--red)}.diagbox{margin-top:10px;border:1px solid var(--line);border-radius:11px;background:#08131f;padding:8px 10px}.diagbox summary{cursor:pointer;color:var(--muted);font-size:11px;font-weight:700}.diagrow{display:grid;grid-template-columns:minmax(150px,1fr) 52px 1.5fr;gap:8px;padding:5px 0;border-top:1px solid #20354a;font-size:10px}.diagrow:first-child{margin-top:7px}.diagscore{font-family:ui-monospace,monospace;color:var(--cyan);text-align:right}.diagreasons{color:var(--muted)}.toggle{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;margin-top:11px}.toggle input{accent-color:#73e4ff}
+.note{margin-top:12px;font-size:11px;color:var(--muted)}
+.library{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:#091522;padding:12px}.library[hidden]{display:none}.library-grid{display:grid;grid-template-columns:minmax(180px,1fr) auto;gap:8px;align-items:end}.library label{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}.library select{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;background:#08131f;color:var(--text)}.cacheline{margin-top:8px;font-size:11px;color:var(--muted)}.diagrow{cursor:pointer;border-radius:6px}.diagrow:hover{background:#102338}.diagrow.selected{background:#102c3a;outline:1px solid #3d6685}.diag-hint{margin-top:8px;color:var(--muted);font-size:10px}
+.save-modal{position:fixed;inset:0;z-index:80;background:#02060bd9;display:none;align-items:center;justify-content:center;padding:20px}.save-modal.show{display:flex}.save-dialog{width:min(1040px,96vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;background:#0b1724;border:1px solid #34506d;border-radius:18px;box-shadow:0 30px 100px #000c}.save-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}.save-head h2{margin:0;font-size:20px}.save-head .spacer{flex:1}.save-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:11px 16px;border-bottom:1px solid var(--line);background:#091421}.save-table-wrap{overflow:auto;min-height:180px}.save-table{width:100%;border-collapse:collapse}.save-table th,.save-table td{padding:10px 12px;border-bottom:1px solid #20354a;text-align:left;font-size:12px;vertical-align:middle}.save-table th{position:sticky;top:0;background:#0d1b2a;color:#9db4cc;font-size:10px;text-transform:uppercase;letter-spacing:.08em}.save-table td.actions-cell{white-space:nowrap}.save-table button{padding:6px 8px;font-size:11px}.save-empty{padding:30px;text-align:center;color:var(--muted)}.save-foot{padding:10px 16px;color:var(--muted);font-size:11px;border-top:1px solid var(--line)}
 @media(max-width:850px){body{padding:15px}.layout{grid-template-columns:1fr}.top{display:block}.chip{display:inline-block;margin-top:10px}.systems{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
 <div class="wrap" id="hub">
   <div class="top">
-    <div><h1>JSD Emulator Hub</h1><p id="introText">Apri una cartella con gioco e, se necessario, BIOS. Il sistema viene riconosciuto automaticamente e viene avviato l'HTML corretto, senza fondere gli emulatori tra loro.</p></div>
+    <div><h1>JSD Emulator Hub</h1><p id="introText">Apri una cartella per riconoscere il sistema, poi avvia il relativo HTML autonomo. ROM e BIOS vengono scelti direttamente dentro l'emulatore.</p></div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
-      <a class="chip helpchip" id="helpLink" href="help.html">? Guida</a>
+      <a class="chip helpchip" id="helpLink" href="help.html">? Guida</a><button class="chip helpchip" id="savesBtn" type="button">💾 I miei salvataggi</button>
       <label class="chip" style="display:flex;align-items:center;gap:7px"><span id="langLabel">Lingua</span><select id="langSelect" style="background:#08131f;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:4px 7px"><option value="it">Italiano</option><option value="en">English</option></select></label>
-      <div class="chip" id="hubChip">7 emulatori · ZIP scan · HTML separati</div>
+      <div class="chip" id="hubChip">12 emulatori · ZIP scan · savegame localStorage · HTML separati</div>
     </div>
   </div>
 
@@ -39,6 +41,11 @@ body{padding:26px}.wrap{max-width:1180px;margin:auto}.top{display:flex;align-ite
       <div class="systems">
         <div class="mini"><b>🟩</b>Game Boy / GBC / GBA</div>
         <div class="mini"><b>🔵</b>SEGA SMS / Game Gear</div>
+        <div class="mini"><b>🟥</b>Mega Drive / Genesis</div>
+        <div class="mini"><b>🟨</b>Neo Geo AES / MVS</div>
+        <div class="mini"><b>🎮</b>NES / Famicom</div>
+        <div class="mini"><b>🟪</b>Super Nintendo / SNES</div>
+        <div class="mini"><b>🟧</b>PC Engine / TG16</div>
         <div class="mini"><b>🕹️</b>ColecoVision</div>
         <div class="mini"><b>🌈</b>ZX Spectrum</div>
         <div class="mini"><b>🔷</b>MSX1</div>
@@ -46,6 +53,15 @@ body{padding:26px}.wrap{max-width:1180px;margin:auto}.top{display:flex;align-ite
         <div class="mini"><b>✳️</b>Vectrex</div>
       </div>
       <div class="status" id="folderStatus">Nessuna cartella selezionata.</div>
+      <div class="library" id="libraryPanel" hidden>
+        <div class="library-grid">
+          <div><label id="gameLabel">Gioco / ROM</label><select id="gameSelect"><option>—</option></select></div>
+          <button class="primary" id="launch" disabled>Apri gioco</button>
+        </div>
+        <div class="bottom"><button class="secondary" id="refreshAnalysis">↻ Refresh analisi</button><button class="secondary" id="clear">Pulisci</button></div>
+        <div class="cacheline" id="cacheStatus"></div>
+        <div class="status" id="launchStatus"></div>
+      </div>
     </section>
 
     <aside class="card">
@@ -56,35 +72,32 @@ body{padding:26px}.wrap{max-width:1180px;margin:auto}.top{display:flex;align-ite
         <div class="conf low" id="conf">—</div>
       </div>
 
-      <div class="field"><label id="systemLabel">Sistema</label><select id="systemOverride"></select></div>
-      <div class="field"><label id="gameLabel">Gioco / ROM</label><select id="gameSelect" disabled><option>—</option></select></div>
-      <div class="biosbox" id="biosBox">BIOS: <span>—</span></div>
-      <div class="filelist" id="fileList"></div>
-      <label class="toggle"><input type="checkbox" id="autoLaunch" checked> <span id="autoLaunchText">Avvio automatico quando il riconoscimento è sicuro</span></label>
-      <div class="bottom"><button class="primary" id="launch" disabled>Avvia emulatore</button><button class="secondary" id="clear" disabled>Pulisci</button></div>
-      <div class="status" id="launchStatus"></div>
-      <div class="note" id="privacyNote">Il caricamento passa direttamente dalla landing all'HTML dell'emulatore tramite il browser; non viene inviato nulla a un server.</div>
+      <details class="diagbox" id="diagBox" open><summary id="diagSummary">Diagnostica riconoscimento</summary><div id="diagScores"></div></details>
+      <div class="diag-hint" id="diagHint">Puoi cliccare una riga della diagnostica per forzare il sistema quando il rilevamento è ambiguo.</div>
     </aside>
   </div>
 </div>
 
-<div id="player">
-  <div class="playerbar">
-    <button class="secondary" id="back">← Landing</button>
-    <strong id="playerTitle">Emulatore</strong>
-    <span class="pstatus" id="playerStatus">apertura…</span>
-    <span class="spacer"></span>
-    <button class="secondary" id="playerFull">⛶ Schermo intero</button><button class="secondary" id="reload">↻ Ricarica</button>
-  </div>
-  <iframe id="emuFrame" allow="autoplay; fullscreen *" allowfullscreen webkitallowfullscreen></iframe>
-</div>
 
+<div id="saveModal" class="save-modal" aria-hidden="true">
+  <section class="save-dialog" role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+    <div class="save-head"><h2 id="saveTitle">💾 I miei salvataggi</h2><span class="spacer"></span><button class="secondary" id="saveClose">Chiudi</button></div>
+    <div class="save-toolbar"><button class="primary" id="saveRefresh">Aggiorna</button><button class="secondary" id="saveExportAll">Backup completo JSON</button><button class="secondary" id="saveImportAllBtn">Importa backup JSON</button><a class="chip helpchip" href="savegame-manager.html">Save Bank manuale</a><span id="saveSummary" class="status" style="margin:0"></span></div>
+    <div class="save-table-wrap"><table class="save-table"><thead><tr><th>Sistema</th><th>Gioco</th><th>Dimensione</th><th>Ultimo salvataggio</th><th>Azioni</th></tr></thead><tbody id="saveRows"></tbody></table><div class="save-empty" id="saveEmpty" hidden>Nessun savegame persistente trovato nel browser.</div></div>
+    <div class="save-foot">“Importa” sostituisce il save del gioco selezionato e lo mantiene in localStorage. Per creare un nuovo slot, avvia prima la ROM almeno una volta. I save-state completi non sono inclusi qui.</div>
+    <input id="saveImportFile" type="file" accept=".sav,.srm,.brm,.bin,application/octet-stream" hidden><input id="saveImportAllFile" type="file" accept=".json,application/json" hidden>
+  </section>
+</div>
 <script>
 'use strict';
 const SYSTEMS={
   gameboy:{label:'Game Boy / Color / Advance',icon:'🟩',html:'gbjsd.html'},
   sega:{label:'SEGA Master System / Game Gear',icon:'🔵',html:'segajsd.html'},
+  megadrive:{label:'SEGA Mega Drive / Genesis',icon:'🟥',html:'megadrivejsd.html'},
   neogeo:{label:'Neo Geo AES / MVS',icon:'🟨',html:'neogeojsd.html'},
+  nes:{label:'Nintendo Entertainment System / Famicom',icon:'🎮',html:'nesjsd.html'},
+  snes:{label:'Super Nintendo / Super Famicom',icon:'🟪',html:'snesjsd.html'},
+  pce:{label:'PC Engine / TurboGrafx-16',icon:'🟧',html:'pcejsd.html'},
   coleco:{label:'ColecoVision',icon:'🕹️',html:'colecojsd.html'},
   spectrum:{label:'ZX Spectrum 48K',icon:'🌈',html:'zx48jsd.html'},
   msx1:{label:'MSX1',icon:'🔷',html:'msx1jsd.html'},
@@ -92,31 +105,23 @@ const SYSTEMS={
   vectrex:{label:'Vectrex',icon:'✳️',html:'vectrex_emulator.html'}
 };
 const $=s=>document.querySelector(s);
-const E={pick:$('#pick'),folderInput:$('#folderInput'),drop:$('#drop'),folderStatus:$('#folderStatus'),systemOverride:$('#systemOverride'),gameSelect:$('#gameSelect'),biosBox:$('#biosBox'),fileList:$('#fileList'),icon:$('#icon'),systemName:$('#systemName'),why:$('#why'),conf:$('#conf'),autoLaunch:$('#autoLaunch'),launch:$('#launch'),clear:$('#clear'),launchStatus:$('#launchStatus'),player:$('#player'),frame:$('#emuFrame'),back:$('#back'),reload:$('#reload'),playerTitle:$('#playerTitle'),playerStatus:$('#playerStatus'),langSelect:$('#langSelect'),playerFull:$('#playerFull')};
-let entries=[],analysis=null,currentSystem='',pendingPayload=null,lastTarget='';
+const E={pick:$('#pick'),folderInput:$('#folderInput'),drop:$('#drop'),folderStatus:$('#folderStatus'),gameSelect:$('#gameSelect'),diagBox:$('#diagBox'),diagSummary:$('#diagSummary'),diagScores:$('#diagScores'),diagHint:$('#diagHint'),icon:$('#icon'),systemName:$('#systemName'),why:$('#why'),conf:$('#conf'),launch:$('#launch'),clear:$('#clear'),refreshAnalysis:$('#refreshAnalysis'),libraryPanel:$('#libraryPanel'),cacheStatus:$('#cacheStatus'),launchStatus:$('#launchStatus'),langSelect:$('#langSelect'),savesBtn:$('#savesBtn'),saveModal:$('#saveModal'),saveClose:$('#saveClose'),saveRefresh:$('#saveRefresh'),saveRows:$('#saveRows'),saveEmpty:$('#saveEmpty'),saveSummary:$('#saveSummary'),saveImportFile:$('#saveImportFile'),saveExportAll:$('#saveExportAll'),saveImportAllBtn:$('#saveImportAllBtn'),saveImportAllFile:$('#saveImportAllFile')};
+let entries=[],analysis=null,currentSystem='',rawFolderEntries=[],topFileMap=new Map(),folderIdentity=null;
+const CACHE_KEY='jsd-hub-folder-analysis-v2';
 
 let uiLang='it';
 const UI={
-  it:{language:'Lingua',help:'? Guida',chip:'8 emulatori · ZIP scan · HTML separati',intro:"Apri una cartella con gioco e, se necessario, BIOS. Il sistema viene riconosciuto automaticamente e viene avviato l'HTML corretto, senza fondere gli emulatori tra loro.",dropTitle:'Mostra una cartella alla landing',dropDesc:'Può contenere BIOS, ROM, ZIP e sottocartelle. La landing guarda anche dentro agli archivi ZIP; i file restano nel browser.',chooseFolder:'Scegli cartella',recognition:'Riconoscimento',system:'Sistema',game:'Gioco / ROM',waiting:'In attesa',selectFolder:'Seleziona una cartella.',autoDetect:'— rilevamento automatico —',autoLaunch:'Avvio automatico quando il riconoscimento è sicuro',launch:'Avvia emulatore',clear:'Pulisci',privacy:"Il caricamento passa direttamente dalla landing all'HTML dell'emulatore tramite il browser; non viene inviato nulla a un server.",back:'← Landing',reload:'↻ Ricarica',fullscreen:'⛶ Schermo intero',noFolder:'Nessuna cartella selezionata.',analysing:'Analisi della cartella e degli eventuali ZIP…',items:'{n} elementi analizzati',zipInfo:' · {z} ZIP, {n} file interni',zipFailed:' ({n} non estraibili)',local:' · tutto resta locale nel browser.',manual:'scelta manuale',compatible:'file compatibili',high:'alta',medium:'media',low:'bassa',noGame:'(nessun gioco · avvio macchina/BIOS)',biosNotNeeded:'non necessario',biosOptional:'opzionale · non caricato',biosMissing:'non trovato',insideZip:'dentro ZIP',detectOnly:'solo rilevamento',destination:'Destinazione: {file}',opening:'apertura di {file}…',reloading:'ricaricamento…',passing:'passaggio ROM/BIOS…',loaded:'caricati: {x}',emuOpened:'emulatore aperto',intelliLive:'Intellivision locale aperto',autoloadFail:'autoload non riuscito: {e}',passError:'errore passaggio file: {e}',zipUnavailable:'ZIP riconosciuto, ma questa entry non può essere estratta dal browser: {x}',error:'Errore: {e}'},
-  en:{language:'Language',help:'? Help',chip:'8 emulators · ZIP scan · separate HTML files',intro:'Open a folder containing a game and, when required, its BIOS. The system is detected automatically and the correct standalone emulator HTML is launched.',dropTitle:'Show a folder to the launcher',dropDesc:'It may contain BIOS files, ROMs, ZIP archives and subfolders. The launcher also inspects files inside ZIP archives; everything stays in your browser.',chooseFolder:'Choose folder',recognition:'Detection',system:'System',game:'Game / ROM',waiting:'Waiting',selectFolder:'Select a folder.',autoDetect:'— automatic detection —',autoLaunch:'Launch automatically when detection is confident',launch:'Launch emulator',clear:'Clear',privacy:'Files are passed directly from the launcher to the emulator HTML in your browser; nothing is uploaded to a server.',back:'← Launcher',reload:'↻ Reload',fullscreen:'⛶ Fullscreen',noFolder:'No folder selected.',analysing:'Analysing folder and ZIP archives…',items:'{n} items analysed',zipInfo:' · {z} ZIP, {n} internal files',zipFailed:' ({n} not extractable)',local:' · everything stays local in your browser.',manual:'manual selection',compatible:'compatible files',high:'high',medium:'medium',low:'low',noGame:'(no game · boot machine/BIOS)',biosNotNeeded:'not required',biosOptional:'optional · not loaded',biosMissing:'not found',insideZip:'inside ZIP',detectOnly:'detection only',destination:'Target: {file}',opening:'opening {file}…',reloading:'reloading…',passing:'passing ROM/BIOS…',loaded:'loaded: {x}',emuOpened:'emulator opened',intelliLive:'local Intellivision emulator opened',autoloadFail:'autoload failed: {e}',passError:'file handoff error: {e}',zipUnavailable:'ZIP detected, but this entry cannot be extracted by the browser: {x}',error:'Error: {e}'}
+  it:{language:'Lingua',help:'? Guida',chip:'12 emulatori · ZIP scan · cache analisi · HTML standalone',intro:'Apri una cartella: il launcher riconosce il sistema e può aprire il gioco direttamente nel relativo emulatore standalone, in una nuova scheda.',dropTitle:'Scegli una cartella di ROM',dropDesc:'Può contenere BIOS, ROM, ZIP e sottocartelle. L’analisi viene memorizzata localmente e riutilizzata quando la cartella è invariata.',chooseFolder:'Scegli cartella',recognition:'Riconoscimento',game:'Gioco / ROM',waiting:'In attesa',selectFolder:'Seleziona una cartella.',launch:'Apri gioco',clear:'Pulisci',refresh:'↻ Refresh analisi',high:'alta',medium:'media',low:'bassa',noGame:'(nessun gioco rilevato)',diag:'Diagnostica riconoscimento',diagHint:'Clicca una riga per forzare il sistema quando il rilevamento è ambiguo.',noSignals:'nessun segnale riconoscibile',insideZip:'dentro ZIP',detectOnly:'solo rilevamento',analysing:'Analisi completa della cartella e degli ZIP…',items:'{n} elementi analizzati',zipInfo:' · {z} ZIP, {n} file interni',zipFailed:' ({n} non estraibili)',local:' · tutto resta locale nel browser.',cacheHit:'Analisi caricata dalla cache locale · {n} elementi · {when}',cacheSaved:'Analisi aggiornata e salvata in localStorage.',cacheMiss:'Cartella nuova o modificata: eseguita una nuova analisi.',opening:'Apro {file} in una nuova scheda…',passing:'Trasferimento ROM/BIOS all’emulatore…',loaded:'ROM/BIOS consegnati all’emulatore.',popup:'Il browser ha bloccato la nuova scheda.',launchFail:'Avvio non riuscito: {e}',noInject:'L’emulatore non ha risposto al protocollo di lancio.',error:'Errore: {e}'},
+  en:{language:'Language',help:'? Help',chip:'12 emulators · ZIP scan · analysis cache · standalone HTML',intro:'Open a folder: the launcher detects the system and can open the selected game directly in its standalone emulator, in a new tab.',dropTitle:'Choose a ROM folder',dropDesc:'It may contain BIOS files, ROMs, ZIP archives and subfolders. Analysis is cached locally and reused while the folder is unchanged.',chooseFolder:'Choose folder',recognition:'Detection',game:'Game / ROM',waiting:'Waiting',selectFolder:'Select a folder.',launch:'Open game',clear:'Clear',refresh:'↻ Refresh analysis',high:'high',medium:'medium',low:'low',noGame:'(no game detected)',diag:'Detection diagnostics',diagHint:'Click a diagnostic row to force a system when detection is ambiguous.',noSignals:'no recognisable signals',insideZip:'inside ZIP',detectOnly:'detection only',analysing:'Fully analysing folder and ZIP archives…',items:'{n} items analysed',zipInfo:' · {z} ZIP, {n} internal files',zipFailed:' ({n} not extractable)',local:' · everything stays local in your browser.',cacheHit:'Analysis restored from local cache · {n} items · {when}',cacheSaved:'Analysis refreshed and saved to localStorage.',cacheMiss:'New or changed folder: a fresh analysis was performed.',opening:'Opening {file} in a new tab…',passing:'Passing ROM/BIOS to emulator…',loaded:'ROM/BIOS delivered to emulator.',popup:'The browser blocked the new tab.',launchFail:'Launch failed: {e}',noInject:'The emulator did not answer the launch protocol.',error:'Error: {e}'}
 };
 function tr(k,v={}){let s=(UI[uiLang]&&UI[uiLang][k])||UI.it[k]||k;return s.replace(/\{(\w+)\}/g,(_,n)=>v[n]??'')}
-const REASON_EN={'nome cartella/file':'folder/file name','nome SEGA / SMS / Game Gear':'SEGA / SMS / Game Gear name','nome Coleco':'Coleco name','nome Spectrum':'Spectrum name','nome MSX':'MSX name','nome Intellivision':'Intellivision name','nome Vectrex':'Vectrex name','header Nintendo Game Boy':'Nintendo Game Boy header','header Game Boy Advance':'Game Boy Advance header','firma TMR SEGA':'TMR SEGA signature','BIOS SEGA':'SEGA BIOS','header cartuccia Coleco':'Coleco cartridge header','BIOS Coleco':'Coleco BIOS','snapshot 48K':'48K snapshot','schermo Spectrum':'Spectrum screen','ROM 48K':'48K ROM','header AB MSX':'MSX AB header','BIOS MSX':'MSX BIOS','BIOS 32 KiB':'32 KiB BIOS','Executive ROM':'Executive ROM','GROM':'GROM','cartuccia .vec':'.vec cartridge','file Vectrex .bin':'Vectrex .bin file','file Vectrex .rom':'Vectrex .rom file','BIOS Vectrex 8 KiB':'Vectrex 8 KiB BIOS','EXEC + GROM':'EXEC + GROM'};
+const REASON_EN={'nome cartella/file':'folder/file name','nome SEGA / SMS / Game Gear':'SEGA / SMS / Game Gear name','nome Mega Drive / Genesis':'Mega Drive / Genesis name','header SEGA Mega Drive':'SEGA Mega Drive header','nome Coleco':'Coleco name','nome Spectrum':'Spectrum name','nome MSX':'MSX name','nome Intellivision':'Intellivision name','nome Vectrex':'Vectrex name','nome NES / Famicom':'NES / Famicom name','nome SNES / Super Famicom':'SNES / Super Famicom name','firma iNES':'iNES signature','nome PC Engine / TurboGrafx':'PC Engine / TurboGrafx name','HuCard PC Engine':'PC Engine HuCard','header Nintendo Game Boy':'Nintendo Game Boy header','header Game Boy Advance':'Game Boy Advance header','firma TMR SEGA':'TMR SEGA signature','BIOS SEGA':'SEGA BIOS','header cartuccia Coleco':'Coleco cartridge header','BIOS Coleco':'Coleco BIOS','snapshot 48K':'48K snapshot','schermo Spectrum':'Spectrum screen','ROM 48K':'48K ROM','header AB MSX':'MSX AB header','BIOS MSX':'MSX BIOS','BIOS 32 KiB':'32 KiB BIOS','Executive ROM':'Executive ROM','GROM':'GROM','cartuccia .vec':'.vec cartridge','file Vectrex .bin':'Vectrex .bin file','file Vectrex .rom':'Vectrex .rom file','BIOS Vectrex 8 KiB':'Vectrex 8 KiB BIOS','EXEC + GROM':'EXEC + GROM','firma Intellicart A8':'Intellicart A8 signature','header GCE Vectrex':'GCE Vectrex header','firma HESM':'HESM signature','cartuccia con firmware Intellivision':'cartridge with Intellivision firmware','BIOS + cartuccia Vectrex':'Vectrex BIOS + cartridge','BIOS + cartuccia Coleco':'Coleco BIOS + cartridge','BIOS + cartuccia MSX':'MSX BIOS + cartridge','HuCard raw con contesto PC Engine':'raw HuCard with PC Engine context'};
 function reasonText(r){return uiLang==='en'?(REASON_EN[r]||r):r}
-function rebuildSystemOptions(){
-  const value=E.systemOverride.value;
-  E.systemOverride.innerHTML='';
-  const auto=document.createElement('option');auto.value='';auto.textContent=tr('autoDetect');E.systemOverride.appendChild(auto);
-  for(const [id,sys] of Object.entries(SYSTEMS)){const o=document.createElement('option');o.value=id;o.textContent=sys.label;E.systemOverride.appendChild(o)}
-  E.systemOverride.value=value||currentSystem||'';
-}
 function applyLanguage(lang){
-  uiLang=lang==='en'?'en':'it';document.documentElement.lang=uiLang;E.langSelect.value=uiLang;try{localStorage.setItem('jsd-hub-lang',uiLang)}catch(_){}
+  uiLang=lang==='en'?'en':'it';document.documentElement.lang=uiLang;E.langSelect.value=uiLang;try{localStorage.setItem('jsdHubLang',uiLang)}catch(_){}
   const set=(sel,key)=>{const el=$(sel);if(el)el.textContent=tr(key)};
-  set('#langLabel','language');set('#helpLink','help');set('#hubChip','chip');set('#introText','intro');set('#dropTitle','dropTitle');set('#dropDesc','dropDesc');E.pick.textContent=tr('chooseFolder');
-  set('#recognitionLabel','recognition');set('#systemLabel','system');set('#gameLabel','game');set('#autoLaunchText','autoLaunch');E.launch.textContent=tr('launch');E.clear.textContent=tr('clear');set('#privacyNote','privacy');E.back.textContent=tr('back');E.reload.textContent=tr('reload');E.playerFull.textContent=tr('fullscreen');
-  rebuildSystemOptions();
-  if(analysis&&currentSystem)render(); else {E.systemName.textContent=tr('waiting');E.why.textContent=tr('selectFolder');if(!entries.length)statusFolder(tr('noFolder'))}
+  set('#langLabel','language');set('#helpLink','help');set('#hubChip','chip');set('#introText','intro');set('#dropTitle','dropTitle');set('#dropDesc','dropDesc');E.pick.textContent=tr('chooseFolder');set('#recognitionLabel','recognition');set('#gameLabel','game');set('#diagSummary','diag');set('#diagHint','diagHint');E.launch.textContent=tr('launch');E.clear.textContent=tr('clear');E.refreshAnalysis.textContent=tr('refresh');
+  if(analysis&&currentSystem)render(); else {E.systemName.textContent=tr('waiting');E.why.textContent=tr('selectFolder');if(!entries.length)statusFolder(uiLang==='en'?'No folder selected.':'Nessuna cartella selezionata.')}
 }
 
 function ext(n){const m=n.toLowerCase().match(/\.([a-z0-9]+)$/);return m?m[1]:''}
@@ -134,8 +139,8 @@ function decodeZipName(bytes,utf8){
 }
 function isInterestingZipEntry(name){
   const x=ext(name),n=name.toLowerCase();
-  if(['gb','gbc','gba','sms','gg','col','cv','vec','sna','z80','tap','scr','mx1','int','rom','bin','p1','p2','p3','p4','s1','m1','v1','v2','v3','v4','c1','c2','c3','c4','c5','c6','c7','c8','sp1','sp2','sp3','sfix','sm1','lo'].includes(x))return true;
-  return /bios|boot|exec|executive|grom|graphics.?rom|coleco|msx|spectrum|vectrex|gce|game.?boy|gba|game.?gear|master.?system|sega|intellivision|neo.?geo|neogeo|unibios|uni.?bios/.test(n);
+  if(['zip','gb','gbc','gba','sms','gg','md','gen','smd','col','cv','vec','sna','z80','tap','scr','mx1','int','img','rom','bin','p1','p2','p3','p4','s1','m1','v1','v2','v3','v4','c1','c2','c3','c4','c5','c6','c7','c8','sp1','sp2','sp3','sfix','sm1','lo','nes','sfc','smc','pce','sgx','hes','sav','srm','brm'].includes(x))return true;
+  return /bios|boot|exec|executive|grom|graphics.?rom|coleco|msx|spectrum|vectrex|gce|game.?boy|gba|game.?gear|master.?system|mega.?drive|genesis|sega|intellivision|neo.?geo|neogeo|unibios|uni.?bios|famicom|super.?famicom|super.?nintendo|snes|nintendo.?entertainment|pc.?engine|turbo.?grafx|hucard/.test(n);
 }
 async function inflateRaw(bytes){
   if(typeof DecompressionStream==='undefined')throw new Error('DecompressionStream non disponibile');
@@ -175,7 +180,7 @@ async function parseZip(container,depth=0){
     let innerFile;
     if(extracted){innerFile=new File([extracted],base(name),{type:'application/octet-stream',lastModified:file.lastModified})}
     else innerFile=new File([],base(name),{type:'application/octet-stream',lastModified:file.lastModified});
-    const item={file:innerFile,path:container.path+'!/'+name,fromZip:true,zipPath:container.path,virtualSize:uncomp,available,zipError:err};
+    const item={file:innerFile,path:container.path+'!/'+name,fromZip:true,zipPath:container.path,virtualSize:uncomp,available,zipError:err,sourcePath:container.sourcePath||container.path,zipChain:[...(container.zipChain||[]),name]};
     out.push(item);
     // One nested ZIP level is enough for unusual ROM packs.
     if(depth<1&&ext(name)==='zip'&&available){try{out.push(...await parseZip(item,depth+1))}catch(_){}}
@@ -204,6 +209,8 @@ async function enrich(item){
   item.ext=ext(item.file.name);item.low=item.path.toLowerCase();
   item.gbLogo=item.head.length>=0x134&&bytesEq(item.head.slice(0x104,0x134),GB_LOGO);
   item.gbaHeader=item.head.length>=0xC0&&item.head[0xB2]===0x96&&item.size>0x8000;
+  item.ines=item.head.length>=4&&item.head[0]===0x4e&&item.head[1]===0x45&&item.head[2]===0x53&&item.head[3]===0x1a;
+  item.mdHeader=item.head.length>=0x110&&String.fromCharCode(...item.head.slice(0x100,0x110)).includes('SEGA');
   item.segaTMR=false;
   if(item.available!==false){
     for(const off of [0x1ff0,0x3ff0,0x7ff0]){
@@ -214,43 +221,51 @@ async function enrich(item){
   }
   item.colecoHeader=item.head.length>=2&&((item.head[0]===0x55&&item.head[1]===0xaa)||(item.head[0]===0xaa&&item.head[1]===0x55));
   item.msxAB=(item.head[0]===0x41&&item.head[1]===0x42)||(item.at4000&&item.at4000[0]===0x41&&item.at4000[1]===0x42);
+  item.intelliRom=item.head.length>=3&&item.head[0]===0xA8&&(((item.head[1]^item.head[2])&255)===255)&&item.head[1]>0;
+  item.vectrexHeader=item.head.length>=5&&/g\s+GCE/i.test(String.fromCharCode(...item.head.slice(0,Math.min(32,item.head.length))));
+  item.hesMagic=item.head.length>=4&&String.fromCharCode(...item.head.slice(0,4))==='HESM';
   return item;
 }
 
-for(const [id,s] of Object.entries(SYSTEMS)){const o=document.createElement('option');o.value=id;o.textContent=s.label;E.systemOverride.appendChild(o)}
-const auto=document.createElement('option');auto.value='';auto.textContent=tr('autoDetect');E.systemOverride.insertBefore(auto,E.systemOverride.firstChild);E.systemOverride.value='';
-
+function folderId(arr){
+  const rows=arr.map(x=>`${x.path}\0${x.file.size}\0${x.file.lastModified||0}`).sort();let h=2166136261,total=0;
+  for(const x of arr)total+=x.file.size;
+  const text=rows.join('\n');for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619)}
+  const roots=[...new Set(arr.map(x=>(x.path||x.file.name).split('/')[0]))];return{sig:(h>>>0).toString(16).padStart(8,'0'),root:roots.length===1?roots[0]:'selection',count:arr.length,total};
+}
+function cacheEntry(f){return{path:f.path,size:f.size,virtualSize:f.virtualSize,fromZip:!!f.fromZip,zipPath:f.zipPath||'',available:f.available!==false,zipError:f.zipError||'',ext:f.ext,low:f.low,gbLogo:!!f.gbLogo,gbaHeader:!!f.gbaHeader,ines:!!f.ines,mdHeader:!!f.mdHeader,segaTMR:!!f.segaTMR,colecoHeader:!!f.colecoHeader,msxAB:!!f.msxAB,intelliRom:!!f.intelliRom,vectrexHeader:!!f.vectrexHeader,hesMagic:!!f.hesMagic,sourcePath:f.sourcePath||f.path,zipChain:f.zipChain||[]}}
+function readCache(){try{const x=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');return x&&x.version===2?x:null}catch(_){return null}}
+function saveCache(){if(!folderIdentity||!analysis)return;const payload={version:2,folder:folderIdentity,savedAt:Date.now(),analysis,entries:entries.map(cacheEntry)};try{localStorage.setItem(CACHE_KEY,JSON.stringify(payload));E.cacheStatus.textContent=tr('cacheSaved')}catch(e){E.cacheStatus.textContent='Cache: '+(e.message||e)}}
+function restoreCached(c,arr){
+  topFileMap=new Map(arr.map(x=>[x.path,x.file]));
+  entries=c.entries.map(m=>{const root=topFileMap.get(m.sourcePath||m.path);const f=(m.zipChain&&m.zipChain.length)?new File([],base(m.path),{type:'application/octet-stream',lastModified:root?.lastModified||0}):root;if(!f)return null;return{...m,file:f}}).filter(Boolean);
+  if(entries.length!==c.entries.length)return false;analysis=c.analysis;currentSystem=analysis.top||'';return true;
+}
+function prepareRaw(arr){return arr.map(x=>({...x,sourcePath:x.path,zipChain:[]}))}
 E.folderInput.onchange=e=>receive([...e.target.files].map(f=>({file:f,path:f.webkitRelativePath||f.name})));
-E.pick.onclick=async()=>{
-  if(!window.showDirectoryPicker){E.folderInput.click();return}
-  try{const h=await showDirectoryPicker({mode:'read'});const arr=[];await walk(h,'',arr);receive(arr)}catch(err){if(err.name!=='AbortError')statusFolder(tr('error',{e:err.message}),true)}
-};
+E.pick.onclick=async()=>{if(!window.showDirectoryPicker){E.folderInput.click();return}try{const h=await showDirectoryPicker({mode:'read'});const arr=[];await walk(h,'',arr);receive(arr)}catch(err){if(err.name!=='AbortError')statusFolder(tr('error',{e:err.message}),true)}};
 async function walk(dir,path,out){for await(const [name,h] of dir.entries()){const p=path?path+'/'+name:name;if(h.kind==='file')out.push({file:await h.getFile(),path:p});else await walk(h,p,out)}}
-['dragenter','dragover'].forEach(t=>E.drop.addEventListener(t,e=>{e.preventDefault();E.drop.classList.add('drag')}));
-['dragleave','drop'].forEach(t=>E.drop.addEventListener(t,e=>{e.preventDefault();E.drop.classList.remove('drag')}));
-E.drop.addEventListener('drop',e=>{const fs=[...e.dataTransfer.files];if(fs.length)receive(fs.map(f=>({file:f,path:f.webkitRelativePath||f.name})))});
+['dragenter','dragover'].forEach(t=>E.drop.addEventListener(t,e=>{e.preventDefault();E.drop.classList.add('drag')}));['dragleave','drop'].forEach(t=>E.drop.addEventListener(t,e=>{e.preventDefault();E.drop.classList.remove('drag')}));E.drop.addEventListener('drop',e=>{const fs=[...e.dataTransfer.files];if(fs.length)receive(fs.map(f=>({file:f,path:f.webkitRelativePath||f.name})))});
 
-async function receive(arr){
-  statusFolder(tr('analysing'));
-  const expanded=await expandArchives(arr);
-  entries=await Promise.all(expanded.items.map(enrich));
-  analysis=detect(entries);currentSystem=analysis.top;E.systemOverride.value=currentSystem;render();
-  const zipInfo=expanded.zipCount?tr('zipInfo',{z:expanded.zipCount,n:expanded.inside})+(expanded.failed?tr('zipFailed',{n:expanded.failed}):''):'';
-  statusFolder(tr('items',{n:entries.length})+zipInfo+tr('local'));E.clear.disabled=false;
-  if(E.autoLaunch.checked&&analysis.confidence==='high'){
-    const roles=classify(currentSystem);
-    if(roles.games.length<=1) setTimeout(()=>launch(),160);
-  }
+async function receive(arr,{force=false}={}){
+  rawFolderEntries=prepareRaw(arr);topFileMap=new Map(rawFolderEntries.map(x=>[x.path,x.file]));folderIdentity=folderId(rawFolderEntries);E.libraryPanel.hidden=false;E.clear.disabled=false;E.refreshAnalysis.disabled=false;
+  if(!force){const c=readCache();if(c&&c.folder?.sig===folderIdentity.sig&&c.folder?.count===folderIdentity.count&&c.folder?.total===folderIdentity.total&&restoreCached(c,rawFolderEntries)){render();const when=new Date(c.savedAt).toLocaleString(uiLang==='en'?'en-GB':'it-IT');statusFolder(tr('cacheHit',{n:entries.length,when}));E.cacheStatus.textContent=tr('cacheHit',{n:entries.length,when});return}}
+  statusFolder(tr('analysing'));E.cacheStatus.textContent=tr('cacheMiss');
+  const expanded=await expandArchives(rawFolderEntries);entries=await Promise.all(expanded.items.map(enrich));analysis=detect(entries);currentSystem=analysis.top||'';render();
+  const zipInfo=expanded.zipCount?tr('zipInfo',{z:expanded.zipCount,n:expanded.inside})+(expanded.failed?tr('zipFailed',{n:expanded.failed}):''):'';statusFolder(tr('items',{n:entries.length})+zipInfo+tr('local'));saveCache();
 }
 
 function detect(files){
-  const score={gameboy:0,sega:0,neogeo:0,coleco:0,spectrum:0,msx1:0,intellivision:0,vectrex:0};
-  const why={gameboy:[],sega:[],neogeo:[],coleco:[],spectrum:[],msx1:[],intellivision:[],vectrex:[]};
+  const score={gameboy:0,sega:0,megadrive:0,neogeo:0,nes:0,snes:0,pce:0,coleco:0,spectrum:0,msx1:0,intellivision:0,vectrex:0};
+  const why={gameboy:[],sega:[],megadrive:[],neogeo:[],nes:[],snes:[],pce:[],coleco:[],spectrum:[],msx1:[],intellivision:[],vectrex:[]};
   const add=(id,n,r)=>{score[id]+=n;if(r&&!why[id].includes(r))why[id].push(r)};
   const all=files.map(x=>x.path.toLowerCase()).join(' ');
   if(/game\s*boy|gameboy|(^|[\\/_ -])gb([\\/_ .-]|$)/i.test(all))add('gameboy',18,'nome cartella/file');
   if(/game.?gear|master.?system|(^|[\\/_ .-])sms([\\/_ .-]|$)|sega/i.test(all))add('sega',18,'nome SEGA / SMS / Game Gear');
   if(/neo[ ._-]?geo|neogeo/i.test(all))add('neogeo',24,'nome Neo Geo');
+  if(/famicom|nintendo.?entertainment|(^|[\/_ .-])nes([\/_ .-]|$)/i.test(all))add('nes',22,'nome NES / Famicom');
+  if(/super.?famicom|super.?nintendo|(^|[\/_ .-])snes([\/_ .-]|$)/i.test(all))add('snes',24,'nome SNES / Super Famicom');
+  if(/pc.?engine|turbo.?grafx|(^|[\/_ .-])pce([\/_ .-]|$)/i.test(all))add('pce',22,'nome PC Engine / TurboGrafx');
   if(/coleco/i.test(all))add('coleco',18,'nome Coleco');
   if(/spectrum|zx\s*48|zx48/i.test(all))add('spectrum',18,'nome Spectrum');
   if(/msx\s*1|msx1|(^|[\\/_ -])msx([\\/_ .-]|$)/i.test(all))add('msx1',18,'nome MSX');
@@ -258,7 +273,7 @@ function detect(files){
   if(/vectrex|gce/i.test(all))add('vectrex',18,'nome Vectrex');
 
   for(const f of files){
-    const x=f.ext,n=f.low,sz=f.size;
+    const x=f.ext,n=f.low,bn=base(f.path).toLowerCase(),sz=f.size;
     if(['gb','gbc'].includes(x))add('gameboy',55,'.'+x);
     if(x==='gba')add('gameboy',65,'.gba');
     if(f.gbLogo)add('gameboy',80,'header Nintendo Game Boy');
@@ -266,7 +281,11 @@ function detect(files){
 
     if(['sms','gg'].includes(x))add('sega',65,'.'+x);
     if(f.segaTMR)add('sega',55,'firma TMR SEGA');
-    if(/game.?gear|master.?system|sms.?bios|sega.?bios/.test(n)&&(x==='rom'||x==='bin'))add('sega',32,'BIOS SEGA');
+    if(/game.?gear|master.?system|sms.?bios|sega.?bios/.test(bn)&&(x==='rom'||x==='bin'))add('sega',32,'BIOS SEGA');
+
+    if(['md','gen','smd'].includes(x))add('megadrive',72,'.'+x);
+    if(f.mdHeader)add('megadrive',88,'header SEGA Mega Drive');
+    if(x==='bin'&&f.mdHeader)add('megadrive',22,'.bin Mega Drive');
 
     if(x==='zip'&&/(^|[\/\\])neogeo\.zip$/.test(n))add('neogeo',95,'BIOS neogeo.zip');
     if(/^p[1-4]$/.test(x))add('neogeo',24,'P-ROM Neo Geo');
@@ -276,45 +295,79 @@ function detect(files){
     if(/^c[1-8]$/.test(x))add('neogeo',8,'C-ROM Neo Geo');
     if(['sp1','sp2','sp3','sfix','sm1','lo'].includes(x)||/uni.?bios|unibios|sp-s2|neo-epo|neo-po/.test(n))add('neogeo',24,'BIOS/board ROM Neo Geo');
 
-    if(['col','cv'].includes(x))add('coleco',55,'.'+x);
-    if(f.colecoHeader)add('coleco',28,'header cartuccia Coleco');
-    if(/coleco.*bios|bios.*coleco/.test(n))add('coleco',40,'BIOS Coleco');
+    if(x==='nes')add('nes',75,'.nes');
+    if(f.ines)add('nes',90,'firma iNES');
 
-    if(['sna','z80','tap','scr'].includes(x))add('spectrum',55,'.'+x);
+    if(['sfc','smc'].includes(x))add('snes',78,'.'+x);
+    if((x==='sfc'||x==='smc')&&sz>=0x8000)add('snes',8,'ROM SNES');
+
+    if(['pce','sgx'].includes(x))add('pce',75,'.'+x);
+    if(x==='hes')add('pce',58,'.hes');
+    if(f.hesMagic)add('pce',82,'firma HESM');
+    if((x==='pce'||x==='sgx')&&sz>=0x2000)add('pce',8,'HuCard PC Engine');
+    if((x==='bin'||x==='rom')&&sz>=0x2000&&/pc.?engine|turbo.?grafx|(^|[\/_ .-])pce([\/_ .-]|$)|hucard/.test(n))add('pce',42,'HuCard raw con contesto PC Engine');
+
+    if(['col','cv'].includes(x))add('coleco',55,'.'+x);
+    if(f.colecoHeader)add('coleco',72,'header cartuccia Coleco');
+    if(/coleco.*bios|bios.*coleco/.test(bn))add('coleco',40,'BIOS Coleco');
+
+    if(['sna','z80','tap','scr'].includes(x))add('spectrum',65,'.'+x);
     if(sz===49179&&x==='sna')add('spectrum',25,'snapshot 48K');
     if(sz===6912&&x==='scr')add('spectrum',20,'schermo Spectrum');
-    if((x==='rom'||x==='bin')&&sz===16384&&/spectrum|48k|48\.rom|zx/.test(n))add('spectrum',35,'ROM 48K');
+    if((x==='rom'||x==='bin')&&sz===16384&&/spectrum|48k|48\.rom|zx/.test(bn))add('spectrum',35,'ROM 48K');
 
     if(x==='mx1')add('msx1',60,'.mx1');
-    if(f.msxAB&&(x==='rom'||x==='bin'||x==='mx1'))add('msx1',22,'header AB MSX');
-    if(/(^|[\\/_ .-])msx([\\/_ .-]|$).*\.(rom|bin)$|msx.*bios|bios.*msx/.test(n))add('msx1',38,'BIOS MSX');
-    if(sz===32768&&(x==='rom'||x==='bin')&&/msx/.test(n))add('msx1',25,'BIOS 32 KiB');
+    if(f.msxAB&&(x==='rom'||x==='bin'||x==='mx1'))add('msx1',62,'header AB MSX');
+    if(/msx.*bios|bios.*msx|main.?bios|^msx1?\.(rom|bin)$/.test(bn))add('msx1',38,'BIOS MSX');
+    if(sz===32768&&(x==='rom'||x==='bin')&&/msx.*bios|bios.*msx|^msx1?\.(rom|bin)$/.test(bn))add('msx1',25,'BIOS 32 KiB');
 
     if(x==='int')add('intellivision',70,'.int');
-    if((x==='bin'||x==='rom')&&sz===8192&&/exec|executive/.test(n))add('intellivision',56,'Executive ROM');
-    if((x==='bin'||x==='rom')&&sz===2048&&/grom|graphics.*rom/.test(n))add('intellivision',56,'GROM');
+    if(x==='img')add('intellivision',62,'.img');
+    if(f.intelliRom)add('intellivision',88,'firma Intellicart A8');
+    if((x==='bin'||x==='rom')&&sz===8192&&/exec|executive/.test(bn))add('intellivision',56,'Executive ROM');
+    if((x==='bin'||x==='rom')&&sz===2048&&/grom|graphics.*rom/.test(bn))add('intellivision',56,'GROM');
 
     if(x==='vec')add('vectrex',70,'cartuccia .vec');
-    if((x==='bin'||x==='rom')&&/vectrex|gce/.test(n))add('vectrex',28,'file Vectrex .'+x);
-    if(sz===8192&&(x==='bin'||x==='rom')&&/bios|gce|vectrex/.test(n))add('vectrex',45,'BIOS Vectrex 8 KiB');
+    if(f.vectrexHeader)add('vectrex',90,'header GCE Vectrex');
+    if((x==='bin'||x==='rom')&&/vectrex|gce/.test(bn))add('vectrex',28,'file Vectrex .'+x);
+    if(sz===8192&&(x==='bin'||x==='rom')&&/bios/.test(bn)&&/gce|vectrex/.test(bn))add('vectrex',45,'BIOS Vectrex 8 KiB');
   }
-  if(files.some(f=>(f.ext==='bin'||f.ext==='rom')&&f.size===8192&&/exec|executive/.test(f.low))&&files.some(f=>(f.ext==='bin'||f.ext==='rom')&&f.size===2048&&/grom|graphics.*rom/.test(f.low)))add('intellivision',35,'EXEC + GROM');
+  const isRaw=f=>f.ext==='bin'||f.ext==='rom';
+  const intExec=files.find(f=>isRaw(f)&&f.size===8192&&/exec|executive/.test(f.low));
+  const intGrom=files.find(f=>isRaw(f)&&f.size===2048&&/grom|graphics.*rom/.test(f.low));
+  if(intExec&&intGrom){add('intellivision',42,'EXEC + GROM');if(files.some(f=>f!==intExec&&f!==intGrom&&(['int','img'].includes(f.ext)||isRaw(f))))add('intellivision',22,'cartuccia con firmware Intellivision')}
+  const vecBios=files.find(f=>isRaw(f)&&f.size===8192&&/vectrex.*bios|bios.*vectrex|gce.*bios|bios.*gce|^(.*[\/])?(vectrex|gce)\.(rom|bin)$/.test(f.low));
+  if(vecBios&&files.some(f=>f!==vecBios&&(f.ext==='vec'||(isRaw(f)&&f.size>0&&f.size<=32768))))add('vectrex',34,'BIOS + cartuccia Vectrex');
+  const colBios=files.find(f=>isRaw(f)&&f.size===8192&&/coleco.*bios|bios.*coleco|colecovision.*bios|bios.*colecovision/.test(f.low));
+  if(colBios&&files.some(f=>f!==colBios&&(['col','cv'].includes(f.ext)||isRaw(f))))add('coleco',34,'BIOS + cartuccia Coleco');
+  const msxBios=files.find(f=>isRaw(f)&&f.size===32768&&/msx.*bios|bios.*msx|main.?bios|(^|[\/])msx1?\.(rom|bin)$/.test(f.low));
+  if(msxBios&&files.some(f=>f!==msxBios&&(f.ext==='mx1'||isRaw(f))))add('msx1',32,'BIOS + cartuccia MSX');
   if(files.some(f=>f.fromZip&&/^p[1-4]$/.test(f.ext)))add('neogeo',65,'ROM set Neo Geo P/S/M/V/C');
 
 
-  const ranked=Object.keys(score).sort((a,b)=>score[b]-score[a]);const top=ranked[0],second=ranked[1];const gap=score[top]-score[second];
+  const ranked=Object.keys(score).sort((a,b)=>score[b]-score[a]);let top=ranked[0],second=ranked[1];let gap=score[top]-score[second];
   let confidence='low';if(score[top]>=60&&gap>=22)confidence='high';else if(score[top]>=30&&gap>=10)confidence='medium';
+  if(score[top]<=0){top='';gap=0;confidence='low'}
   return{score,why,top,confidence,gap};
 }
 
-function isLikelyState(f){return f.ext==='json'||/state|save|savestate|ram\.sav/.test(f.low)}
+function isLikelyState(f){return ['sav','srm','brm'].includes(f.ext)||f.ext==='json'||/state|save|savestate|backup.?ram|ram\.(sav|bin)/.test(f.low)}
+function isSaveFile(f){return ['sav','srm','brm'].includes(f.ext)||/backup.?ram|battery|sram|bram|savegame|ram\.(sav|bin)/.test(f.low)}
 function classify(system){
-  const bios=[],games=[];let exec=null,grom=null;
+  const bios=[],games=[],saves=[];let exec=null,grom=null;
   const bn=f=>base(f.path||f.file?.name||'').toLowerCase();
   const rombin=f=>f.ext==='rom'||f.ext==='bin';
   if(system==='gameboy'){
     // GB/GBC/GBA boot ROMs are not required by this emulator: never autoload a BIOS.
     for(const f of entries)if(['gb','gbc','gba'].includes(f.ext)||f.gbLogo||f.gbaHeader)games.push(f);
+  }else if(system==='megadrive'){
+    for(const f of entries)if(!isLikelyState(f)&&(['md','gen','smd'].includes(f.ext)||(f.ext==='bin'&&f.mdHeader)))games.push(f);
+  }else if(system==='nes'){
+    for(const f of entries)if(!isLikelyState(f)&&(f.ext==='nes'||f.ines))games.push(f);
+  }else if(system==='snes'){
+    for(const f of entries)if(!isLikelyState(f)&&['sfc','smc'].includes(f.ext))games.push(f);
+  }else if(system==='pce'){
+    for(const f of entries)if(!isLikelyState(f)&&(['pce','sgx','hes'].includes(f.ext)||((f.ext==='bin'||f.ext==='rom')&&f.size>=8192)))games.push(f);
   }else if(system==='sega'){
     // SMS/Game Gear BIOS is optional. Deliberately never autoload one: this avoids
     // unrelated .rom/.bin files (e.g. MSX BIOS) being injected into the Sega core.
@@ -340,7 +393,7 @@ function classify(system){
       /^(coleco|colecovision)(bios)?\.(rom|bin)$/.test(bn(f))
     ));
     if(candidates[0])bios.push(candidates[0]);
-    for(const f of entries)if(!bios.includes(f)&&!isLikelyState(f)&&(['col','cv'].includes(f.ext)||(rombin(f)&&f.colecoHeader)))games.push(f);
+    for(const f of entries)if(!bios.includes(f)&&!isLikelyState(f)&&(['col','cv'].includes(f.ext)||rombin(f)))games.push(f);
   }else if(system==='spectrum'){
     // Required 48K ROM: exact 16 KiB and explicit Spectrum/ZX/48K naming.
     const candidates=entries.filter(f=>rombin(f)&&f.size===16384&&(
@@ -354,64 +407,96 @@ function classify(system){
       /msx.*bios|bios.*msx|main.?bios|^msx1?\.(rom|bin)$/.test(bn(f))
     ));
     if(candidates[0])bios.push(candidates[0]);
-    for(const f of entries)if(!bios.includes(f)&&!isLikelyState(f)&&(f.ext==='mx1'||(rombin(f)&&(f.msxAB||/cart|game|rom/.test(bn(f))))))games.push(f);
+    for(const f of entries)if(!bios.includes(f)&&!isLikelyState(f)&&(f.ext==='mx1'||rombin(f)))games.push(f);
   }else if(system==='vectrex'){
     // Required GCE/Vectrex BIOS: exact 8 KiB and explicit Vectrex/GCE BIOS naming.
     const candidates=entries.filter(f=>rombin(f)&&f.size===8192&&(
       /vectrex.*bios|bios.*vectrex|gce.*bios|bios.*gce|^(vectrex|gce)\.(rom|bin)$/.test(bn(f))
     ));
     if(candidates[0])bios.push(candidates[0]);
-    for(const f of entries)if(!bios.includes(f)&&!isLikelyState(f)&&(f.ext==='vec'||(rombin(f)&&/cart|game|vectrex/.test(bn(f)))))games.push(f);
+    for(const f of entries)if(!bios.includes(f)&&!isLikelyState(f)&&(f.ext==='vec'||(rombin(f)&&f.size>0&&f.size<=32768)))games.push(f);
   }else if(system==='intellivision'){
     // Both firmware images are required and validated independently by name + exact size.
     exec=entries.find(f=>rombin(f)&&f.size===8192&&/exec|executive/.test(bn(f)))||null;
     grom=entries.find(f=>rombin(f)&&f.size===2048&&/grom|graphics.*rom/.test(bn(f)))||null;
     if(exec)bios.push(exec);if(grom&&grom!==exec)bios.push(grom);
-    for(const f of entries)if(!bios.includes(f)&&!isLikelyState(f)&&f.ext==='int')games.push(f);
+    for(const f of entries)if(!bios.includes(f)&&!isLikelyState(f)&&(['int','img'].includes(f.ext)||rombin(f)))games.push(f);
   }
-  const uniq=a=>[...new Map(a.map(f=>[f.path,f])).values()];return{bios:uniq(bios),games:uniq(games),exec,grom};
+  for(const f of entries)if(isSaveFile(f))saves.push(f);
+  const uniq=a=>[...new Map(a.map(f=>[f.path,f])).values()];return{bios:uniq(bios),games:uniq(games),saves:uniq(saves),exec,grom};
 }
 
+
+function renderDiagnostics(){
+  if(!analysis){E.diagScores.innerHTML='';return}
+  const rows=Object.keys(SYSTEMS).map(id=>({id,score:analysis.score[id]||0,reasons:analysis.why[id]||[]})).sort((a,b)=>b.score-a.score||SYSTEMS[a.id].label.localeCompare(SYSTEMS[b.id].label));const visible=rows.filter(r=>r.score>0);
+  E.diagScores.innerHTML=visible.length?visible.map(r=>`<div class="diagrow ${r.id===currentSystem?'selected':''}" data-system="${r.id}"><div>${esc(SYSTEMS[r.id].label)}</div><div class="diagscore">${r.score}</div><div class="diagreasons">${esc(r.reasons.map(reasonText).join(' · '))}</div></div>`).join(''):`<div class="diagreasons" style="padding:8px 0">${esc(tr('noSignals'))}</div>`;
+  E.diagScores.querySelectorAll('[data-system]').forEach(el=>el.onclick=()=>{currentSystem=el.dataset.system;render()});
+}
 function render(){
-  if(!analysis||!currentSystem)return;const s=SYSTEMS[currentSystem];const autoChosen=currentSystem===analysis.top;const confidence=autoChosen?analysis.confidence:'medium';
-  E.icon.textContent=s.icon;E.systemName.textContent=s.label;E.why.textContent=(autoChosen?analysis.why[currentSystem].map(reasonText):[tr('manual')]).slice(0,3).join(' · ')||tr('compatible');
-  E.conf.className='conf '+confidence;E.conf.textContent=tr(confidence);
-  const r=classify(currentSystem);E.gameSelect.innerHTML='';E.gameSelect._games=r.games;
-  if(r.games.length){r.games.forEach((f,i)=>{const o=document.createElement('option');o.value=i;o.textContent=base(f.path)+' · '+size(f.size);E.gameSelect.appendChild(o)});E.gameSelect.disabled=r.games.length===1}else{const o=document.createElement('option');o.value='';o.textContent=tr('noGame');E.gameSelect.appendChild(o);E.gameSelect.disabled=true}
-  const biosText=r.bios.length?r.bios.map(f=>base(f.path)+' ('+size(f.size)+')').join(' · '):currentSystem==='gameboy'?tr('biosNotNeeded'):currentSystem==='sega'?tr('biosOptional'):tr('biosMissing');
-  E.biosBox.innerHTML='<b>BIOS</b>: '+esc(biosText);
-  E.fileList.innerHTML='';const tagged=[];r.bios.forEach(f=>tagged.push([f,'BIOS']));r.games.forEach(f=>tagged.push([f,'GAME']));const used=new Set(tagged.map(x=>x[0].path));entries.filter(f=>!used.has(f.path)).slice(0,10).forEach(f=>tagged.push([f,'FILE']));
-  tagged.slice(0,25).forEach(([f,t])=>{const d=document.createElement('div');d.className='file';d.innerHTML='<div><div class="fname" title="'+esc(f.path)+'">'+esc(f.path)+'</div><div class="fmeta">'+size(f.size)+(f.fromZip?' · '+tr('insideZip'):'')+(f.available===false?' · '+tr('detectOnly'):'')+'</div></div><span class="tag '+(t==='BIOS'?'bios':t==='GAME'?'game':'')+'">'+t+'</span>';E.fileList.appendChild(d)});
-  E.launch.disabled=false;E.launchStatus.textContent=tr('destination',{file:s.html});
+  if(!analysis){return}renderDiagnostics();
+  if(!currentSystem){E.icon.textContent='?';E.systemName.textContent=tr('waiting');E.why.textContent=tr('noSignals');E.conf.className='conf low';E.conf.textContent=tr('low');E.gameSelect.innerHTML=`<option>${esc(tr('noGame'))}</option>`;E.launch.disabled=true;return}
+  const s=SYSTEMS[currentSystem],autoChosen=currentSystem===analysis.top,confidence=autoChosen?analysis.confidence:'medium';E.icon.textContent=s.icon;E.systemName.textContent=s.label;E.why.textContent=(autoChosen?analysis.why[currentSystem].map(reasonText):[uiLang==='en'?'manual selection':'scelta manuale']).slice(0,3).join(' · ')||'';E.conf.className='conf '+confidence;E.conf.textContent=tr(confidence);
+  const r=classify(currentSystem);E.gameSelect.innerHTML='';E.gameSelect._games=r.games;if(r.games.length){r.games.forEach((f,i)=>{const o=document.createElement('option');o.value=i;o.textContent=base(f.path)+' · '+size(f.size);E.gameSelect.appendChild(o)});E.gameSelect.disabled=false;E.launch.disabled=false}else{E.gameSelect.innerHTML=`<option value="">${esc(tr('noGame'))}</option>`;E.gameSelect.disabled=true;E.launch.disabled=true}
 }
 
-E.systemOverride.onchange=()=>{currentSystem=E.systemOverride.value||analysis?.top||'';if(currentSystem)render()};
-E.clear.onclick=reset;E.launch.onclick=launch;
-E.back.onclick=async()=>{if(document.fullscreenElement===E.player||document.fullscreenElement===E.frame){try{await document.exitFullscreen()}catch(_){}}E.player.classList.remove('show');E.frame.src='about:blank';pendingPayload=null;E.playerStatus.textContent='';};
-E.reload.onclick=()=>{if(lastTarget){E.playerStatus.textContent=tr('reloading');E.frame.src=lastTarget}};
-E.playerFull.onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await E.player.requestFullscreen()}catch(err){E.playerStatus.textContent=tr('error',{e:err.message})}};
-
-function launch(){
-  if(!currentSystem||!entries.length)return;const r=classify(currentSystem),games=E.gameSelect._games||r.games;const selected=games.length?games[Number(E.gameSelect.value||0)]:null;
-  const unavailable=[...r.bios,...(selected?[selected]:[])].filter(x=>x&&x.available===false);
-  if(unavailable.length){E.launchStatus.textContent=tr('zipUnavailable',{x:unavailable.map(x=>base(x.path)).join(', ')});return}
-  pendingPayload={type:'emulator-autoload',system:currentSystem,bios:r.bios.map(x=>x.file),rom:selected?[selected.file]:[]};
-  const s=SYSTEMS[currentSystem];lastTarget=s.html;E.playerTitle.textContent=s.label;E.playerStatus.textContent=tr('opening',{file:s.html});E.player.classList.add('show');
-  E.frame.src=s.html;
-  // onload is a fallback; the bridge normally asks for data with emulator-ready.
-  E.frame.onload=()=>setTimeout(sendPayload,220);
+// ---------------- Persistent save browser ----------------
+const SAVE_SYS={gameboy:'Game Boy / GBC / GBA',nes:'NES / Famicom',pce:'PC Engine / TurboGrafx-16',megadrive:'Mega Drive / Genesis'};
+const SAVE_EXT={gameboy:'sav',nes:'sav',pce:'sav',megadrive:'srm'};
+function saveB64ToBytes(text){const b=atob(text),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+function saveBytesToB64(u){let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode(...u.subarray(i,i+0x8000));return btoa(s)}
+function saveSafeName(s){return String(s||'save').replace(/\.[^.]+$/,'').replace(/[\\/:*?"<>|]+/g,'_').trim()||'save'}
+function saveMeta(key){try{return JSON.parse(localStorage.getItem('jsd-save-meta:'+key)||'null')||{}}catch(_){return{}}}
+function saveInfoFromKey(key){
+  if(key.startsWith('jsd-save-meta:')||key.startsWith('jsd-save-bank:')||key.endsWith('_rtc'))return null;
+  let system='',name='',format='sav';
+  let m;
+  if((m=key.match(/^gbjsd_[0-9a-f]+_(.+)$/i))){system='gameboy';name=m[1]}
+  else if((m=key.match(/^gbxjsd_clean_gba_(.+)$/i))){system='gameboy';name=m[1]}
+  else if((m=key.match(/^nesjsd:sram:([0-9a-f]+):(\d+)$/i))){system='nes';name='NES '+m[1]}
+  else if((m=key.match(/^nesjsd_sram_(.+)$/i))){system='nes';name=m[1]}
+  else if((m=key.match(/^pcejsd:bram:(.+):(\d+)$/i))){system='pce';try{name=decodeURIComponent(m[1])}catch(_){name=m[1]}}
+  else if((m=key.match(/^mdjsd:sram:([0-9a-f]+):(\d+)$/i))){system='megadrive';name='Mega Drive '+m[1];format='srm'}
+  else return null;
+  let value;try{value=localStorage.getItem(key);if(!value)return null}catch(_){return null}
+  let bytes;try{bytes=saveB64ToBytes(value)}catch(_){return null}
+  const meta=saveMeta(key);if(meta.name)name=meta.name;if(meta.system)system=meta.system;if(meta.format)format=meta.format;
+  return{key,system,name,format,size:bytes.length,updated:Number(meta.updated)||0,bytes,hasRtc:!!localStorage.getItem(key+'_rtc')};
 }
-function sendPayload(){if(!pendingPayload||!E.frame.contentWindow)return;try{E.frame.contentWindow.postMessage(pendingPayload,'*');E.playerStatus.textContent=tr('passing')}catch(err){E.playerStatus.textContent=tr('passError',{e:err.message})}}
-window.addEventListener('message',e=>{
-  if(e.source!==E.frame.contentWindow)return;const m=e.data;if(!m)return;
-  if(m.type==='emulator-ready')sendPayload();
-  if(m.type==='emulator-autoload-status'){
-    if(m.ok){const x=(m.loaded||[]).join(' + ');E.playerStatus.textContent=x?tr('loaded',{x}):tr('emuOpened');}
-    else E.playerStatus.textContent=tr('autoloadFail',{e:(m.error||'error')});
+function listPersistentSaves(){const out=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i),x=k&&saveInfoFromKey(k);if(x)out.push(x)}return out.sort((a,b)=>(b.updated-a.updated)||a.system.localeCompare(b.system)||a.name.localeCompare(b.name))}
+function saveDownload(name,bytes,type='application/octet-stream'){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([bytes],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1200)}
+function renderPersistentSaves(){
+  const items=listPersistentSaves();E.saveRows.innerHTML='';E.saveEmpty.hidden=!!items.length;E.saveSummary.textContent=items.length?`${items.length} save · ${size(items.reduce((n,x)=>n+x.size,0))}`:'0 save';
+  for(const x of items){const tr=document.createElement('tr'),when=x.updated?new Date(x.updated).toLocaleString(uiLang==='en'?'en-GB':'it-IT'):(uiLang==='en'?'unknown / legacy':'sconosciuta / precedente');tr.innerHTML=`<td>${esc(SAVE_SYS[x.system]||x.system)}</td><td><b>${esc(x.name)}</b>${x.hasRtc?' <span class="tag">RTC</span>':''}<div class="fmeta">${esc(x.key)}</div></td><td>${size(x.size)}</td><td>${esc(when)}</td><td class="actions-cell"><button class="secondary" data-save-dl>Scarica</button> <button class="secondary" data-save-in>Importa</button> <button class="secondary danger" data-save-del>Elimina</button></td>`;
+    tr.querySelector('[data-save-dl]').onclick=()=>saveDownload(saveSafeName(x.name)+'.'+(SAVE_EXT[x.system]||x.format||'sav'),x.bytes);
+    tr.querySelector('[data-save-in]').onclick=()=>{E.saveImportFile.value='';E.saveImportFile.onchange=async()=>{const f=E.saveImportFile.files?.[0];if(!f)return;const u=new Uint8Array(await f.arrayBuffer());localStorage.setItem(x.key,saveBytesToB64(u));localStorage.setItem('jsd-save-meta:'+x.key,JSON.stringify({system:x.system,name:x.name,format:SAVE_EXT[x.system]||x.format||'sav',size:u.length,updated:Date.now()}));renderPersistentSaves()};E.saveImportFile.click()};
+    tr.querySelector('[data-save-del]').onclick=()=>{if(!confirm((uiLang==='en'?'Delete save for ':'Eliminare il save di ')+x.name+'?'))return;localStorage.removeItem(x.key);localStorage.removeItem('jsd-save-meta:'+x.key);if(x.hasRtc)localStorage.removeItem(x.key+'_rtc');renderPersistentSaves()};
+    E.saveRows.appendChild(tr)
   }
-});
+}
+function openSaveModal(){renderPersistentSaves();E.saveModal.classList.add('show');E.saveModal.setAttribute('aria-hidden','false')}
+function closeSaveModal(){E.saveModal.classList.remove('show');E.saveModal.setAttribute('aria-hidden','true')}
+E.savesBtn.onclick=openSaveModal;E.saveClose.onclick=closeSaveModal;E.saveRefresh.onclick=renderPersistentSaves;E.saveModal.addEventListener('click',e=>{if(e.target===E.saveModal)closeSaveModal()});
+E.saveExportAll.onclick=()=>{const list=listPersistentSaves().map(x=>({system:x.system,name:x.name,key:x.key,format:SAVE_EXT[x.system]||x.format,size:x.size,updated:x.updated||null,data_base64:saveBytesToB64(x.bytes),rtc:x.hasRtc?localStorage.getItem(x.key+'_rtc'):null}));saveDownload('jsd-local-saves.json',new TextEncoder().encode(JSON.stringify({format:'jsd-local-saves-1',exported:new Date().toISOString(),entries:list},null,2)),'application/json')};
+E.saveImportAllBtn.onclick=()=>{E.saveImportAllFile.value='';E.saveImportAllFile.click()};
+E.saveImportAllFile.onchange=async()=>{const f=E.saveImportAllFile.files?.[0];if(!f)return;try{const o=JSON.parse(await f.text());if(o?.format!=='jsd-local-saves-1'||!Array.isArray(o.entries))throw Error(uiLang==='en'?'Invalid JSD save backup':'Backup JSD non valido');let n=0;for(const e of o.entries){if(!e?.key||!e?.data_base64||!saveInfoFromKey(e.key))continue;saveB64ToBytes(e.data_base64);localStorage.setItem(e.key,e.data_base64);localStorage.setItem('jsd-save-meta:'+e.key,JSON.stringify({system:e.system||saveInfoFromKey(e.key)?.system||'',name:e.name||'save',format:e.format||'sav',size:e.size||0,updated:Date.now()}));if(e.rtc)localStorage.setItem(e.key+'_rtc',e.rtc);n++}renderPersistentSaves();alert((uiLang==='en'?'Imported saves: ':'Save importati: ')+n)}catch(err){alert(err.message||String(err))}};
 
-function reset(){entries=[];analysis=null;currentSystem='';E.folderInput.value='';E.systemOverride.value='';E.gameSelect.innerHTML='<option>—</option>';E.gameSelect.disabled=true;E.biosBox.innerHTML='BIOS: <span>—</span>';E.fileList.innerHTML='';E.icon.textContent='?';E.systemName.textContent=tr('waiting');E.why.textContent=tr('selectFolder');E.conf.className='conf low';E.conf.textContent='—';E.launch.disabled=true;E.clear.disabled=true;E.launchStatus.textContent='';statusFolder(tr('noFolder'))}
+E.clear.onclick=reset;E.refreshAnalysis.onclick=()=>rawFolderEntries.length&&receive(rawFolderEntries,{force:true});E.launch.onclick=launch;
+async function zipExtractNamed(bytes,target){
+  const u8=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes),dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength);const start=Math.max(0,u8.length-0x10000-22);let e=-1;for(let i=u8.length-22;i>=start;i--){if(rd32(dv,i)===0x06054b50){e=i;break}}if(e<0)throw Error('ZIP directory not found');let p=rd32(dv,e+16),count=rd16(dv,e+10);for(let i=0;i<count&&p+46<=u8.length;i++){if(rd32(dv,p)!==0x02014b50)break;const flags=rd16(dv,p+8),method=rd16(dv,p+10),comp=rd32(dv,p+20),nl=rd16(dv,p+28),el=rd16(dv,p+30),cl=rd16(dv,p+32),local=rd32(dv,p+42),name=decodeZipName(u8.slice(p+46,p+46+nl),!!(flags&0x800));p+=46+nl+el+cl;if(name!==target)continue;if(flags&1)throw Error('ZIP encrypted');const lnl=rd16(dv,local+26),lel=rd16(dv,local+28),off=local+30+lnl+lel,packed=u8.slice(off,off+comp);if(method===0)return packed;if(method===8)return inflateRaw(packed);throw Error('ZIP compression '+method+' unsupported')}throw Error('ZIP entry not found: '+target)
+}
+async function materializeEntry(e){if(!e)return null;if(!e.zipChain?.length)return e.file;const root=topFileMap.get(e.sourcePath);if(!root)throw Error('File sorgente non disponibile: '+e.sourcePath);let u=new Uint8Array(await root.arrayBuffer());for(const part of e.zipChain)u=await zipExtractNamed(u,part);return new File([u],base(e.path),{type:'application/octet-stream',lastModified:root.lastModified||Date.now()})}
+async function launch(){
+  if(!currentSystem)return;const s=SYSTEMS[currentSystem],r=classify(currentSystem),idx=Number(E.gameSelect.value),game=r.games[idx];if(!game)return;const token='jsd-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);E.launchStatus.textContent=tr('opening',{file:s.html});
+  const win=window.open(s.html+'#jsdlaunch='+encodeURIComponent(token),'_blank');if(!win){E.launchStatus.textContent=tr('popup');return}
+  try{
+    const specs=[];if(currentSystem==='intellivision'){if(r.exec)specs.push(['exec',r.exec]);if(r.grom)specs.push(['grom',r.grom]);specs.push(['game',game])}else{for(const b of r.bios)specs.push(['bios',b]);specs.push(['game',game])}
+    const payloadFiles=[];for(const [role,e] of specs){const f=await materializeEntry(e);payloadFiles.push({role,name:f.name,bytes:await f.arrayBuffer()})}
+    E.launchStatus.textContent=tr('passing');
+    await new Promise((resolve,reject)=>{let sent=false;const timer=setTimeout(()=>{cleanup();reject(Error(tr('noInject')))},30000);function cleanup(){clearTimeout(timer);window.removeEventListener('message',onmsg)}function onmsg(ev){if(ev.source!==win||!ev.data||ev.data.token!==token)return;if(ev.data.type==='jsd-emulator-ready'&&!sent){sent=true;try{win.postMessage({type:'jsd-launch',token,system:currentSystem,files:payloadFiles},'*',payloadFiles.map(x=>x.bytes))}catch(e){cleanup();reject(e)}}else if(ev.data.type==='jsd-launch-accepted'){cleanup();resolve()}else if(ev.data.type==='jsd-launch-error'){cleanup();reject(Error(ev.data.error||'inject error'))}}window.addEventListener('message',onmsg)});E.launchStatus.textContent=tr('loaded');
+  }catch(e){E.launchStatus.textContent=tr('launchFail',{e:e.message||e})}
+}
+function reset(){entries=[];analysis=null;currentSystem='';rawFolderEntries=[];topFileMap=new Map();folderIdentity=null;E.folderInput.value='';E.gameSelect.innerHTML='<option>—</option>';E.gameSelect.disabled=true;E.diagScores.innerHTML='';E.icon.textContent='?';E.systemName.textContent=tr('waiting');E.why.textContent=tr('selectFolder');E.conf.className='conf low';E.conf.textContent='—';E.launch.disabled=true;E.libraryPanel.hidden=true;E.launchStatus.textContent='';E.cacheStatus.textContent='';statusFolder(uiLang==='en'?'No folder selected.':'Nessuna cartella selezionata.')}
 function statusFolder(t,bad=false){E.folderStatus.textContent=t;E.folderStatus.className='status'+(bad?' bad':'')}
 E.langSelect.onchange=e=>{localStorage.setItem('jsdHubLang',e.target.value);applyLanguage(e.target.value)};
 applyLanguage(localStorage.getItem('jsdHubLang')||'it');

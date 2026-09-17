@@ -467,7 +467,7 @@ class JSDGBAEmulator {
   read8(a){return this.bus.read8(a)} read16(a){return this.bus.read16(a)} read32(a){return this.bus.read32(a)} write8(a,v){this.bus.write8(a,v)} write16(a,v){this.bus.write16(a,v)} write32(a,v){this.bus.write32(a,v)}
   updateKeys(){this.bus.io[0x130]=this.keys&255;this.bus.io[0x131]=(this.keys>>>8)&3;const ctl=this.bus.read16(0x04000132),mask=ctl&0x3ff;if(ctl&0x4000){const pressed=(~this.keys)&0x3ff,match=(ctl&0x8000)?((pressed&mask)===mask):!!(pressed&mask);if(match)this.bus.setIF(1<<12)}}
   key(index,down){const bit=1<<index;if(down)this.keys&=~bit;else this.keys|=bit;this.updateKeys();}
-  runFrame(){this.cpu.flushBus();const start=this.bus.frame;let guard=0;while(this.bus.frame===start&&guard++<400000)this.cpu.step();this.cpu.flushBus();this.cycles=this.cpu.cycles;this.frames=this.ppu.frames;return 1;}
+  runFrame(){this.cpu.flushBus();const start=this.bus.frame;let guard=0;while(this.bus.frame===start&&!this._jsdPaused&&guard++<400000)this.cpu.step();this.cpu.flushBus();this.cycles=this.cpu.cycles;this.frames=this.ppu.frames;return 1;}
   step(){const c=this.cpu.step();this.cycles=this.cpu.cycles;return c;}
   hleSWI(n){
     n&=0xff;const r=this.cpu.r,b=this.bus;
@@ -551,7 +551,7 @@ class Cartridge{
     if(a>=0xA000&&a<0xC000&&this.ramEnable){if(this.mapper==='MBC3'&&this.rtcSel>=0x08&&this.rtcSel<=0x0C){this.rtcWrite(this.rtcSel,v);return}if(!this.ram.length)return;let idx=this.mapper==='MBC2'?((a-0xA000)&0x1FF):(this.ramBank*0x2000+(a-0xA000))%this.ram.length;this.ram[idx]=this.mapper==='MBC2'?(v&15)|0xF0:v}
   }
   key(){return'gbjsd_'+this.hash.toString(16)+'_'+this.title}
-  saveBattery(){if(this.battery){try{if(this.ram.length)localStorage.setItem(this.key(),bytesToB64(this.ram));this.rtcSync();localStorage.setItem(this.key()+'_rtc',JSON.stringify(this.rtc))}catch(e){}}}
+  saveBattery(){if(this.battery){try{const k=this.key();if(this.ram.length){localStorage.setItem(k,bytesToB64(this.ram));localStorage.setItem('jsd-save-meta:'+k,JSON.stringify({system:'gameboy',name:this.title||'Game Boy game',format:'sav',size:this.ram.length,updated:Date.now()}))}this.rtcSync();localStorage.setItem(k+'_rtc',JSON.stringify(this.rtc))}catch(e){}}}
   loadBattery(){if(this.battery){try{if(this.ram.length){const s=localStorage.getItem(this.key());if(s){const b=b64ToBytes(s);this.ram.set(b.subarray(0,this.ram.length))}}const rs=localStorage.getItem(this.key()+'_rtc');if(rs){Object.assign(this.rtc,JSON.parse(rs));this.rtc.last=Date.now()}}catch(e){}}}
   info(){return{title:this.title,type:this.type,typeName:CART_NAMES[this.type]||hex(this.type),mapper:this.mapper,romBytes:this.rom?.length||0,expectedRom:ROM_SIZES[this.rom?.[0x148]],ramBytes:this.ram.length,banks:this.banks(),battery:this.battery,hash:this.hash,cgbFlag:this.cgbFlag,cgbSupport:this.cgbSupport,cgbOnly:this.cgbOnly}}
 }
@@ -856,7 +856,7 @@ let gbaFrameSerial=0;
 class GBAPlugIn{
   constructor(canvas){this.canvas=canvas;this.engine=null;this.graphics={img:null};this.rom=null;this.meta=null;this.fileName='';this.powered=false;this.paused=false;this.speedPct=100;this.cycles=0;this.lastFrames=0}
   saveKey(){return 'gbxjsd_clean_gba_'+(this.meta?.gameCode||this.meta?.title||'game')}
-  persistSave(){if(!this.engine||!this.meta)return;try{localStorage.setItem(this.saveKey(),bytesToB64(this.engine.exportSave()))}catch(_){}}
+  persistSave(){if(!this.engine||!this.meta)return;try{const k=this.saveKey(),data=this.engine.exportSave();localStorage.setItem(k,bytesToB64(data));localStorage.setItem('jsd-save-meta:'+k,JSON.stringify({system:'gameboy',name:this.meta.title||this.meta.gameCode||'GBA game',format:'sav',size:data.length,updated:Date.now(),variant:'GBA'}))}catch(_){}}
   async load(bytes,fileName){await ensureGBACore();this.shutdown();this.rom=new Uint8Array(bytes);this.fileName=fileName||'game.gba';this.meta=gbaInfoFromROM(this.rom,this.fileName);this.engine=new window.JSDGBAEmulator(this.canvas);this.engine.loadROM(this.rom);try{const v=localStorage.getItem(this.saveKey());if(v)this.engine.importSave(b64ToBytes(v))}catch(_){}this.powered=false;this.paused=false;this.cycles=0;this.speedPct=100;this.lastFrames=this.engine.ppu.frames}
   play(){if(!this.engine||!this.rom)return;this.engine.setSpeed?.(+$('#speed').value||1);this.powered=true;this.paused=false}
   pause(){if(!this.engine)return;this.paused=true}
@@ -1056,80 +1056,249 @@ $('#assetSource').onchange=()=>{fillAssetBanks();refreshAssets()};$('#assetBank'
 $('#disBank').onchange=e=>{if(!isGBA())$('#disStart').value=+e.target.value===0?'0100':'4000'};function runDis(){if(isGBA()){if(!gba.rom)return alert(tr('needRom'));let start=parseInt($('#disStart').value.replace(/^\$/,''),16);if(!Number.isFinite(start))start=0x08000000;$('#disOut').value=gbaDisassemble(start,$('#disMode').value,768);log('GBA ARM/Thumb disassembly complete');return}if(!machine.cart.rom)return alert(tr('needRom'));let bank=+$('#disBank').value||0,start=parseInt($('#disStart').value.replace(/^\$/,''),16);if(!Number.isFinite(start))start=bank?0x4000:0x100;let out=disassembleBank(machine.cart,bank,start,$('#disMode').value);$('#disOut').value=out;log(tr('disDone'))}$('#disRun').onclick=runDis;$('#disPc').onclick=()=>{if(isGBA()){let th=gbaCpuMode()==='THUMB',pc=(gbaPC()-(th?4:8))>>>0;$('#disMode').value=th?'thumb':'arm';$('#disStart').value=pc.toString(16).padStart(8,'0');runDis();return}let pc=machine.cpu.PC,bank=pc<0x4000?0:machine.cart.romBank%Math.max(1,machine.cart.banks());$('#disBank').value=bank;$('#disStart').value=pc.toString(16).padStart(4,'0');runDis()};$('#disEntry').onclick=()=>{if(isGBA()){$('#disMode').value='arm';$('#disStart').value='08000000';runDis();return}$('#disBank').value=0;$('#disStart').value='0100';runDis()};$('#disCopy').onclick=async()=>{await navigator.clipboard.writeText($('#disOut').value);osd(tr('copy'))};$('#disExport').onclick=()=>download(isGBA()?`${gba.meta?.title||'game'}_${$('#disMode').value}_disassembly.asm`:`${machine.cart.title||'game'}_bank${$('#disBank').value}.asm`,$('#disOut').value,'text/plain');
 $('#apuJson').onclick=()=>{if(isGBA())return download(`${gba.meta?.title||'game'}_audio_info.json`,JSON.stringify({system:'GBA',core:'JSD clean-room ARM7TDMI',audio:audioOn?'enabled':'disabled',events:gba.engine?.audio?.events||[]},null,2),'application/json');download(`${machine.cart.title||'game'}_apu.json`,JSON.stringify({rom:machine.cart.info(),events:machine.apuLog},null,2),'application/json')};$('#apuClear').onclick=()=>{if(!isGBA())machine.apuLog=[];refreshUI()};$('#clearEvents').onclick=()=>$('#eventList').innerHTML='';
 window.addEventListener('beforeunload',()=>{machine.cart.saveBattery();try{gba.persistSave()}catch(_){}});
+
+// Bridge del debugger: mantiene machine/gba/isGBA nello stesso scope privato dell'emulatore.
+// Il modulo universal-debugger.js viene caricato dopo la chiusura dell'IIFE e usa
+// esclusivamente questo oggetto pubblico, evitando ReferenceError sui simboli locali.
+window.__JSD_GB_DEBUG_CFG__={
+ name:'Game Boy / GBC / GBA',addressBits:32,addrWidth:8,
+ getPC:()=>isGBA()?(gba.engine?.cpu?.r?.[15]>>>0||0):(machine.cpu.PC&0xFFFF),
+ getRegisters:()=>{if(isGBA()&&gba.engine){const c=gba.engine.cpu,o={};for(let i=0;i<16;i++)o['R'+i]={value:c.r[i]>>>0,width:8};o.CPSR={value:c.cpsr>>>0,width:8};o.MODE=c.thumb?'THUMB':'ARM';return o}const c=machine.cpu;return{A:{value:c.A,width:2},F:{value:c.F,width:2},B:{value:c.B,width:2},C:{value:c.C,width:2},D:{value:c.D,width:2},E:{value:c.E,width:2},H:{value:c.H,width:2},L:{value:c.L,width:2},SP:{value:c.SP,width:4},PC:{value:c.PC,width:4},IME:String(c.ime)}},
+ isPaused:()=>isGBA()?gba.paused:machine.paused,
+ setPaused:v=>{if(isGBA()){gba.paused=v;if(gba.engine)gba.engine._jsdPaused=v}else machine.paused=v;refreshUI();},
+ step:()=>{if(isGBA()){if(gba.engine){gba.engine._jsdPaused=false;gba.step();gba.engine._jsdPaused=true}}else if(machine.powered)machine.cpu.step();refreshUI();},
+ read:a=>isGBA()?gba.read8(a>>>0):machine.read(a&0xFFFF),
+ write:(a,v)=>{if(isGBA())gba.engine?.write8?.(a>>>0,v);else machine.write(a&0xFFFF,v)},
+ stepTargets:[{target:machine.cpu}],memoryTargets:[{target:machine,read:'read',write:'write'}],
+ dynamicTargets:()=>{const e=gba.engine;if(!e)return{};return{stepTargets:[{target:e.cpu}],memoryTargets:[{target:e.bus,read:'read8',write:'write8'},{target:e.bus,read:'read16',write:'write16',valueMask:0xFFFF},{target:e.bus,read:'read32',write:'write32',valueMask:0xFFFFFFFF}]};},
+ traceOpcode:a=>{if(isGBA()&&gba.engine){const n=gba.engine.cpu.thumb?2:4;return Array.from({length:n},(_,i)=>gba.read8((a+i)>>>0).toString(16).padStart(2,'0').toUpperCase()).join(' ')}return [0,1,2].map(i=>machine.read((a+i)&0xFFFF).toString(16).padStart(2,'0').toUpperCase()).join(' ')}
+};
+
 machine.ppu.setDisplayMode($('#graphics').value);setSystemUI('GB');updateCartUI();refreshAssets();memDump();refreshUI();emuClock=performance.now();requestAnimationFrame(frame);
 })();
 </script>
 <script>
-/*
- * JSD Emulator Hub — local iframe autoload bridge
- * Project code. No emulator core is included here.
+/* JSD Universal Debugger v0.1
+ * Shared debugger UI/runtime for JSD Emulator Hub.
+ * Breakpoints, R/W watchpoints, register view, live memory, poke and execution trace.
  */
-(()=>{
-  'use strict';
-  const byId=id=>document.getElementById(id);
-  const delay=ms=>new Promise(r=>setTimeout(r,ms));
-  const ext=f=>((f&&f.name)||'').toLowerCase().match(/\.([^.]+)$/)?.[1]||'';
-  function setFiles(input,files){
-    if(!input||!files||!files.length)return false;
-    try{
-      const dt=new DataTransfer();
-      for(const f of files)if(f instanceof File)dt.items.add(f);
-      if(!dt.files.length)return false;
-      input.files=dt.files;
-      input.dispatchEvent(new Event('change',{bubbles:true}));
-      return true;
-    }catch(err){
-      console.warn('JSD autoload: cannot assign files',err);
-      return false;
+(() => {
+'use strict';
+const U32 = v => Number(v) >>> 0;
+const hex = (v,w=4) => (U32(v)).toString(16).toUpperCase().padStart(w,'0');
+const parseHex = (s, fallback=NaN) => {
+  if(typeof s==='number') return s;
+  const t=String(s??'').trim().replace(/^\$/,'').replace(/^0x/i,'');
+  if(!t) return fallback;
+  const n=parseInt(t,16);return Number.isFinite(n)?n:fallback;
+};
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+
+class Debugger {
+  constructor(cfg){
+    this.cfg=cfg||{};
+    this.name=this.cfg.name||'JSD';
+    this.breakpoints=new Set();
+    this.watchpoints=[];
+    this.trace=[];
+    this.traceMax=this.cfg.traceMax||256;
+    this.pendingWatch=null;
+    this.internal=false;
+    this.skipPCOnce=null;
+    this.enabled=true;
+    this.lastHit='';
+    this._wrapped=[];
+    this._stepWrappers=new WeakSet();
+    this._memoryWrappers=new WeakMap();
+    this.makeUI();
+    this.install();
+    this.timer=setInterval(()=>{this.installDynamic?.();this.render(false)},120);
+    addEventListener('keydown',e=>{
+      if(e.code==='F8'){e.preventDefault();this.toggle();}
+      if(e.code==='F10'&&this.open){e.preventDefault();this.step();}
+      if(e.code==='F5'&&this.open){e.preventDefault();this.continue();}
+    },true);
+  }
+  pc(){try{return U32(this.cfg.getPC?.()??0)}catch{return 0}}
+  paused(){try{return !!this.cfg.isPaused?.()}catch{return true}}
+  setPaused(v){try{this.cfg.setPaused?.(!!v)}catch(e){console.warn('JSD debugger pause',e)}}
+  addrMask(){if(this.cfg.addressMask!==undefined)return U32(this.cfg.addressMask);const bits=this.cfg.addressBits||16;return bits>=32?0xFFFFFFFF:(2**bits-1)>>>0}
+  normAddr(v){return U32(U32(v)&this.addrMask())}
+  addrWidth(){return this.cfg.addrWidth||Math.ceil((this.cfg.addressBits||16)/4)}
+  valueWidth(){return this.cfg.valueWidth||2}
+  valueMask(){return this.cfg.valueMask===undefined?0xFF:U32(this.cfg.valueMask)}
+  install(){
+    if(this.cfg.stepTargets) for(const spec of this.cfg.stepTargets) this.wrapStep(spec);
+    if(this.cfg.memoryTargets) for(const spec of this.cfg.memoryTargets) this.wrapMemory(spec);
+    if(this.cfg.dynamicTargets){
+      this.installDynamic=()=>{
+        const d=this.cfg.dynamicTargets?.()||{};
+        for(const spec of d.stepTargets||[])this.wrapStep(spec);
+        for(const spec of d.memoryTargets||[])this.wrapMemory(spec);
+      };
+      this.installDynamic();
     }
   }
-  function status(system,loaded,error=''){
-    try{parent.postMessage({type:'emulator-autoload-status',system,loaded,error},'*')}catch(_){ }
-  }
-  addEventListener('message',async e=>{
-    const p=e.data;
-    if(!p||p.type!=='emulator-autoload')return;
-    const system=String(p.system||'');
-    const bios=Array.isArray(p.bios)?p.bios.filter(f=>f instanceof File):[];
-    const roms=Array.isArray(p.rom)?p.rom.filter(f=>f instanceof File):[];
-    const loaded=[];
-    try{
-      if(system==='gameboy'){
-        if(setFiles(byId('romFile'),roms.slice(0,1)))loaded.push('ROM');
-      }else if(system==='sega'){
-        // SMS/GG in this build does not require automatic BIOS loading.
-        if(setFiles(byId('romFile'),roms.slice(0,1)))loaded.push('ROM');
-      }else if(system==='coleco'){
-        const b=bios.find(f=>f.size===8192);
-        if(b&&setFiles(byId('biosFile'),[b])){loaded.push('BIOS');await delay(120)}
-        if(setFiles(byId('romFile'),roms.slice(0,1)))loaded.push('ROM');
-      }else if(system==='msx1'){
-        const b=bios.find(f=>f.size===32768);
-        if(b&&setFiles(byId('biosFile'),[b])){loaded.push('BIOS');await delay(120)}
-        if(setFiles(byId('romFile'),roms.slice(0,1)))loaded.push('ROM');
-      }else if(system==='spectrum'){
-        const b=bios.find(f=>f.size===16384);
-        if(b&&setFiles(byId('romFile'),[b])){loaded.push('SYSTEM ROM');await delay(120)}
-        if(setFiles(byId('gameFile'),roms.slice(0,1)))loaded.push('GAME');
-      }else if(system==='vectrex'){
-        const b=bios.find(f=>f.size===8192);
-        if(b&&setFiles(byId('biosFile'),[b])){loaded.push('BIOS');await delay(120)}
-        if(setFiles(byId('romFile'),roms.slice(0,1)))loaded.push('ROM');
-      }else if(system==='intellivision'){
-        // Strict validation: only named EXEC/GROM BIOS files and .int cartridges.
-        const exec=bios.find(f=>f.size===8192&&/exec|executive/i.test(f.name));
-        const grom=bios.find(f=>f.size===2048&&/(^|[^a-z])grom([^a-z]|$)|graphics[ _.-]*rom/i.test(f.name));
-        const cart=roms.find(f=>ext(f)==='int');
-        if(exec&&setFiles(byId('file-exec'),[exec])){loaded.push('EXEC');await delay(80)}
-        if(grom&&setFiles(byId('file-grom'),[grom])){loaded.push('GROM');await delay(80)}
-        if(cart&&setFiles(byId('file-cart'),[cart]))loaded.push('CARTRIDGE');
+  wrapStep(spec){
+    const obj=spec?.target,method=spec?.method||'step';
+    if(!obj||typeof obj[method]!=='function')return;
+    let map=obj.__jsdDebuggerWrappedSteps;
+    if(!map){Object.defineProperty(obj,'__jsdDebuggerWrappedSteps',{value:new Set(),configurable:true});map=obj.__jsdDebuggerWrappedSteps;}
+    if(map.has(method))return;
+    const orig=obj[method],dbg=this;
+    obj[method]=function(...args){
+      if(!dbg.enabled)return orig.apply(this,args);
+      const pc0=dbg.pc();
+      const running=!dbg.paused();
+      if(running && dbg.breakpoints.has(pc0) && dbg.skipPCOnce!==pc0){
+        dbg.hit(`BREAK $${hex(pc0,dbg.addrWidth())}`);
+        return spec.stopReturn??0;
       }
-      status(system,loaded);
-    }catch(err){status(system,loaded,String(err&&err.message||err));}
-  });
-  try{parent.postMessage({type:'emulator-autoload-ready'},'*')}catch(_){ }
+      if(dbg.skipPCOnce===pc0)dbg.skipPCOnce=null;
+      let op='';
+      try{if(dbg.cfg.traceOpcode){dbg.internal=true;op=dbg.cfg.traceOpcode(pc0)||''}}catch{}finally{dbg.internal=false}
+      const out=orig.apply(this,args);
+      const pc1=dbg.pc();
+      dbg.trace.push({pc:pc0,next:pc1,op});
+      if(dbg.trace.length>dbg.traceMax)dbg.trace.splice(0,dbg.trace.length-dbg.traceMax);
+      if(dbg.pendingWatch){const w=dbg.pendingWatch;dbg.pendingWatch=null;dbg.hit(`${w.kind} $${hex(w.addr,dbg.addrWidth())}${w.value!==undefined?' = $'+hex(w.value,dbg.valueWidth()):''}`)}
+      return out;
+    };
+    map.add(method);
+    this._wrapped.push(()=>{obj[method]=orig;map.delete(method)});
+  }
+  wrapMemory(spec){
+    const obj=spec?.target;if(!obj)return;
+    const read=spec.read,write=spec.write,dbg=this;
+    if(read&&typeof obj[read]==='function'){
+      let key='r:'+read,marks=obj.__jsdDebuggerWrappedMem;
+      if(!marks){Object.defineProperty(obj,'__jsdDebuggerWrappedMem',{value:new Set(),configurable:true});marks=obj.__jsdDebuggerWrappedMem;}
+      if(!marks.has(key)){
+        const orig=obj[read];
+        obj[read]=function(a,...rest){const v=orig.call(this,a,...rest);dbg.memoryEvent('R',a,v,spec);return v};
+        marks.add(key);this._wrapped.push(()=>{obj[read]=orig;marks.delete(key)});
+      }
+    }
+    if(write&&typeof obj[write]==='function'){
+      let key='w:'+write,marks=obj.__jsdDebuggerWrappedMem;
+      if(!marks){Object.defineProperty(obj,'__jsdDebuggerWrappedMem',{value:new Set(),configurable:true});marks=obj.__jsdDebuggerWrappedMem;}
+      if(!marks.has(key)){
+        const orig=obj[write];
+        obj[write]=function(a,v,...rest){const out=orig.call(this,a,v,...rest);dbg.memoryEvent('W',a,v,spec);return out};
+        marks.add(key);this._wrapped.push(()=>{obj[write]=orig;marks.delete(key)});
+      }
+    }
+  }
+  memoryEvent(kind,a,v,spec){
+    if(this.internal||!this.enabled||this.paused())return;
+    const addr=this.normAddr(spec?.normalize?spec.normalize(a):a);
+    for(const w of this.watchpoints){
+      if(addr>=w.start&&addr<=w.end&&((kind==='R'&&w.r)||(kind==='W'&&w.w))){this.pendingWatch={kind:`WATCH ${kind}`,addr,value:U32(v)&(spec?.valueMask??this.valueMask())};break}
+    }
+  }
+  hit(text){
+    this.lastHit=text;this.setPaused(true);this.openPanel(true);
+    try{this.cfg.onBreak?.(text)}catch{}
+    this.render(true);
+  }
+  step(){
+    this.setPaused(true);this.skipPCOnce=this.pc();
+    try{this.cfg.step?.()}catch(e){this.lastHit='STEP ERROR: '+e.message}
+    this.render(true);
+  }
+  continue(){
+    this.skipPCOnce=this.pc();this.lastHit='';this.setPaused(false);
+    try{this.cfg.onContinue?.()}catch{}
+    this.render(true);
+  }
+  pause(){this.setPaused(true);this.lastHit='PAUSE';this.render(true)}
+  addBreakpoint(s){const n=parseHex(s,NaN);if(!Number.isFinite(n))return;const a=this.normAddr(n);this.breakpoints.add(a);this.render(true)}
+  addWatch(start,end,type){let a=parseHex(start,NaN),b=parseHex(end,NaN);if(!Number.isFinite(a))return;if(!Number.isFinite(b))b=a;a=this.normAddr(a);b=this.normAddr(b);if(b<a)[a,b]=[b,a];this.watchpoints.push({start:a,end:b,r:type!=='W',w:type!=='R'});this.render(true)}
+  read(addr){try{this.internal=true;return U32(this.cfg.read?.(this.normAddr(addr))??0)&this.valueMask()}finally{this.internal=false}}
+  write(addr,val){try{this.internal=true;this.cfg.write?.(this.normAddr(addr),U32(val)&this.valueMask())}finally{this.internal=false}}
+  makeUI(){
+    const host=document.createElement('div');host.id='jsd-universal-debugger';document.documentElement.appendChild(host);const s=host.attachShadow({mode:'open'});this.shadow=s;
+    s.innerHTML=`<style>
+:host{all:initial}.dock{position:fixed;right:14px;bottom:14px;z-index:2147483646;font:12px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;color:#d9fff2}.fab{width:54px;height:32px;border-radius:10px;border:1px solid #3a806d;background:#0b211b;color:#72ffd1;font-weight:900;cursor:pointer;box-shadow:0 8px 30px #0009}.panel{display:none;width:min(620px,calc(100vw - 28px));height:min(610px,calc(100vh - 70px));background:#07120fF7;border:1px solid #275a4d;border-radius:14px;box-shadow:0 20px 70px #000c;overflow:hidden;margin-bottom:8px}.panel.open{display:flex;flex-direction:column}.head{display:flex;align-items:center;gap:8px;padding:9px 10px;background:#0d201a;border-bottom:1px solid #20483e}.title{font-weight:900;color:#76ffd3}.state{margin-left:auto;color:#9bb8af}.hit{color:#ffd479;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.controls{display:flex;gap:6px;padding:8px;border-bottom:1px solid #17392f;flex-wrap:wrap}button,input,select{font:inherit}button{border:1px solid #2d6354;background:#102c24;color:#d9fff2;border-radius:7px;padding:5px 8px;cursor:pointer}button:hover{background:#173b31}.primary{background:#65e8bb;color:#052018;border-color:#65e8bb;font-weight:900}.tabs{display:flex;gap:4px;padding:6px 8px 0;border-bottom:1px solid #17392f}.tab{border-bottom-left-radius:0;border-bottom-right-radius:0}.tab.on{color:#68f2c4;background:#153b30}.body{min-height:0;flex:1;overflow:auto;padding:9px}.page{display:none}.page.on{display:block}.regs{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:6px}.reg{background:#0b1d18;border:1px solid #1f4439;border-radius:7px;padding:6px}.reg span{color:#77978d;font-size:10px}.reg b{display:block;font-size:13px;color:#aaffdf}.row{display:flex;gap:6px;align-items:center;margin-bottom:7px;flex-wrap:wrap}.row input,.row select{background:#06100d;color:#dff8f0;border:1px solid #285a4d;border-radius:6px;padding:5px 6px}.row input{width:92px}.list{border:1px solid #1c4036;border-radius:8px;overflow:auto;max-height:190px}.item{display:flex;gap:7px;align-items:center;padding:6px 7px;border-bottom:1px solid #17352d}.item:last-child{border-bottom:0}.item .grow{flex:1}.x{color:#ffafb6}.mono{white-space:pre;overflow:auto;background:#030806;border:1px solid #17372e;border-radius:8px;padding:8px;color:#a9c9bf;min-height:260px}.trace{min-height:360px}.hint{color:#739187;font-size:10px;margin:5px 0 8px}.small{font-size:10px}.statusline{padding:5px 9px;border-top:1px solid #17372e;color:#6f9487;background:#081713}
+</style><div class="dock"><div class="panel"><div class="head"><span class="title"></span><span class="hit"></span><span class="state"></span></div><div class="controls"><button class="primary" data-a="cont">▶ F5</button><button data-a="pause">Ⅱ</button><button data-a="step">STEP F10</button><button data-a="cleartrace">Clear trace</button></div><div class="tabs"><button class="tab on" data-tab="cpu">CPU</button><button class="tab" data-tab="break">Break/Watch</button><button class="tab" data-tab="mem">Memory</button><button class="tab" data-tab="trace">Trace</button></div><div class="body"><section class="page on" data-page="cpu"><div class="regs"></div></section><section class="page" data-page="break"><div class="row"><input data-f="bp" placeholder="PC hex"><button data-a="addbp">+ breakpoint</button></div><div class="list bplist"></div><div class="hint">Watchpoint: intervallo inclusivo. R = lettura, W = scrittura, RW = entrambi.</div><div class="row"><input data-f="ws" placeholder="start"><input data-f="we" placeholder="end"><select data-f="wt"><option>RW</option><option>R</option><option>W</option></select><button data-a="addwatch">+ watch</button></div><div class="list watchlist"></div></section><section class="page" data-page="mem"><div class="row"><input data-f="ma" value="0000"><button data-a="memgo">Go</button><span>poke</span><input data-f="pa" placeholder="addr"><input data-f="pv" placeholder="value"><button data-a="poke">Write</button></div><div class="mono mem"></div></section><section class="page" data-page="trace"><div class="mono trace"></div></section></div><div class="statusline">F8 apre/chiude · breakpoint sul PC · watchpoint R/W · debugger condiviso JSD</div></div><button class="fab">DBG</button></div>`;
+    this.el=q=>s.querySelector(q);this.els=q=>[...s.querySelectorAll(q)];this.open=false;
+    this.el('.title').textContent=`${this.name} · UNIVERSAL DEBUGGER`;
+    this.el('.fab').onclick=()=>this.toggle();
+    this.els('.tab').forEach(b=>b.onclick=()=>{this.els('.tab').forEach(x=>x.classList.toggle('on',x===b));this.els('.page').forEach(p=>p.classList.toggle('on',p.dataset.page===b.dataset.tab));this.render(true)});
+    const act=a=>this.el(`[data-a="${a}"]`);
+    act('cont').onclick=()=>this.continue();act('pause').onclick=()=>this.pause();act('step').onclick=()=>this.step();act('cleartrace').onclick=()=>{this.trace=[];this.render(true)};
+    act('addbp').onclick=()=>{this.addBreakpoint(this.el('[data-f="bp"]').value);this.el('[data-f="bp"]').value=''};
+    act('addwatch').onclick=()=>{this.addWatch(this.el('[data-f="ws"]').value,this.el('[data-f="we"]').value,this.el('[data-f="wt"]').value)};
+    act('memgo').onclick=()=>this.renderMemory();act('poke').onclick=()=>{const a=parseHex(this.el('[data-f="pa"]').value,NaN),v=parseHex(this.el('[data-f="pv"]').value,NaN);if(Number.isFinite(a)&&Number.isFinite(v)){this.write(a,v);this.renderMemory()}};
+    for(const f of ['bp','ma','pa','pv'])this.el(`[data-f="${f}"]`).addEventListener('keydown',e=>{if(e.key==='Enter'){if(f==='bp')act('addbp').click();else if(f==='ma')act('memgo').click();else act('poke').click()}});
+  }
+  toggle(){this.openPanel(!this.open)}
+  openPanel(v){this.open=!!v;this.el('.panel').classList.toggle('open',this.open);this.el('.fab').textContent=this.open?'× DBG':'DBG';if(this.open)this.render(true)}
+  render(force){
+    if(!this.open&&!force)return;
+    this.el('.state').textContent=this.paused()?'PAUSED':'RUN';this.el('.hit').textContent=this.lastHit;
+    let regs={};try{regs=this.cfg.getRegisters?.()||{}}catch(e){regs={ERR:e.message}}
+    this.el('.regs').innerHTML=Object.entries(regs).map(([k,v])=>{let n=typeof v==='object'&&v? v.value:v,w=typeof v==='object'&&v?.width?v.width:(Math.abs(Number(n))>0xFFFF?8:4);return `<div class="reg"><span>${k}</span><b>${typeof n==='number'?'$'+hex(n,w):String(n)}</b></div>`}).join('');
+    this.el('.bplist').innerHTML=[...this.breakpoints].sort((a,b)=>a-b).map(a=>`<div class="item"><span class="grow">PC = $${hex(a,this.addrWidth())}</span><button class="x" data-rbp="${a}">×</button></div>`).join('')||'<div class="item">nessun breakpoint</div>';
+    this.els('[data-rbp]').forEach(b=>b.onclick=()=>{this.breakpoints.delete(+b.dataset.rbp);this.render(true)});
+    this.el('.watchlist').innerHTML=this.watchpoints.map((w,i)=>`<div class="item"><span class="grow">${w.r&&w.w?'RW':w.r?'R':'W'} $${hex(w.start,this.addrWidth())}–$${hex(w.end,this.addrWidth())}</span><button class="x" data-rw="${i}">×</button></div>`).join('')||'<div class="item">nessun watchpoint</div>';
+    this.els('[data-rw]').forEach(b=>b.onclick=()=>{this.watchpoints.splice(+b.dataset.rw,1);this.render(true)});
+    const tp=this.el('.trace');if(tp.closest('.page').classList.contains('on'))tp.textContent=this.trace.slice().reverse().map(t=>`$${hex(t.pc,this.addrWidth())}${t.op?'  '+t.op:''}  → $${hex(t.next,this.addrWidth())}`).join('\n')||'trace vuoto';
+    if(this.el('.mem').closest('.page').classList.contains('on'))this.renderMemory();
+  }
+  renderMemory(){
+    const input=this.el('[data-f="ma"]');let base=parseHex(input.value,0);base=this.normAddr(base);input.value=hex(base,this.addrWidth());const words=this.cfg.memoryWordsPerRow||16,rows=this.cfg.memoryRows||16,stride=this.cfg.memoryStride||1;let out='';
+    for(let r=0;r<rows;r++){let a=this.normAddr(base+r*words*stride),vals=[];for(let i=0;i<words;i++)vals.push(hex(this.read(a+i*stride),this.valueWidth()));out+=`${hex(a,this.addrWidth())}  ${vals.join(' ')}\n`}
+    this.el('.mem').textContent=out;
+  }
+  destroy(){clearInterval(this.timer);for(const undo of this._wrapped.reverse())try{undo()}catch{};this.shadow.host.remove()}
+}
+window.JSDUniversalDebugger={attach(cfg){if(window.__jsdUniversalDebugger)try{window.__jsdUniversalDebugger.destroy()}catch{};return window.__jsdUniversalDebugger=new Debugger(cfg)},Debugger};
 })();
 
+</script>
+<script>
+if(window.__JSD_GB_DEBUG_CFG__){
+  JSDUniversalDebugger.attach(window.__JSD_GB_DEBUG_CFG__);
+}else{
+  console.error('JSD debugger bridge non disponibile per GB/GBC/GBA');
+}
+</script>
+
+
+<!-- JSD Hub optional launch receiver: standalone operation does not depend on it. -->
+<script>
+(function(){
+  'use strict';
+  var JSD_SYS='gameboy';
+  var m=(location.hash||'').match(/(?:^#|&)jsdlaunch=([^&]+)/);
+  var JSD_TOKEN=m?decodeURIComponent(m[1]):'';
+  function jsdPost(type,extra){try{if(window.opener)window.opener.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+  function jsdFile(x){return new File([x.bytes],x.name||'game.bin',{type:'application/octet-stream',lastModified:Date.now()})}
+  function jsdRole(p,r){return (p.files||[]).filter(function(x){return x.role===r})}
+  function jsdSet(id,files,fire){var el=document.querySelector(id);if(!el||!files.length)return null;var dt=new DataTransfer();files.forEach(function(f){dt.items.add(f)});el.files=dt.files;if(fire!==false)el.dispatchEvent(new Event('change',{bubbles:true}));return el}
+  function jsdSleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  async function jsdInject(p){
+    var games=jsdRole(p,'game').map(jsdFile),bios=jsdRole(p,'bios').map(jsdFile),execs=jsdRole(p,'exec').map(jsdFile),groms=jsdRole(p,'grom').map(jsdFile);
+    var game=games[0]||null;
+    if(JSD_SYS==='gameboy'){jsdSet('#romFile',games);await jsdSleep(450);var b=document.querySelector('#powerBtn');if(b)b.click()}
+    else if(JSD_SYS==='sega'){if(bios[0]){var bi=jsdSet('#biosFile',[bios[0]],false);await fileLoad(bi,'bios')}if(game){var ri=jsdSet('#romFile',[game],false);await fileLoad(ri,'rom')}}
+    else if(JSD_SYS==='megadrive'){if(game){await loadFile(game);machine.power(true);refreshUI()}}
+    else if(JSD_SYS==='neogeo'){if(bios.length)await loadPackage(bios,'bios');if(games.length)await loadPackage(games,'game');ngPower();if(typeof ngToggleRun==='function')ngToggleRun()}
+    else if(JSD_SYS==='nes'){if(game){await loadFile(game);if(!nes.powered)power()}}
+    else if(JSD_SYS==='snes'){if(game){jsdSet('#romFile',[game],false);await loadSelected();await jsdSleep(80);if(emu&&emu.cart&&!emu.running)document.querySelector('#runBtn')?.click()}}
+    else if(JSD_SYS==='pce'){if(game)await loadROM(game)}
+    else if(JSD_SYS==='coleco'){if(bios[0]){machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);document.querySelector('#biosInfo').textContent=bios[0].name}if(game){machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);document.querySelector('#romInfo').textContent=game.name}if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='spectrum'){if(bios[0])machine.setROM(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game){var u=new Uint8Array(await game.arrayBuffer()),x=(game.name.split('.').pop()||'').toLowerCase();if(x==='sna'||x==='z80')machine.loadSnapshot(x==='sna'?parseSNA(u):parseZ80(u));else if(x==='tap'){machine.tape=new Tape(parseTAP(u));machine.autoLoad()}else if(x==='scr'){machine.reset();machine.paused=true;machine.mem.set(u,0x4000);machine.drawFull()}document.querySelector('#gameName').textContent=game.name;render();refresh()}}
+    else if(JSD_SYS==='msx1'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='intellivision'){if(execs[0])await loadFile('exec',execs[0]);if(groms[0])await loadFile('grom',groms[0]);if(game)await loadFile('cart',game);if(!state.power)boot();reset();if(state.paused)togglePause()}
+    else if(JSD_SYS==='vectrex'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.biosLoaded&&machine.cartLoaded){machine.reset();machine.running=true}machine.updateUI();renderMachineText()}
+    jsdPost('jsd-launch-accepted',{files:(p.files||[]).length});
+  }
+  var jsdReadyTimer=0;window.addEventListener('message',function(ev){if(!JSD_TOKEN||ev.source!==window.opener||!ev.data||ev.data.type!=='jsd-launch'||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;if(jsdReadyTimer)clearInterval(jsdReadyTimer);jsdInject(ev.data).catch(function(err){console.error(err);jsdPost('jsd-launch-error',{error:err&&err.message?err.message:String(err)})})});
+  function ready(){if(JSD_TOKEN)jsdPost('jsd-emulator-ready')}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();jsdReadyTimer=setInterval(ready,500);setTimeout(function(){if(jsdReadyTimer)clearInterval(jsdReadyTimer)},30000);
+})();
 </script>
 </body>
 </html>
