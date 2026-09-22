@@ -103,7 +103,7 @@ footer{max-width:1540px;margin:0 auto 20px;padding:0 14px;color:var(--muted);fon
     <h2><span>ROM / RACCOLTA</span><span class="spacer"></span><span class="pill" id="chipBadge">STANDARD</span></h2>
     <div class="body">
       <div class="rom-fileline">
-        <input id="romFile" type="file" accept=".sfc,.smc,.zip,application/zip,application/octet-stream">
+        <input id="romFile" type="file" accept=".sfc,.smc,.zip,.7z,application/zip,application/x-7z-compressed,application/octet-stream">
         <button class="primary" id="loadBtn" data-i18n="load">Carica ROM</button>
       </div>
       <div id="archiveLibrary" class="archive-panel">
@@ -126,7 +126,7 @@ footer{max-width:1540px;margin:0 auto 20px;padding:0 14px;color:var(--muted);fon
         <div class="gsu-chip"><span>PC</span><b id="gsuPc">—</b></div>
         <div class="gsu-chip"><span>SFR</span><b id="gsuSfr">—</b></div>
       </div>
-      <p class="help" style="margin:9px 0 0">Supporta ROM dirette, ZIP e archivi ZIP annidati. Seleziona il gioco dall'elenco e fai doppio clic o premi Apri / Carica.</p>
+      <p class="help" style="margin:9px 0 0">Supporta ROM dirette, ZIP/7Z e archivi annidati. Seleziona il gioco dall'elenco e fai doppio clic o premi Apri / Carica.</p>
     </div>
   </div>
   <div class="card">
@@ -158,7 +158,7 @@ footer{max-width:1540px;margin:0 auto 20px;padding:0 14px;color:var(--muted);fon
   </div>
 </aside>
 </main>
-<footer>SNESJSD alpha 0.22c STABLE — implementation from hardware documentation; ZIP support uses browser APIs only. No external runtime libraries. No commercial ROM, BIOS or copyrighted game data included.</footer>
+<footer>SNESJSD alpha 0.22c STABLE — implementation from hardware documentation; 7z support uses 7z-wasm on demand. No commercial ROM, BIOS or copyrighted game data included.</footer>
 
 <script>
 'use strict';
@@ -189,10 +189,11 @@ const zipDecoder=new TextDecoder();
 let archiveCollection=null, archiveVisible=[], archiveStack=[], archiveSerial=0;
 
 function escapeHtml(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function archiveKind(name){return /\.(sfc|smc)$/i.test(name)?'rom':/\.zip$/i.test(name)?'zip':null}
-function cleanArchiveLabel(name){return name.replace(/\\/g,'/').split('/').pop().replace(/\.(sfc|smc|zip)$/i,'').replace(/_/g,' ').trim()||name}
-function archiveIcon(kind){return kind==='rom'?'ROM':'ZIP'}
+function archiveKind(name){return /\.(sfc|smc)$/i.test(name)?'rom':/\.zip$/i.test(name)?'zip':/\.7z$/i.test(name)?'7z':null}
+function cleanArchiveLabel(name){return name.replace(/\\/g,'/').split('/').pop().replace(/\.(sfc|smc|zip|7z)$/i,'').replace(/_/g,' ').trim()||name}
+function archiveIcon(kind){return kind==='rom'?'ROM':kind==='zip'?'ZIP':'7Z'}
 function isZipBytes(u){return u?.length>=4&&u[0]===0x50&&u[1]===0x4B&&(u[2]===0x03||u[2]===0x05||u[2]===0x07)}
+function is7zBytes(u){return u?.length>=6&&u[0]===0x37&&u[1]===0x7A&&u[2]===0xBC&&u[3]===0xAF&&u[4]===0x27&&u[5]===0x1C}
 
 function zipDirectory(bytes){
   const u=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes),dv=new DataView(u.buffer,u.byteOffset,u.byteLength);let eocd=-1;
@@ -216,22 +217,66 @@ async function zipExtract(zip,entry){
   throw new Error('ZIP: metodo '+entry.method+' non supportato ('+entry.name+')');
 }
 
+const SEVENZIP_SOURCES=[
+  {js:'https://cdn.jsdelivr.net/npm/7z-wasm@1.2.0/7zz.umd.js',wasm:'https://cdn.jsdelivr.net/npm/7z-wasm@1.2.0/7zz.wasm'},
+  {js:'https://unpkg.com/7z-wasm@1.2.0/7zz.umd.js',wasm:'https://unpkg.com/7z-wasm@1.2.0/7zz.wasm'}
+];
+let sevenZipFactoryPromise=null,sevenZipWasmUrl=SEVENZIP_SOURCES[0].wasm;
+async function getSevenZipFactory(){
+  if(typeof window.SevenZip==='function')return window.SevenZip;
+  if(sevenZipFactoryPromise)return sevenZipFactoryPromise;
+  sevenZipFactoryPromise=(async()=>{
+    let lastErr=null;
+    for(const src of SEVENZIP_SOURCES){
+      try{
+        await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src=src.js;sc.async=true;sc.onload=resolve;sc.onerror=()=>reject(new Error('download fallito'));document.head.appendChild(sc)});
+        if(typeof window.SevenZip==='function'){sevenZipWasmUrl=src.wasm;return window.SevenZip}
+      }catch(e){lastErr=e}
+    }
+    throw new Error('7Z: impossibile caricare 7z-wasm. Serve una connessione Internet al primo uso del formato .7z'+(lastErr?' — '+lastErr.message:''));
+  })().catch(e=>{sevenZipFactoryPromise=null;throw e});
+  return sevenZipFactoryPromise;
+}
+function fsWriteBinary(FS,name,data){const st=FS.open(name,'w+');try{FS.write(st,data,0,data.length)}finally{FS.close(st)}}
+function fsReadMaybe(FS,path){try{return new Uint8Array(FS.readFile(path))}catch{return null}}
+function sanitizeFsName(name){return name.replace(/[^a-zA-Z0-9_.-]/g,'_')}
+
+async function sevenZipOpen(bytes,name){
+  if(typeof WebAssembly==='undefined')throw new Error('7Z: WebAssembly non supportato');
+  const SevenZip=await getSevenZipFactory();let stdout=[],stderr=[];
+  const z=await SevenZip({locateFile:p=>p.endsWith('.wasm')?sevenZipWasmUrl:p,print:s=>stdout.push(String(s)),printErr:s=>stderr.push(String(s))});
+  const archiveName='/input_'+(++archiveSerial)+'_'+sanitizeFsName(name||'archive.7z');fsWriteBinary(z.FS,archiveName,bytes instanceof Uint8Array?bytes:new Uint8Array(bytes));
+  stdout=[];stderr=[];try{z.callMain(['l','-slt',archiveName])}catch(e){throw new Error('7Z: impossibile leggere archivio'+(stderr.length?' — '+stderr.slice(-3).join(' | '):''))}
+  const paths=[];for(const line of stdout){const m=/^Path = (.+)$/.exec(line.trim());if(m&&m[1]!==archiveName&&m[1]!==archiveName.replace(/^\//,'')){const k=archiveKind(m[1]);if(k)paths.push({name:m[1],kind:k})}}
+  return{type:'7z',name,z,archiveName,items:paths,extractCount:0};
+}
+async function sevenZipExtract(col,item){
+  const out='/out_'+(++col.extractCount)+'_'+archiveSerial;try{col.z.FS.mkdir(out)}catch{}
+  let stderr=[];const oldErr=col.z.printErr;try{col.z.callMain(['x',col.archiveName,item.name,'-o'+out,'-y','-aoa'])}catch(e){throw new Error('7Z: estrazione fallita '+item.name)}
+  const rel=item.name.replace(/\\/g,'/'),cands=[out+'/'+rel,out+'/'+rel.split('/').pop()];for(const p of cands){const d=fsReadMaybe(col.z.FS,p);if(d)return d}
+  const walk=dir=>{for(const n of col.z.FS.readdir(dir)){if(n==='.'||n==='..')continue;const p=(dir==='/'?'':dir)+'/'+n;let st;try{st=col.z.FS.stat(p)}catch{continue}if(col.z.FS.isDir(st.mode)){const r=walk(p);if(r)return r}else if(n===rel.split('/').pop()){const d=fsReadMaybe(col.z.FS,p);if(d)return d}}return null};
+  const found=walk(out);if(found)return found;throw new Error('7Z: file estratto ma non trovato: '+item.name);
+}
+
 async function makeArchiveCollection(bytes,name,depth=0){
   if(depth>8)throw new Error('Troppi livelli di archivi annidati');const u=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes);
   if(/\.zip$/i.test(name)||isZipBytes(u)){
     const zip=zipDirectory(u),items=zip.entries.filter(e=>!e.isDir&&archiveKind(e.name)).map(entry=>({name:entry.name,kind:archiveKind(entry.name),entry,label:cleanArchiveLabel(entry.name)})).sort((a,b)=>a.label.localeCompare(b.label,undefined,{numeric:true,sensitivity:'base'}));
-    if(!items.length)throw new Error('ZIP: nessuna ROM .sfc/.smc o archivio .zip trovato');return{name,type:'zip',container:zip,items,depth};
+    if(!items.length)throw new Error('ZIP: nessuna ROM .sfc/.smc o archivio .zip/.7z trovato');return{name,type:'zip',container:zip,items,depth};
+  }
+  if(/\.7z$/i.test(name)||is7zBytes(u)){
+    log('7Z: inizializzazione 7-Zip WebAssembly…','muted');const c=await sevenZipOpen(u,name);if(!c.items.length)throw new Error('7Z: nessuna ROM .sfc/.smc o archivio .zip/.7z trovato');return{name,type:'7z',container:c,items:c.items.map(x=>({...x,label:cleanArchiveLabel(x.name)})).sort((a,b)=>a.label.localeCompare(b.label,undefined,{numeric:true,sensitivity:'base'})),depth};
   }
   throw new Error('Formato archivio non riconosciuto: '+name);
 }
-async function extractArchiveItem(col,item){return zipExtract(col.container,item.entry)}
+async function extractArchiveItem(col,item){return col.type==='zip'?zipExtract(col.container,item.entry):sevenZipExtract(col.container,item)}
 
 function renderArchiveLibrary(){
   const box=$('#archiveLibrary');if(!archiveCollection){box.classList.remove('show');return}box.classList.add('show');
   const q=$('#archiveFilter').value.trim().toLowerCase();archiveVisible=archiveCollection.items.filter(x=>!q||x.label.toLowerCase().includes(q)||x.name.toLowerCase().includes(q));
   $('#archiveTitle').textContent=archiveCollection.name;$('#archiveCount').textContent=`${archiveCollection.items.length} elementi`;$('#archiveBack').disabled=!archiveStack.length;
   $('#archiveSelect').innerHTML=archiveVisible.map((x,i)=>`<option value="${i}">[${archiveIcon(x.kind)}] ${escapeHtml(x.label)}</option>`).join('');
-  $('#archiveOpen').disabled=!archiveVisible.length;$('#archiveInfo').textContent=`${archiveVisible.length} visibili · livello ${archiveCollection.depth} · ROM dirette e ZIP annidati supportati`;
+  $('#archiveOpen').disabled=!archiveVisible.length;$('#archiveInfo').textContent=`${archiveVisible.length} visibili · livello ${archiveCollection.depth} · ROM dirette e ZIP/7Z annidati supportati`;
 }
 function clearArchiveBrowser(){archiveCollection=null;archiveVisible=[];archiveStack=[];$('#archiveFilter').value='';renderArchiveLibrary()}
 async function loadRomBytes(u,name){
@@ -1284,10 +1329,10 @@ function drawTiles(){
   ctx.putImageData(img,0,0);
 }
 async function loadSelected(){
-  const f=$('#romFile').files[0];if(!f){log('Seleziona una ROM .sfc/.smc oppure un archivio .zip','warntxt');return}
+  const f=$('#romFile').files[0];if(!f){log('Seleziona una ROM .sfc/.smc oppure un archivio .zip/.7z','warntxt');return}
   try{
     const u=new Uint8Array(await f.arrayBuffer()),name=f.name;
-    if(/\.zip$/i.test(name)||isZipBytes(u)){await openTopArchive(u,name);return}
+    if(/\.(zip|7z)$/i.test(name)||isZipBytes(u)||is7zBytes(u)){await openTopArchive(u,name);return}
     clearArchiveBrowser();await loadRomBytes(u,name);
   }catch(err){log('LOAD ERROR: '+err.message,'badtxt')}
 }
@@ -1316,42 +1361,57 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelect
 addEventListener('keydown',e=>{const gameKey=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','Enter','ShiftLeft','ShiftRight','KeyZ','KeyX','KeyA','KeyS','KeyQ','KeyW'].includes(e.code);if(gameKey){e.preventDefault();e.stopPropagation()}emu.keys[e.code]=true},true);
 addEventListener('keyup',e=>{const gameKey=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','Enter','ShiftLeft','ShiftRight','KeyZ','KeyX','KeyA','KeyS','KeyQ','KeyW'].includes(e.code);if(gameKey){e.preventDefault();e.stopPropagation()}emu.keys[e.code]=false},true);
 setInterval(()=>{const n=emu.fpsCount;$('#fps').textContent=n+' fps';emu.fpsCount=0;if(emu.running&&emu.autoFrameskip){if(n<46&&emu.videoSkipLevel<2)emu.videoSkipLevel++;else if(n<55&&emu.videoSkipLevel<1)emu.videoSkipLevel=1}if(!emu.running||!emu.performanceMode){emu.updateUI(false);emu.updateRegs()}$('#perfInfo').textContent=`Prestazioni: ${emu.performanceMode?'debugger live sospeso':'debugger live attivo'} · frameskip ${emu.videoSkipLevel}${emu.autoFrameskip?' auto':''}.`},1000);
-applyLang(); log('SNESJSD alpha 0.22c STABLE ready — PPU Modes 0-7: OPT 2/4/6, 8bpp/direct color 3/4, hires 5/6, Mode 7/EXTBG, HDMA/VIRQ e audio SPC700/DSP.','goodtxt'); log('Modalità prestazioni attiva: niente aggiornamento live del debugger durante Run; auto-frameskip mantiene CPU/APU alla velocità corretta se il rendering resta indietro.','goodtxt'); log('Enter è esclusivamente Start SNES; selettore ROM a destra e archivi ZIP annidati supportati.','goodtxt'); log('CPU: corretti gli indirizzi relativi a 16 bit di BRL e PER; questo evita salti di 2 byte che corrompevano il flusso di inizializzazione grafica.','goodtxt'); log('APU: supportato il re-bootstrap IPL $BBAA via CMP/CPX/CPY, necessario fra gli altri per Rampart.','goodtxt');
+applyLang(); log('SNESJSD alpha 0.22c STABLE ready — PPU Modes 0-7: OPT 2/4/6, 8bpp/direct color 3/4, hires 5/6, Mode 7/EXTBG, HDMA/VIRQ e audio SPC700/DSP.','goodtxt'); log('Modalità prestazioni attiva: niente aggiornamento live del debugger durante Run; auto-frameskip mantiene CPU/APU alla velocità corretta se il rendering resta indietro.','goodtxt'); log('Enter è esclusivamente Start SNES; selettore ROM a destra e archivi ZIP/7Z annidati supportati.','goodtxt'); log('CPU: corretti gli indirizzi relativi a 16 bit di BRL e PER; questo evita salti di 2 byte che corrompevano il flusso di inizializzazione grafica.','goodtxt'); log('APU: supportato il re-bootstrap IPL $BBAA via CMP/CPX/CPY, necessario fra gli altri per Rampart.','goodtxt');
 </script>
 
-
-<!-- JSD Hub optional launch receiver: standalone operation does not depend on it. -->
 <script>
+
 (function(){
   'use strict';
   var JSD_SYS='snes';
   var m=(location.hash||'').match(/(?:^#|&)jsdlaunch=([^&]+)/);
   var JSD_TOKEN=m?decodeURIComponent(m[1]):'';
-  function jsdPost(type,extra){try{if(window.opener)window.opener.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+  var JSD_PARENT=null;
+  function jsdPostTo(target,type,extra){try{if(target)target.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+  function jsdPost(type,extra){jsdPostTo(JSD_PARENT||window.opener,type,extra)}
   function jsdFile(x){return new File([x.bytes],x.name||'game.bin',{type:'application/octet-stream',lastModified:Date.now()})}
   function jsdRole(p,r){return (p.files||[]).filter(function(x){return x.role===r})}
   function jsdSet(id,files,fire){var el=document.querySelector(id);if(!el||!files.length)return null;var dt=new DataTransfer();files.forEach(function(f){dt.items.add(f)});el.files=dt.files;if(fire!==false)el.dispatchEvent(new Event('change',{bubbles:true}));return el}
   function jsdSleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  function jsdWaitUntil(test,ms){return new Promise(function(resolve,reject){var t=Date.now();(function poll(){try{if(test())return resolve()}catch(_){}if(Date.now()-t>=ms)return reject(new Error('ROM ricevuta ma non caricata dal core'));setTimeout(poll,50)})()})}
   async function jsdInject(p){
     var games=jsdRole(p,'game').map(jsdFile),bios=jsdRole(p,'bios').map(jsdFile),execs=jsdRole(p,'exec').map(jsdFile),groms=jsdRole(p,'grom').map(jsdFile);
     var game=games[0]||null;
-    if(JSD_SYS==='gameboy'){jsdSet('#romFile',games);await jsdSleep(450);var b=document.querySelector('#powerBtn');if(b)b.click()}
-    else if(JSD_SYS==='sega'){if(bios[0]){var bi=jsdSet('#biosFile',[bios[0]],false);await fileLoad(bi,'bios')}if(game){var ri=jsdSet('#romFile',[game],false);await fileLoad(ri,'rom')}}
-    else if(JSD_SYS==='megadrive'){if(game){await loadFile(game);machine.power(true);refreshUI()}}
+    if(JSD_SYS==='gameboy'){jsdSet('#romFile',games);await jsdWaitUntil(function(){return !!((typeof gba!=='undefined'&&gba&&gba.rom)||(typeof machine!=='undefined'&&machine&&machine.cart&&machine.cart.rom))},5000);var b=document.querySelector('#powerBtn');if(b)b.click()}
+    else if(JSD_SYS==='sega'){if(bios[0]){var bi=jsdSet('#biosFile',[bios[0]],false);await fileLoad(bi,'bios')}if(game){var ri=jsdSet('#romFile',[game],false);await fileLoad(ri,'rom');if(!machine.romInfo)throw new Error('ROM SEGA non caricata')}}
+    else if(JSD_SYS==='megadrive'){if(game){await loadFile(game);if(!machine.rom)throw new Error('ROM Mega Drive non caricata');machine.power(true);refreshUI()}}
     else if(JSD_SYS==='neogeo'){if(bios.length)await loadPackage(bios,'bios');if(games.length)await loadPackage(games,'game');ngPower();if(typeof ngToggleRun==='function')ngToggleRun()}
-    else if(JSD_SYS==='nes'){if(game){await loadFile(game);if(!nes.powered)power()}}
-    else if(JSD_SYS==='snes'){if(game){jsdSet('#romFile',[game],false);await loadSelected();await jsdSleep(80);if(emu&&emu.cart&&!emu.running)document.querySelector('#runBtn')?.click()}}
-    else if(JSD_SYS==='pce'){if(game)await loadROM(game)}
-    else if(JSD_SYS==='coleco'){if(bios[0]){machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);document.querySelector('#biosInfo').textContent=bios[0].name}if(game){machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);document.querySelector('#romInfo').textContent=game.name}if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='nes'){if(game){await loadFile(game);if(!nes.cart)throw new Error('ROM NES non caricata');if(!nes.powered)power()}}
+    else if(JSD_SYS==='snes'){if(game){jsdSet('#romFile',[game],false);await loadSelected();if(!emu||!emu.cart)throw new Error('ROM SNES non caricata');await jsdSleep(80);if(!emu.running)document.querySelector('#runBtn')?.click()}}
+    else if(JSD_SYS==='pce'){if(game){await loadROM(game);if(!(bus.rom&&bus.rom.length)&&!bus.hesMode)throw new Error('ROM PC Engine non caricata')}}
+    else if(JSD_SYS==='coleco'){if(bios[0]){machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);document.querySelector('#biosInfo').textContent=bios[0].name}if(game){machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);document.querySelector('#romInfo').textContent=game.name}if(game&&!machine.cart)throw new Error('ROM Coleco non caricata');if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
     else if(JSD_SYS==='spectrum'){if(bios[0])machine.setROM(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game){var u=new Uint8Array(await game.arrayBuffer()),x=(game.name.split('.').pop()||'').toLowerCase();if(x==='sna'||x==='z80')machine.loadSnapshot(x==='sna'?parseSNA(u):parseZ80(u));else if(x==='tap'){machine.tape=new Tape(parseTAP(u));machine.autoLoad()}else if(x==='scr'){machine.reset();machine.paused=true;machine.mem.set(u,0x4000);machine.drawFull()}document.querySelector('#gameName').textContent=game.name;render();refresh()}}
-    else if(JSD_SYS==='msx1'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='msx1'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(game&&!machine.cart)throw new Error('ROM MSX non caricata');if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
     else if(JSD_SYS==='intellivision'){if(execs[0])await loadFile('exec',execs[0]);if(groms[0])await loadFile('grom',groms[0]);if(game)await loadFile('cart',game);if(!state.power)boot();reset();if(state.paused)togglePause()}
-    else if(JSD_SYS==='vectrex'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.biosLoaded&&machine.cartLoaded){machine.reset();machine.running=true}machine.updateUI();renderMachineText()}
+    else if(JSD_SYS==='vectrex'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(game&&!machine.cartLoaded)throw new Error('ROM Vectrex non caricata');if(machine.biosLoaded&&machine.cartLoaded){machine.reset();machine.running=true}machine.updateUI();renderMachineText()}
     jsdPost('jsd-launch-accepted',{files:(p.files||[]).length});
   }
-  var jsdReadyTimer=0;window.addEventListener('message',function(ev){if(!JSD_TOKEN||ev.source!==window.opener||!ev.data||ev.data.type!=='jsd-launch'||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;if(jsdReadyTimer)clearInterval(jsdReadyTimer);jsdInject(ev.data).catch(function(err){console.error(err);jsdPost('jsd-launch-error',{error:err&&err.message?err.message:String(err)})})});
-  function ready(){if(JSD_TOKEN)jsdPost('jsd-emulator-ready')}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();jsdReadyTimer=setInterval(ready,500);setTimeout(function(){if(jsdReadyTimer)clearInterval(jsdReadyTimer)},30000);
+  window.addEventListener('message',function(ev){
+    if(!JSD_TOKEN||!ev.data||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;
+    if(ev.data.type==='jsd-probe'){
+      JSD_PARENT=ev.source||JSD_PARENT;
+      jsdPostTo(JSD_PARENT,'jsd-emulator-ready');
+      return;
+    }
+    if(ev.data.type!=='jsd-launch')return;
+    JSD_PARENT=ev.source||JSD_PARENT;
+    jsdInject(ev.data).catch(function(err){console.error(err);jsdPost('jsd-launch-error',{error:err&&err.message?err.message:String(err)})});
+  });
+  // Backward-compatible proactive ready signal when opener is available.
+  function ready(){if(JSD_TOKEN&&window.opener)jsdPostTo(window.opener,'jsd-emulator-ready')}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();
+
 })();
+
 </script>
 </body></html>

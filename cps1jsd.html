@@ -1,0 +1,2536 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CPSJSD · CPS-1 alpha 2.8 Frame Sync / Sprite Priority</title>
+<style>
+:root{
+ --bg:#090b0f;--panel:#12161d;--panel2:#0d1117;--line:#28303c;--text:#e7edf5;--muted:#8c98a8;
+ --accent:#65b7ff;--good:#7fe39a;--warn:#ffd36b;--bad:#ff8087;
+ font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;color-scheme:dark
+}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#16202c 0,#090b0f 36%,#07090c 100%);color:var(--text)}
+header{height:62px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;background:#0b0e13e8;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;backdrop-filter:blur(10px)}
+.brand{display:flex;align-items:center;gap:12px}.logo{font-weight:900;letter-spacing:.11em;font-size:18px}.logo b{color:var(--accent)}
+.subtitle{color:var(--muted);font-size:12px;margin-top:2px}.badge{font:11px ui-monospace,monospace;border:1px solid #39536b;background:#112131;color:#9fd2ff;padding:5px 8px;border-radius:999px}
+main{display:grid;grid-template-columns:minmax(620px,1fr) 330px;gap:14px;max-width:1450px;margin:auto;padding:14px}
+.panel,.card{background:linear-gradient(180deg,#141922,#10141b);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px #0005}
+.panel{padding:12px}.card{padding:11px;margin-bottom:10px}
+.screen-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.game-title{font-weight:750}.runpill{font:11px ui-monospace,monospace;color:var(--muted);display:flex;gap:6px;align-items:center}.led{width:8px;height:8px;background:#39414c;border-radius:50%;display:inline-block;box-shadow:0 0 0 2px #0004}.led.on{background:#63e884;box-shadow:0 0 12px #63e884}
+#screenWrap{position:relative;background:#020304;border:1px solid #303845;border-radius:8px;overflow:hidden;line-height:0;max-height:min(68vh,720px)}
+#screen{width:100%;aspect-ratio:3/2;object-fit:contain;image-rendering:pixelated;background:#000}
+#screenWrap.scanlines:after,#screenWrap.crt:after{content:"";position:absolute;inset:0;pointer-events:none}
+#screenWrap.scanlines:after{background:repeating-linear-gradient(0deg,#0000 0 2px,#0005 2px 3px)}
+#screenWrap.crt:after{background:repeating-linear-gradient(0deg,#0000 0 2px,#0005 2px 3px),radial-gradient(ellipse at center,#0000 55%,#0008 100%);mix-blend-mode:multiply}
+.toolbar{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+button,.filebtn,select{appearance:none;background:#202733;color:var(--text);border:1px solid #384353;border-radius:7px;padding:8px 10px;font:600 12px system-ui;cursor:pointer}
+button:hover,.filebtn:hover,select:hover{background:#293343;border-color:#4b5a70}.primary{background:#173651;border-color:#296590}.primary:hover{background:#1c4569}
+.danger{border-color:#6f3438}.filebtn input{display:none}.toolbar .spacer{flex:1}
+.status{padding:8px 9px;background:#0a0d12;border:1px solid #242c37;border-radius:7px;font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;color:#cbd6e2}
+.good{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}small,.muted{color:var(--muted)}
+.tabs{display:flex;gap:3px;overflow-x:auto;border-bottom:1px solid var(--line);margin:10px -12px 0;padding:0 12px}.tab{border:0;border-radius:6px 6px 0 0;background:transparent;color:#9ba8b8;padding:9px 11px;white-space:nowrap}.tab.active{background:#202733;color:#fff;border-bottom:2px solid var(--accent)}
+.page{display:none;padding-top:12px}.page.active{display:block}
+.metricgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-bottom:9px}.metric{background:#0a0d12;border:1px solid #242c37;border-radius:7px;padding:7px;font:10px ui-monospace,monospace;color:#8290a1}.metric b{display:block;margin-top:3px;font-size:14px;color:#cae9ff}
+.runtime-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:9px}.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:#778598;margin:1px 0 6px}
+pre{white-space:pre-wrap;overflow:auto;max-height:380px;background:#080b0f;border:1px solid #222a35;padding:10px;border-radius:7px;font:11px/1.42 ui-monospace,Consolas,monospace}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:6px;border-bottom:1px solid #242c37;text-align:left}
+#gfx{width:100%;background:#030405;border:1px solid #303845;image-rendering:pixelated}
+.side h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#8391a3;margin:4px 0 7px}
+.controls{display:grid;grid-template-columns:1fr 1.15fr;gap:10px;align-items:center}
+.dpad{display:grid;grid-template-columns:36px 36px 36px;grid-template-rows:36px 36px 36px;justify-content:center}.dpad button{padding:0;font-size:16px}.dpad .up{grid-column:2}.dpad .left{grid-column:1;grid-row:2}.dpad .right{grid-column:3;grid-row:2}.dpad .down{grid-column:2;grid-row:3}
+.arcbuttons{display:grid;grid-template-columns:repeat(3,42px);gap:8px;justify-content:center;transform:rotate(-7deg)}.arcbuttons button{height:42px;padding:0;border-radius:50%;font-weight:800;transform:rotate(7deg)}
+.vbtn.pressed{background:#4b86b9;border-color:#8bc9ff;transform:translateY(1px)}.arcbuttons .vbtn.pressed{transform:rotate(7deg) translateY(1px)}
+.sysbuttons{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.sysbuttons button{padding:6px 8px;font-size:11px}
+.keys{font:11px/1.55 ui-monospace,Consolas,monospace;color:#9ba8b8}.kbd{border:1px solid #3a4452;background:#181e27;border-bottom-width:2px;border-radius:4px;padding:1px 4px;color:#dbe6f1}
+.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.row select{padding:6px 8px}.row span{font-size:12px;color:#a9b4c1}
+.footer{font-size:10px;color:#657183;text-align:center;padding:4px}
+@media(max-width:1000px){main{grid-template-columns:1fr}.side{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.side .card{margin:0}.metricgrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:650px){main{padding:7px}.side{display:block}.side .card{margin-bottom:8px}.runtime-grid{grid-template-columns:1fr}.metricgrid{grid-template-columns:repeat(2,1fr)}header{padding:0 10px}.subtitle{display:none}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><div class="logo"><b>CPS</b>JSD</div><div><div style="font-weight:700">Capcom Play System 1</div><div class="subtitle">MC68000 · Z80 · CPS-A/CPS-B · YM2151/OKI HLE · strumenti JSD</div></div></div>
+ <div class="badge">ALPHA 2.8 · FRAME SYNC / PRIORITY</div>
+</header>
+<main>
+<section class="panel">
+ <div class="screen-head"><div id="gameTitle" class="game-title">Nessun ROM set</div><div class="runpill"><span id="runLed" class="led"></span><span id="runState">PAUSA</span></div></div>
+ <div id="screenWrap"><canvas id="screen" width="384" height="256" tabindex="0"></canvas></div>
+ <div class="toolbar">
+  <label class="filebtn primary">📂 ROM set ZIP<input id="zipFile" type="file" accept=".zip"></label>
+  <label class="filebtn">📁 Cartella ROM<input id="folderPick" type="file" webkitdirectory multiple></label>
+  <select id="folderSet" title="ROM set indicizzati nella cartella" style="display:none;max-width:210px"></select>
+  <button id="folderLoad" style="display:none">Carica set</button>
+  <button id="powerBtn">⏻ Power</button><button id="runBtn" class="primary">▶ Esegui</button>
+  <button id="resetBtn">↻ Reset</button><button id="frameBtn">Frame</button><button id="stepBtn">Step</button>
+  <button id="turboBtn">⚡ Boot rapido</button><button id="audioBtn" title="Attiva/disattiva WebAudio">🔊 Audio ON</button><span class="spacer"></span>
+  <select id="speedSel" title="Velocità"><option value="1">1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+  <select id="renderSel" title="Frequenza video"><option value="2" selected>Video 30 FPS</option><option value="3">Video 20 FPS</option><option value="4">Video 15 FPS</option><option value="6">Video 10 FPS</option></select>
+  <button id="monitorBtn" title="Contatori I/O, loop detector e pannelli runtime">Monitor: OFF</button>
+  <select id="videoMode" title="Effetto video"><option value="pixel">Pixel</option><option value="scan">Scanlines</option><option value="crt">CRT</option></select>
+  <button id="fullBtn">⛶</button>
+ </div>
+ <div id="status" class="status">Carica uno ZIP oppure scegli <b>Cartella ROM</b>: i CRC vengono indicizzati nel browser e le ROM mancanti possono essere cercate negli altri ZIP della stessa cartella.</div>
+
+ <div class="tabs">
+  <button class="tab active" data-page="runtime">Runtime</button>
+  <button class="tab" data-page="gfx">Grafica</button>
+  <button class="tab" data-page="cpu">68000</button>
+  <button class="tab" data-page="audio">Z80 / Audio</button>
+  <button class="tab" data-page="roms">ROM</button>
+  <button class="tab" data-page="log">Log</button>
+ </div>
+
+ <div id="page-runtime" class="page active">
+  <div class="metricgrid">
+   <div class="metric">68K PC<b id="rtPC">------</b></div><div class="metric">SR<b id="rtSR">----</b></div>
+   <div class="metric">Z80 PC<b id="rtZ80">----</b></div><div class="metric">SOUND<b id="rtSound">--</b></div>
+   <div class="metric">FRAME<b id="rtFrame">0</b></div><div class="metric">68K CYCLES<b id="rtCycles">0</b></div>
+  </div>
+  <div class="runtime-grid">
+   <div><div class="section-title">CPU / ingressi</div><div id="runtimeRegs" class="status">Runtime non avviato.</div></div>
+   <div><div class="section-title">Check / loop detector</div><div id="diagState" class="status">Monitor runtime OFF: diagnostica sospesa per massime prestazioni.</div><div class="row" style="margin-top:7px"><button id="diagClear">Azzera diagnostica</button></div></div>
+  </div>
+ </div>
+
+ <div id="page-gfx" class="page">
+   <div class="row"><button id="prevGfx">◀</button><button id="nextGfx">▶</button>
+   <select id="tileSize"><option value="8">8×8</option><option value="16" selected>16×16</option><option value="32">32×32</option></select><span id="gfxInfo"></span></div>
+   <canvas id="gfx" width="512" height="384"></canvas>
+ </div>
+
+ <div id="page-cpu" class="page">
+   <div class="row"><button id="disasmHere">Disasm @ PC</button><button id="disasmReset">Reset vector</button><button id="disasmPrev">− $100</button><button id="disasmNext">+ $100</button></div>
+   <div id="vectors" class="status"></div><pre id="disasm"></pre>
+ </div>
+
+ <div id="page-audio" class="page"><div class="section-title">Sottosistema audio</div><div id="audioState" class="status">Z80 non avviato.</div>
+  <div class="muted" style="margin-top:8px;font-size:12px">Audio WebAudio attivo: OKI MSM6295 ADPCM a 4 voci + YM2151 HLE con timer/IRQ. Il timbro FM è ancora approssimato, ma musica ed effetti non sono più intenzionalmente muti.</div>
+ </div>
+ <div id="page-roms" class="page"><div id="romTable"></div></div>
+ <div id="page-log" class="page"><pre id="log"></pre></div>
+</section>
+
+<aside class="side">
+ <div class="card"><h3>Macchina</h3><div id="machine" class="status">—</div>
+  <table><tbody><tr><td>MAIN 68000</td><td id="mainSize">—</td></tr><tr><td>GFX</td><td id="gfxSize">—</td></tr><tr><td>Z80</td><td id="z80Size">—</td></tr><tr><td>OKI</td><td id="okiSize">—</td></tr></tbody></table>
+ </div>
+ <div class="card"><h3>Stato core</h3><div id="coreState" class="status warn">Carica un set CPS-1.</div><h3 style="margin-top:10px">Registri video</h3><div id="videoRegs" class="status">CPS-A —<br>CPS-B —</div></div>
+ <div class="card">
+  <h3>Player 1</h3>
+  <div class="controls">
+   <div class="dpad"><button class="vbtn up" data-input="p1:3">▲</button><button class="vbtn left" data-input="p1:1">◀</button><button class="vbtn right" data-input="p1:0">▶</button><button class="vbtn down" data-input="p1:2">▼</button></div>
+   <div class="arcbuttons"><button class="vbtn" data-input="p1:4">1</button><button class="vbtn" data-input="p1:5">2</button><button class="vbtn" data-input="p1:6">3</button></div>
+  </div>
+  <div class="sysbuttons"><button class="vbtn" data-input="sys:0" data-pulse="1">COIN 1</button><button class="vbtn" data-input="sys:4" data-pulse="1">START 1</button><button class="vbtn" data-input="sys:2" data-pulse="1">SERVICE</button></div>
+  <div class="keys" style="margin-top:7px"><span class="kbd">←↑↓→</span> · <span class="kbd">Z X C</span> · coin <span class="kbd">5</span> · start <span class="kbd">1</span></div>
+ </div>
+ <div class="card">
+  <h3>Player 2 / DIP</h3>
+  <div class="sysbuttons"><button class="vbtn" data-input="sys:1" data-pulse="1">COIN 2</button><button class="vbtn" data-input="sys:5" data-pulse="1">START 2</button></div>
+  <div class="keys" style="margin-top:7px"><span class="kbd">I J K L</span> movimento · <span class="kbd">N M ,</span> pulsanti · coin <span class="kbd">6</span> · start <span class="kbd">2</span></div>
+  <div class="row" style="margin-top:9px"><label class="muted">Game mode</label><select id="gameMode"><option value="game">GAME</option><option value="test">TEST</option></select></div>
+ </div>
+ <div class="footer">CPSJSD alpha 2.8 · 30 FPS default · coherent VBlank video + exact CPS-1 sprite delay · standalone HTML</div>
+</aside>
+</main>
+<script>
+
+'use strict';
+const $=s=>document.querySelector(s), hex=(v,n=6)=>(v>>>0).toString(16).toUpperCase().padStart(n,'0');
+let pkg=[],regions={main:null,gfx:null,z80:null,oki:null},spec=null,gfxPage=0,disasmPC=0;
+let currentZipName='',romFolderFiles=[],romFolderCRC=new Map(),romFolderName=new Map(),romFolderZip=new Map(),romEntryCache=new Map();
+let machine=null,running=false,raf=0,lastTick=0,emuAcc=0,screenImage=null,screen32=null,screenPalette32=null,tileCache=new Map(),runtimeSpeed=1;
+let runtimeMonitor=false,renderModulo=2,audioEngine=null,audioWanted=true;
+const CPS_CPU_HZ=10000000,CPS_CPU_HZ_DASH=12000000,CPS_Z80_HZ=3579545,CPS_QSOUND_Z80_HZ=8000000;
+const CPS_PIXEL_HZ=8000000,CPS_HTOTAL=512,CPS_LINES=262,CPS_FPS=CPS_PIXEL_HZ/CPS_HTOTAL/CPS_LINES,CPS_VISIBLE_Y=16,CPS_VISIBLE_H=224;
+function sgn(v,b){if(b===32)return v|0;const m=1<<(b-1);return (v&m)?v-(1<<b):v}
+function s8x(v){return (v<<24)>>24}
+function s16x(v){return (v<<16)>>16}
+function maskSize(sz){return sz===1?0xFF:sz===2?0xFFFF:0xFFFFFFFF}
+function signSize(sz){return sz===1?0x80:sz===2?0x8000:0x80000000}
+class EARef{
+  constructor(cpu){this.cpu=cpu;this.bus=cpu.bus;this.mode=0;this.reg=0;this.sz=0;this.kind='mem';this.addr=0;this.imm=0;this.post=0;this.finished=false}
+  set(mode,reg,sz,kind,addr,imm,post){this.mode=mode;this.reg=reg;this.sz=sz;this.kind=kind;this.addr=addr;this.imm=imm;this.post=post;this.finished=false;return this}
+  read(){const c=this.cpu,b=this.bus;if(this.kind==='D')return c.regGet('D',this.reg,this.sz);if(this.kind==='A')return c.regGet('A',this.reg,this.sz);if(this.kind==='imm')return this.imm>>>0;return this.sz===1?b.read8(this.addr):this.sz===2?b.read16(this.addr):b.read32(this.addr)}
+  write(v){const c=this.cpu,b=this.bus;if(this.kind==='D')c.regSet('D',this.reg,this.sz,v);else if(this.kind==='A')c.regSet('A',this.reg,this.sz,v);else if(this.kind==='imm')throw new Error('Write immediate');else if(this.sz===1)b.write8(this.addr,v);else if(this.sz===2)b.write16(this.addr,v);else b.write32(this.addr,v)}
+  finish(){if(!this.finished&&this.post){this.cpu.A[this.reg]=(this.cpu.A[this.reg]+this.post)>>>0;this.finished=true}}
+  address(){if(this.kind!=='mem')throw new Error('EA not address');return this.addr>>>0}
+}
+class M68K{
+  constructor(bus){
+    this.bus=bus;this.D=new Uint32Array(8);this.A=new Uint32Array(8);
+    // Fixed trace ring: no per-instruction object allocations and no Array.shift().
+    this.tracePC=new Uint32Array(128);this.traceOP=new Uint16Array(128);this.tracePos=0;this.traceCount=0;this.traceDivider=0;
+    this._ea=new EARef(this);this.reset()
+  }
+  reset(){
+    this.D.fill(0);this.A.fill(0);this.SR=0x2700;this.USP=0;this.SSP=0;this.cycles=0;this.halted=false;this.stopped=false;this.reason='';
+    this.A[7]=this.bus.read32(0)>>>0;this.SSP=this.A[7]>>>0;this.PC=this.bus.read32(4)&0xFFFFFF;
+    this.tracePos=0;this.traceCount=0;this.traceDivider=0
+  }
+  // 68000 has distinct user and supervisor stack pointers. A7 always names the
+  // currently active one; USP/SSP retain the inactive/current physical stacks.
+  // CPS-1 games use RTE to enter user mode during startup, so collapsing both
+  // stacks (as the early Neo Geo-derived core did) corrupts return addresses.
+  supervisor(){return !!(this.SR&0x2000)}
+  swapStackForSR(newSR){
+    const oldS=!!(this.SR&0x2000),newS=!!(newSR&0x2000);
+    if(oldS===newS)return;
+    if(oldS){this.SSP=this.A[7]>>>0;this.A[7]=this.USP>>>0}
+    else{this.USP=this.A[7]>>>0;this.A[7]=this.SSP>>>0}
+  }
+  setSRFull(v){v&=0xFFFF;this.swapStackForSR(v);this.SR=v}
+  enterSupervisor(){
+    if(!(this.SR&0x2000)){this.USP=this.A[7]>>>0;this.A[7]=this.SSP>>>0;this.SR|=0x2000}
+  }
+  flag(bit){return !!(this.SR&(1<<bit))}
+  setFlag(bit,on){if(on)this.SR|=1<<bit;else this.SR&=~(1<<bit)}
+  ccClear(){this.SR&=~0x0F}
+  setNZ(v,sz){
+    const m=maskSize(sz),s=signSize(sz),x=v&m;
+    this.setFlag(3,(x&s)!==0);this.setFlag(2,x===0)
+  }
+  logicFlags(v,sz){this.setNZ(v,sz);this.setFlag(1,false);this.setFlag(0,false)}
+  addFlags(a,b,r,sz,withX=true){
+    const m=maskSize(sz),sb=signSize(sz),aa=a&m,bb=b&m,rr=r&m,sum=aa+bb;
+    const c=sum>m,v=((~(aa^bb)&(rr^aa)&sb)>>>0)!==0;
+    this.setNZ(rr,sz);this.setFlag(1,v);this.setFlag(0,c);if(withX)this.setFlag(4,c)
+  }
+  subFlags(a,b,r,sz,withX=true){
+    const m=maskSize(sz),sb=signSize(sz),aa=a&m,bb=b&m,rr=r&m;
+    const c=aa<bb,v=(((aa^bb)&(rr^aa)&sb)>>>0)!==0;
+    this.setNZ(rr,sz);this.setFlag(1,v);this.setFlag(0,c);if(withX)this.setFlag(4,c)
+  }
+  bcdAdd8(a,b,x){let lo=(a&15)+(b&15)+x,adj=lo>9?6:0,sum=(a&255)+(b&255)+x+adj,carry=sum>0x99;if(carry)sum+=0x60;return [sum&255,carry]}
+  bcdSub8(a,b,x){let lo=(a&15)-(b&15)-x,r=(a&255)-(b&255)-x;if(lo<0)r-=6;const borrow=r<0;if(borrow)r-=0x60;return [r&255,borrow]}
+  bcdFlags(r,c){if(r!==0)this.setFlag(2,false);this.setFlag(0,c);this.setFlag(4,c)}
+  fetch16(){const v=this.bus.read16(this.PC);this.PC=(this.PC+2)&0xFFFFFF;return v}
+  fetch32(){const v=this.bus.read32(this.PC);this.PC=(this.PC+4)&0xFFFFFF;return v}
+  push16(v){this.A[7]=(this.A[7]-2)>>>0;this.bus.write16(this.A[7],v)}
+  push32(v){this.A[7]=(this.A[7]-4)>>>0;this.bus.write32(this.A[7],v)}
+  pop16(){const v=this.bus.read16(this.A[7]);this.A[7]=(this.A[7]+2)>>>0;return v}
+  pop32(){const v=this.bus.read32(this.A[7]);this.A[7]=(this.A[7]+4)>>>0;return v}
+  cond(c){
+    const C=this.flag(0),V=this.flag(1),Z=this.flag(2),N=this.flag(3);
+    return [true,false,!C&&!Z,C||Z,!C,C,!Z,Z,!V,V,!N,N,N===V,N!==V,!Z&&(N===V),Z||(N!==V)][c&15]
+  }
+  regGet(kind,r,sz){
+    const v=kind==='D'?this.D[r]:this.A[r];return sz===1?v&255:sz===2?v&0xFFFF:v>>>0
+  }
+  regSet(kind,r,sz,v){
+    if(kind==='A'){this.A[r]=v>>>0;return}
+    if(sz===1)this.D[r]=((this.D[r]&0xFFFFFF00)|(v&255))>>>0;
+    else if(sz===2)this.D[r]=((this.D[r]&0xFFFF0000)|(v&0xFFFF))>>>0;
+    else this.D[r]=v>>>0
+  }
+  indexValue(ext){
+    const isA=!!(ext&0x8000),r=(ext>>>12)&7,long=!!(ext&0x0800);
+    let v=isA?this.A[r]:this.D[r];if(!long)v=sgn(v&0xFFFF,16);return v|0
+  }
+  ea(mode,reg,sz,allowImm=true){
+    let kind='mem',addr=0,imm=0,post=0;
+    if(mode===0)kind='D';
+    else if(mode===1)kind='A';
+    else if(mode===2)addr=this.A[reg]&0xFFFFFF;
+    else if(mode===3){addr=this.A[reg]&0xFFFFFF;post=(sz===1&&reg===7)?2:sz}
+    else if(mode===4){const n=(sz===1&&reg===7)?2:sz;this.A[reg]=(this.A[reg]-n)>>>0;addr=this.A[reg]&0xFFFFFF}
+    else if(mode===5){addr=(this.A[reg]+sgn(this.fetch16(),16))&0xFFFFFF}
+    else if(mode===6){const e=this.fetch16();addr=(this.A[reg]+sgn(e&255,8)+this.indexValue(e))&0xFFFFFF}
+    else if(mode===7){
+      if(reg===0)addr=sgn(this.fetch16(),16)&0xFFFFFF;
+      else if(reg===1)addr=this.fetch32()&0xFFFFFF;
+      else if(reg===2){const d=sgn(this.fetch16(),16);addr=((this.PC-2)+d)&0xFFFFFF}
+      else if(reg===3){const e=this.fetch16();addr=((this.PC-2)+sgn(e&255,8)+this.indexValue(e))&0xFFFFFF}
+      else if(reg===4&&allowImm){kind='imm';imm=sz===1?(this.fetch16()&255):sz===2?this.fetch16():this.fetch32()}
+      else throw new Error('Invalid EA '+mode+','+reg)
+    } else throw new Error('Invalid EA '+mode+','+reg);
+    return this._ea.set(mode,reg,sz,kind,addr,imm,post)
+  }
+  eaCycles(mode,reg,sz){
+    const L=sz===4;
+    if(mode===0||mode===1)return 0;
+    if(mode===2||mode===3)return L?8:4;
+    if(mode===4)return L?10:6;
+    if(mode===5)return L?12:8;
+    if(mode===6)return L?14:10;
+    if(mode===7){if(reg===0||reg===2)return L?12:8;if(reg===1)return L?16:12;if(reg===3)return L?14:10;if(reg===4)return L?8:4}
+    return 0
+  }
+  moveDstCycles(mode,reg,sz){
+    const L=sz===4;if(mode===0||mode===1)return 0;
+    if(mode===2||mode===3||mode===4)return L?8:4;if(mode===5)return L?12:8;if(mode===6)return L?14:10;
+    if(mode===7){if(reg===0)return L?12:8;if(reg===1)return L?16:12}return 0
+  }
+  moveCycles(sm,sr,dm,dr,sz){return 4+this.eaCycles(sm,sr,sz)+this.moveDstCycles(dm,dr,sz)}
+  aluToDnCycles(mode,reg,sz){let base=sz===4?6:4;if(sz===4&&(mode===0||(mode===7&&reg===4)))base=8;return base+this.eaCycles(mode,reg,sz)}
+  aluToMemCycles(mode,reg,sz){return (sz===4?12:8)+this.eaCycles(mode,reg,sz)}
+  addaCycles(mode,reg,sz){let base=sz===4?6:8;if(sz===4&&(mode===0||(mode===7&&reg===4)))base=8;return base+this.eaCycles(mode,reg,sz)}
+  cmpCycles(mode,reg,sz){return (sz===4?6:4)+this.eaCycles(mode,reg,sz)}
+  eorCycles(mode,reg,sz){return mode===0?(sz===4?8:4):(sz===4?12:8)+this.eaCycles(mode,reg,sz)}
+  quickCycles(mode,reg,sz){if(mode===0)return sz===4?8:4;if(mode===1)return 8;return (sz===4?12:8)+this.eaCycles(mode,reg,sz)}
+  controlCycles(kind,mode,reg){
+    if(kind==='jmp'){if(mode===2)return 8;if(mode===5)return 10;if(mode===6)return 14;if(mode===7)return [10,12,10,14][reg]||10}
+    if(kind==='jsr'){if(mode===2)return 16;if(mode===5)return 18;if(mode===6)return 22;if(mode===7)return [18,20,18,22][reg]||18}
+    if(kind==='lea'){if(mode===2)return 4;if(mode===5)return 8;if(mode===6)return 12;if(mode===7)return [8,12,8,12][reg]||8}
+    if(kind==='pea'){if(mode===2)return 12;if(mode===5)return 16;if(mode===6)return 20;if(mode===7)return [16,20,16,20][reg]||16}
+    return 4
+  }
+  calcEAAddress(mode,reg,sz=2){
+    if(mode===2)return this.A[reg]&0xFFFFFF;
+    if(mode===3)return this.A[reg]&0xFFFFFF;
+    if(mode===4){this.A[reg]=(this.A[reg]-sz)>>>0;return this.A[reg]&0xFFFFFF}
+    if(mode===5)return (this.A[reg]+sgn(this.fetch16(),16))&0xFFFFFF;
+    if(mode===6){const e=this.fetch16();return (this.A[reg]+sgn(e&255,8)+this.indexValue(e))&0xFFFFFF}
+    if(mode===7&&reg===0)return sgn(this.fetch16(),16)&0xFFFFFF;
+    if(mode===7&&reg===1)return this.fetch32()&0xFFFFFF;
+    if(mode===7&&reg===2){const d=sgn(this.fetch16(),16);return ((this.PC-2)+d)&0xFFFFFF}
+    if(mode===7&&reg===3){const e=this.fetch16();return ((this.PC-2)+sgn(e&255,8)+this.indexValue(e))&0xFFFFFF}
+    throw new Error('Invalid address EA '+mode+','+reg)
+  }
+  exception(vec,pcOverride=null){
+    const oldSR=this.SR&0xFFFF,pc=pcOverride===null?this.PC:pcOverride;
+    this.enterSupervisor();this.SR&=~0x8000;
+    this.push32(pc);this.push16(oldSR);
+    this.SSP=this.A[7]>>>0;
+    this.PC=this.bus.read32((vec*4)&0xFF)&0xFFFFFF;
+    this.stopped=false;return 34
+  }
+  interrupt(level){
+    if(level<=((this.SR>>>8)&7))return false;
+    const oldSR=this.SR&0xFFFF;
+    this.enterSupervisor();this.SR=(this.SR&~0x0700)|((level&7)<<8);this.SR&=~0x8000;
+    this.push32(this.PC);this.push16(oldSR);this.SSP=this.A[7]>>>0;
+    this.PC=this.bus.read32((24+level)*4)&0xFFFFFF;this.stopped=false;const ic=44;this.cycles+=ic;this.bus.advance?.(ic);return true
+  }
+  stopUnsupported(op,pc){
+    this.halted=true;this.reason=`Unsupported opcode $${hex(op,4)} at $${hex(pc,6)}`;
+    return 4
+  }
+  doMovem(op){
+    const dir=!!(op&0x0400),sz=(op&0x0040)?4:2,mode=(op>>>3)&7,areg=op&7,mask=this.fetch16();
+    let addr,step=sz;
+    const getReg=i=>i<8?this.D[i]:this.A[i-8];
+    const setReg=(i,v)=>{if(i<8)this.D[i]=v>>>0;else this.A[i-8]=v>>>0};
+    if(!dir){
+      if(mode===4){
+        addr=this.A[areg]>>>0;
+        for(let bit=0;bit<16;bit++)if(mask&(1<<bit)){
+          const ri=15-bit;addr=(addr-step)>>>0;let v=getReg(ri);
+          if(sz===2)this.bus.write16(addr,v);else this.bus.write32(addr,v)
+        }
+        this.A[areg]=addr>>>0
+      }else{
+        addr=this.calcEAAddress(mode,areg,sz);
+        for(let i=0;i<16;i++)if(mask&(1<<i)){const v=getReg(i);if(sz===2)this.bus.write16(addr,v);else this.bus.write32(addr,v);addr=(addr+step)>>>0}
+      }
+    }else{
+      addr=this.calcEAAddress(mode,areg,sz);
+      for(let i=0;i<16;i++)if(mask&(1<<i)){
+        let v=sz===2?this.bus.read16(addr):this.bus.read32(addr);if(sz===2)v=s16x(v);setReg(i,v);addr=(addr+step)>>>0
+      }
+      if(mode===3)this.A[areg]=addr>>>0
+    }
+    let n=0,q=mask&0xffff;while(q){q&=q-1;n++}
+    const per=sz===4?8:4;let base;
+    if(dir){if(mode===2||mode===3)base=12;else if(mode===5)base=16;else if(mode===6)base=18;else if(mode===7)base=[16,20,16,18][areg]||16;else base=12}
+    else{if(mode===2||mode===4)base=8;else if(mode===5)base=12;else if(mode===6)base=14;else if(mode===7)base=[12,16,12,14][areg]||12;else base=8}
+    return base+n*per
+  }
+  doShift(op){
+    const sizeCode=(op>>>6)&3;
+    if(sizeCode!==3){
+      const sz=[1,2,4][sizeCode],dir=!!(op&0x0100),reg=op&7,type=(op>>>3)&3,fromReg=!!(op&0x20);
+      let count=fromReg?(this.D[(op>>>9)&7]&63):((op>>>9)&7)||8;
+      let v=this.regGet('D',reg,sz),m=maskSize(sz),sign=signSize(sz),last=0,ov=false;
+      const old=v;
+      for(let i=0;i<count;i++){
+        if(type===0){ // arithmetic
+          if(dir){last=(v&sign)?1:0;const nv=(v<<1)&m;if(((v^nv)&sign)!==0)ov=true;v=nv}
+          else{last=v&1;v=((v>>>1)|(v&sign))&m}
+        }else if(type===1){ // logical
+          if(dir){last=(v&sign)?1:0;v=(v<<1)&m}else{last=v&1;v=(v>>>1)&m}
+        }else if(type===2){ // ROX
+          const x=this.flag(4)?1:0;
+          if(dir){last=(v&sign)?1:0;v=((v<<1)|x)&m}else{last=v&1;v=((v>>>1)|(x?sign:0))&m}
+          this.setFlag(4,!!last)
+        }else{ // rotate
+          if(dir){last=(v&sign)?1:0;v=((v<<1)|last)&m}else{last=v&1;v=((v>>>1)|(last?sign:0))&m}
+        }
+      }
+      this.regSet('D',reg,sz,v);this.setNZ(v,sz);this.setFlag(0,count?!!last:false);this.setFlag(1,type===0?ov:false);
+      if(type<2&&count)this.setFlag(4,!!last);return (sz===4?8:6)+count*2
+    }
+    const dir=!!(op&0x0100),type=(op>>>9)&3,mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,2,false);let v=e.read(),last=0,sign=0x8000;
+    if(type===0){if(dir){last=(v&sign)?1:0;const nv=(v<<1)&0xFFFF;this.setFlag(1,((v^nv)&sign)!==0);v=nv}else{last=v&1;v=((v>>>1)|(v&sign))&0xFFFF;this.setFlag(1,false)}}
+    else if(type===1){if(dir){last=(v&sign)?1:0;v=(v<<1)&0xFFFF}else{last=v&1;v>>>=1}this.setFlag(1,false)}
+    else if(type===2){const x=this.flag(4);if(dir){last=(v&sign)?1:0;v=((v<<1)|(x?1:0))&0xFFFF}else{last=v&1;v=((v>>>1)|(x?sign:0))&0xFFFF}this.setFlag(4,!!last);this.setFlag(1,false)}
+    else{if(dir){last=(v&sign)?1:0;v=((v<<1)|last)&0xFFFF}else{last=v&1;v=((v>>>1)|(last?sign:0))&0xFFFF}this.setFlag(1,false)}
+    e.write(v);e.finish();this.setNZ(v,2);this.setFlag(0,!!last);if(type<2)this.setFlag(4,!!last);return 8+this.eaCycles(mode,reg,2)
+  }
+  step(){
+    if(this.halted)return 0;
+    if(this.stopped){this.cycles+=4;this.bus.advance(4);const irq=this.bus.takeIRQ()||0;if(irq&&this.interrupt(irq))this.bus.ackIRQ(irq);return 4}
+    const pc0=this.PC,op=this.fetch16(),top=op>>>12;
+    let cyc=8;
+    try{
+      // MOVE.B / MOVE.L / MOVE.W
+      if(top===1||top===2||top===3){
+        const sz=top===1?1:top===2?4:2,sm=(op>>>3)&7,sr=op&7,dm=(op>>>6)&7,dr=(op>>>9)&7;
+        const src=this.ea(sm,sr,sz,true),v=src.read();src.finish();
+        if(dm===1){
+          if(sz===1)return this.stopUnsupported(op,pc0);
+          this.A[dr]=(sz===2?s16x(v):v)>>>0
+        }else{
+          const dst=this.ea(dm,dr,sz,false);dst.write(v);dst.finish();this.logicFlags(v,sz)
+        }
+        cyc=this.moveCycles(sm,sr,dm,dr,sz)
+      }
+      else if(top===0){
+        // immediate CCR/SR
+        if(op===0x003C){this.SR=(this.SR&0xFF00)|((this.SR|this.fetch16())&0xFF);cyc=20}
+        else if(op===0x007C){this.setSRFull(this.SR|this.fetch16());cyc=20}
+        else if(op===0x023C){this.SR=(this.SR&0xFF00)|((this.SR&this.fetch16())&0xFF);cyc=20}
+        else if(op===0x027C){this.setSRFull(this.SR&this.fetch16());cyc=20}
+        else if(op===0x0A3C){this.SR=(this.SR&0xFF00)|((this.SR^this.fetch16())&0xFF);cyc=20}
+        else if(op===0x0A7C){this.setSRFull(this.SR^this.fetch16());cyc=20}
+        else if((op&0xF138)===0x0108){ // MOVEP
+          const dn=(op>>>9)&7,an=op&7,kind=(op>>>6)&3,disp=sgn(this.fetch16(),16),a=(this.A[an]+disp)&0xFFFFFF;
+          if(kind===0){this.D[dn]=(this.D[dn]&0xFFFF0000)|(this.bus.read8(a)<<8)|this.bus.read8(a+2)}
+          else if(kind===1){this.D[dn]=((this.bus.read8(a)<<24)>>>0)|(this.bus.read8(a+2)<<16)|(this.bus.read8(a+4)<<8)|this.bus.read8(a+6)}
+          else if(kind===2){const v=this.D[dn];this.bus.write8(a,(v>>>8)&255);this.bus.write8(a+2,v&255)}
+          else{const v=this.D[dn];this.bus.write8(a,(v>>>24)&255);this.bus.write8(a+2,(v>>>16)&255);this.bus.write8(a+4,(v>>>8)&255);this.bus.write8(a+6,v&255)}
+          cyc=16
+        }
+        else if((op&0xF100)===0x0100){ // dynamic bit ops
+          const dn=(op>>>9)&7,kind=(op>>>6)&3,mode=(op>>>3)&7,reg=op&7,sz=mode===0?4:1,e=this.ea(mode,reg,sz,false);
+          let v=e.read(),bit=this.D[dn]&(mode===0?31:7),was=(v>>>bit)&1;this.setFlag(2,!was);
+          if(kind===1)v^=(1<<bit);else if(kind===2)v&=~(1<<bit);else if(kind===3)v|=(1<<bit);
+          if(kind)e.write(v);e.finish();cyc=mode===0?[6,8,10,8][kind]:(kind===0?4:8)+this.eaCycles(mode,reg,1)
+        }
+        else if((op&0xFF00)===0x0800){ // immediate bit ops
+          const bitNo=this.fetch16(),kind=(op>>>6)&3,mode=(op>>>3)&7,reg=op&7,sz=mode===0?4:1,e=this.ea(mode,reg,sz,false);
+          let v=e.read(),bit=bitNo&(mode===0?31:7),was=(v>>>bit)&1;this.setFlag(2,!was);
+          if(kind===1)v^=(1<<bit);else if(kind===2)v&=~(1<<bit);else if(kind===3)v|=(1<<bit);
+          if(kind)e.write(v);e.finish();cyc=mode===0?[10,12,14,12][kind]:(kind===0?8:12)+this.eaCycles(mode,reg,1)
+        }
+        else{
+          const base=op&0xFF00,scode=(op>>>6)&3;
+          if([0x0000,0x0200,0x0400,0x0600,0x0A00,0x0C00].includes(base)&&scode<3){
+            const sz=[1,2,4][scode],imm=sz===1?(this.fetch16()&255):sz===2?this.fetch16():this.fetch32(),mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,sz,false),a=e.read();let r;
+            if(base===0x0000){r=(a|imm)>>>0;e.write(r);this.logicFlags(r,sz)}
+            else if(base===0x0200){r=(a&imm)>>>0;e.write(r);this.logicFlags(r,sz)}
+            else if(base===0x0400){r=(a-imm)>>>0;e.write(r);this.subFlags(a,imm,r,sz)}
+            else if(base===0x0600){r=(a+imm)>>>0;e.write(r);this.addFlags(a,imm,r,sz)}
+            else if(base===0x0A00){r=(a^imm)>>>0;e.write(r);this.logicFlags(r,sz)}
+            else{r=(a-imm)>>>0;this.subFlags(a,imm,r,sz,false)}
+            e.finish();
+            if(base===0x0C00)cyc=mode===0?(sz===4?14:8):(sz===4?12:8)+this.eaCycles(mode,reg,sz);
+            else cyc=mode===0?(sz===4?16:8):(sz===4?20:12)+this.eaCycles(mode,reg,sz)
+          }else cyc=this.stopUnsupported(op,pc0)
+        }
+      }
+      else if(top===4){
+        if(op===0x4E71)cyc=4;
+        else if(op===0x4E70)cyc=132;
+        else if(op===0x4E72){this.setSRFull(this.fetch16());this.stopped=true;cyc=4}
+        else if(op===0x4E73){const ns=this.pop16(),npc=this.pop32()&0xFFFFFF;this.SSP=this.A[7]>>>0;this.setSRFull(ns);this.PC=npc;cyc=20}
+        else if(op===0x4E75){this.PC=this.pop32()&0xFFFFFF;cyc=16}
+        else if(op===0x4E76){if(this.flag(1))cyc=this.exception(7);else cyc=4}
+        else if(op===0x4E77){this.SR=(this.SR&0xFF00)|(this.pop16()&0xFF);this.PC=this.pop32()&0xFFFFFF;cyc=20}
+        else if((op&0xFFF0)===0x4E40){cyc=this.exception(32+(op&15))}
+        else if((op&0xFFF8)===0x4E50){const r=op&7,disp=sgn(this.fetch16(),16);this.push32(this.A[r]);this.A[r]=this.A[7];this.A[7]=(this.A[7]+disp)>>>0;cyc=16}
+        else if((op&0xFFF8)===0x4E58){const r=op&7;this.A[7]=this.A[r];this.A[r]=this.pop32();cyc=12}
+        else if((op&0xFFF0)===0x4E60){const r=op&7;if(op&8){this.A[r]=this.USP}else this.USP=this.A[r];cyc=4}
+        else if((op&0xFFC0)===0x4E80){const mode=(op>>>3)&7,reg=op&7,a=this.calcEAAddress(mode,reg,4);this.push32(this.PC);this.PC=a;cyc=this.controlCycles('jsr',mode,reg)}
+        else if((op&0xFFC0)===0x4EC0){const mode=(op>>>3)&7,reg=op&7;this.PC=this.calcEAAddress(mode,reg,4);cyc=this.controlCycles('jmp',mode,reg)}
+        else if((op&0xF1C0)===0x41C0){const mode=(op>>>3)&7,reg=op&7,a=this.calcEAAddress(mode,reg,4);this.A[(op>>>9)&7]=a;cyc=this.controlCycles('lea',mode,reg)}
+        else if((op&0xFFC0)===0x4800){const mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,1,false),a=e.read(),q=this.bcdSub8(0,a,this.flag(4)?1:0);e.write(q[0]);e.finish();this.bcdFlags(q[0],q[1]);cyc=mode===0?6:8+this.eaCycles(mode,reg,1)}
+        else if((op&0xFFC0)===0x4840 && ((op>>>3)&7)!==0){const mode=(op>>>3)&7,reg=op&7,a=this.calcEAAddress(mode,reg,4);this.push32(a);cyc=this.controlCycles('pea',mode,reg)}
+        else if((op&0xFFF8)===0x4840){const r=op&7,v=this.D[r];this.D[r]=((v<<16)|(v>>>16))>>>0;this.logicFlags(this.D[r],4);cyc=4}
+        else if((op&0xFFF8)===0x4880){const r=op&7,v=sgn(this.D[r]&255,8)&0xFFFF;this.D[r]=((this.D[r]&0xFFFF0000)|v)>>>0;this.logicFlags(v,2);cyc=4}
+        else if((op&0xFFF8)===0x48C0){const r=op&7,v=s16x(this.D[r]);this.D[r]=v;this.logicFlags(v,4);cyc=4}
+        else if((op&0xFB80)===0x4880){cyc=this.doMovem(op)}
+        else if((op&0xFFC0)===0x40C0){const mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,2,false);e.write(this.SR);e.finish();cyc=mode===0?6:8+this.eaCycles(mode,reg,2)}
+        else if((op&0xFFC0)===0x42C0){const mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,2,false);e.write(this.SR&0xFF);e.finish();cyc=mode===0?6:8+this.eaCycles(mode,reg,2)}
+        else if((op&0xFFC0)===0x44C0){const mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,2,true);this.SR=(this.SR&0xFF00)|(e.read()&0xFF);e.finish();cyc=12+this.eaCycles(mode,reg,2)}
+        else if((op&0xFFC0)===0x46C0){const mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,2,true),ns=e.read()&0xFFFF;e.finish();this.setSRFull(ns);cyc=12+this.eaCycles(mode,reg,2)}
+        else if((op&0xFFC0)===0x4AC0){const mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,1,false),v=e.read();this.logicFlags(v,1);e.write(v|0x80);e.finish();cyc=mode===0?4:10+this.eaCycles(mode,reg,1)}
+        else if((op&0xF1C0)===0x4180){const dn=(op>>>9)&7,e=this.ea((op>>>3)&7,op&7,2,true),bound=sgn(e.read(),16),v=this.D[dn]|0;e.finish();this.setFlag(3,v<0);this.setFlag(2,false);if(v<0||v>bound)cyc=this.exception(6);else cyc=10}
+        else{
+          const base=op&0xFF00,scode=(op>>>6)&3;
+          if([0x4000,0x4200,0x4400,0x4600,0x4A00].includes(base)&&scode<3){
+            const sz=[1,2,4][scode],e=this.ea((op>>>3)&7,op&7,sz,false),a=e.read();let r=a;
+            if(base===0x4000){const x=this.flag(4)?1:0;r=(0-a-x)>>>0;e.write(r);this.subFlags(0,a+x,r,sz)}
+            else if(base===0x4200){r=0;e.write(0);this.logicFlags(0,sz)}
+            else if(base===0x4400){r=(0-a)>>>0;e.write(r);this.subFlags(0,a,r,sz)}
+            else if(base===0x4600){r=(~a)>>>0;e.write(r);this.logicFlags(r,sz)}
+            else this.logicFlags(a,sz);
+            e.finish();const mode=(op>>>3)&7,reg=op&7;
+            if(base===0x4A00)cyc=mode===0?4:4+this.eaCycles(mode,reg,sz);
+            else cyc=mode===0?(sz===4?6:4):(sz===4?12:8)+this.eaCycles(mode,reg,sz)
+          }else cyc=this.stopUnsupported(op,pc0)
+        }
+      }
+      else if(top===5){
+        if((op&0xF0F8)===0x50C8){const c=(op>>>8)&15,r=op&7,d=sgn(this.fetch16(),16);if(this.cond(c))cyc=12;else{let w=(this.D[r]-1)&0xFFFF;this.D[r]=((this.D[r]&0xFFFF0000)|w)>>>0;if(w!==0xFFFF){this.PC=((this.PC-2)+d)&0xFFFFFF;cyc=10}else cyc=14}}
+        else if((op&0xF0C0)===0x50C0){const c=(op>>>8)&15,mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,1,false),on=this.cond(c);e.write(on?0xFF:0);e.finish();cyc=mode===0?(on?6:4):8+this.eaCycles(mode,reg,1)}
+        else{
+          const data=((op>>>9)&7)||8,sub=!!(op&0x0100),scode=(op>>>6)&3;if(scode===3)cyc=this.stopUnsupported(op,pc0);else{
+            const sz=[1,2,4][scode],mode=(op>>>3)&7,r=op&7;
+            if(mode===1){this.A[r]=(sub?this.A[r]-data:this.A[r]+data)>>>0;cyc=8}
+            else{const e=this.ea(mode,r,sz,false),a=e.read(),res=(sub?a-data:a+data)>>>0;e.write(res);e.finish();if(sub)this.subFlags(a,data,res,sz);else this.addFlags(a,data,res,sz);cyc=this.quickCycles(mode,r,sz)}
+          }
+        }
+      }
+      else if(top===6){
+        const c=(op>>>8)&15,wordDisp=(op&255)===0;let d=sgn(op&255,8),base=this.PC;if(wordDisp){d=sgn(this.fetch16(),16);base=(this.PC-2)&0xFFFFFF}
+        if(c===1){this.push32(this.PC);this.PC=(base+d)&0xFFFFFF;cyc=18}
+        else if(c===0){this.PC=(base+d)&0xFFFFFF;cyc=10}
+        else if(this.cond(c)){this.PC=(base+d)&0xFFFFFF;cyc=10}else cyc=wordDisp?12:8
+      }
+      else if(top===7){const r=(op>>>9)&7,v=s8x(op&255);this.D[r]=v>>>0;this.logicFlags(v,4);cyc=4}
+      else if(top===8){
+        if((op&0xF1F0)===0x8100){
+          const rx=(op>>>9)&7,ry=op&7,mem=!!(op&8),x=this.flag(4)?1:0;let a,b,wr;
+          if(mem){const dy=ry===7?2:1,dx=rx===7?2:1;this.A[ry]=(this.A[ry]-dy)>>>0;b=this.bus.read8(this.A[ry]);this.A[rx]=(this.A[rx]-dx)>>>0;a=this.bus.read8(this.A[rx]);wr=v=>this.bus.write8(this.A[rx],v);cyc=18}else{a=this.D[rx]&255;b=this.D[ry]&255;wr=v=>this.regSet('D',rx,1,v);cyc=6}
+          const q=this.bcdSub8(a,b,x);wr(q[0]);this.bcdFlags(q[0],q[1])
+        }
+        else if((op&0xF0C0)===0x80C0){
+          const signed=!!(op&0x0100),dn=(op>>>9)&7,e=this.ea((op>>>3)&7,op&7,2,true),div=e.read();e.finish();
+          if(div===0)cyc=this.exception(5);else{
+            if(!signed){const q=Math.floor((this.D[dn]>>>0)/(div&0xFFFF)),rem=(this.D[dn]>>>0)%(div&0xFFFF);if(q>0xFFFF){this.setFlag(1,true);this.setFlag(0,false)}else{this.D[dn]=((rem<<16)|(q&0xFFFF))>>>0;this.logicFlags(q,2)}}
+            else{const ds=sgn(div,16),num=this.D[dn]|0,q=(num/ds)|0,rem=num%ds;if(q<-32768||q>32767){this.setFlag(1,true);this.setFlag(0,false)}else{this.D[dn]=(((rem&0xFFFF)<<16)|(q&0xFFFF))>>>0;this.logicFlags(q,2)}}
+            const mode=(op>>>3)&7,reg=op&7;cyc=140+this.eaCycles(mode,reg,2)
+          }
+        }else{
+          const dn=(op>>>9)&7,dir=!!(op&0x0100),scode=(op>>>6)&3;if(scode===3)cyc=this.stopUnsupported(op,pc0);else{
+            const sz=[1,2,4][scode],mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,sz,false);
+            if(!dir){const a=this.regGet('D',dn,sz),b=e.read(),r=(a|b)>>>0;this.regSet('D',dn,sz,r);e.finish();this.logicFlags(r,sz);cyc=this.aluToDnCycles(mode,reg,sz)}
+            else{const a=e.read(),b=this.regGet('D',dn,sz),r=(a|b)>>>0;e.write(r);e.finish();this.logicFlags(r,sz);cyc=this.aluToMemCycles(mode,reg,sz)}
+          }
+        }
+      }
+      else if(top===9||top===0xD){
+        const isAdd=top===0xD;
+        // ADDX / SUBX -- used by the original Neo Geo SYSTEM_IO routine.
+        //
+        // In particular SP-S2 uses:
+        //   ADD.B  D1,D1
+        //   ADD.B  D1,D1
+        //   ADDX.B D0,D0
+        // to compact the alternating START/SELECT bits from BIOS_STATCHANGE.
+        // Treating $D100 as an ordinary ADD loses the X carry and makes
+        // PLAYER_START impossible even though REG_STATUS_B is read correctly.
+        if((op&0xF130)===(isAdd?0xD100:0x9100) && ((op>>>6)&3)!==3){
+          const scode=(op>>>6)&3;
+          {
+            const sz=[1,2,4][scode],rx=(op>>>9)&7,ry=op&7,mem=!!(op&0x0008);
+            const m=maskSize(sz),sign=signSize(sz),xin=this.flag(4)?1:0;
+            let a,b,writeResult;
+            if(!mem){
+              a=this.regGet('D',rx,sz); // destination
+              b=this.regGet('D',ry,sz); // source
+              writeResult=v=>this.regSet('D',rx,sz,v);
+              cyc=sz===4?8:4;
+            }else{
+              const decY=(sz===1&&ry===7)?2:sz;
+              const decX=(sz===1&&rx===7)?2:sz;
+              this.A[ry]=(this.A[ry]-decY)>>>0;
+              const sy=this.A[ry]&0xFFFFFF;
+              b=sz===1?this.bus.read8(sy):sz===2?this.bus.read16(sy):this.bus.read32(sy);
+              this.A[rx]=(this.A[rx]-decX)>>>0;
+              const dx=this.A[rx]&0xFFFFFF;
+              a=sz===1?this.bus.read8(dx):sz===2?this.bus.read16(dx):this.bus.read32(dx);
+              writeResult=v=>{if(sz===1)this.bus.write8(dx,v);else if(sz===2)this.bus.write16(dx,v);else this.bus.write32(dx,v)};
+              cyc=sz===4?30:18;
+            }
+
+            let r,carry,overflow;
+            if(isAdd){
+              const aa=a&m,bb=b&m,sum=aa+bb+xin;
+              r=sum&m;carry=sum>m;
+              overflow=((~(aa^bb)&(r^aa)&sign)>>>0)!==0;
+            }else{
+              const aa=a&m,bb=b&m,sub=bb+xin;
+              r=(aa-sub)&m;carry=aa<sub;
+              overflow=(((aa^bb)&(r^aa)&sign)>>>0)!==0;
+            }
+            writeResult(r);
+            this.setFlag(3,(r&sign)!==0);
+            // X instructions preserve a previous Z=1 across zero-sized chunks,
+            // clearing it only when a non-zero result is produced.
+            if((r&m)!==0)this.setFlag(2,false);
+            this.setFlag(1,overflow);
+            this.setFlag(0,carry);
+            this.setFlag(4,carry);
+          }
+        }else{
+          const dn=(op>>>9)&7,dir=!!(op&0x0100),scode=(op>>>6)&3;
+        if(scode===3){const sz=dir?4:2,mode=(op>>>3)&7,r=op&7,e=this.ea(mode,r,sz,true),v=e.read();e.finish();const x=sz===2?s16x(v):v;this.A[dn]=(isAdd?this.A[dn]+x:this.A[dn]-x)>>>0;cyc=this.addaCycles(mode,r,sz)}
+        else{
+          const sz=[1,2,4][scode],mode=(op>>>3)&7,r=op&7;
+          if(!dir){const e=this.ea(mode,r,sz,true),b=e.read(),a=this.regGet('D',dn,sz),res=(isAdd?a+b:a-b)>>>0;e.finish();this.regSet('D',dn,sz,res);if(isAdd)this.addFlags(a,b,res,sz);else this.subFlags(a,b,res,sz);cyc=this.aluToDnCycles(mode,r,sz)}
+          else{const e=this.ea(mode,r,sz,false),a=e.read(),b=this.regGet('D',dn,sz),res=(isAdd?a+b:a-b)>>>0;e.write(res);e.finish();if(isAdd)this.addFlags(a,b,res,sz);else this.subFlags(a,b,res,sz);cyc=this.aluToMemCycles(mode,r,sz)}
+          }
+        }
+      }
+      else if(top===0xA||top===0xF){cyc=this.exception(top===0xA?10:11,pc0)}
+      else if(top===0xB){
+        // CMPM.<size> (Ay)+,(Ax)+ -- used by the Neo Geo BIOS cartridge/security checks.
+        // Encoding: 1011 xxx1 ss001 yyy. Both address registers advance after the read.
+        if((op&0xF138)===0xB108 && ((op>>>6)&3)!==3){
+          const scode=(op>>>6)&3;
+          {
+            const sz=[1,2,4][scode],dst=(op>>>9)&7,src=op&7;
+            const srcAddr=this.A[src]&0xFFFFFF,dstAddr=this.A[dst]&0xFFFFFF;
+            const read=(a)=>sz===1?this.bus.read8(a):sz===2?this.bus.read16(a):this.bus.read32(a);
+            const a=read(dstAddr),b=read(srcAddr),inc=(sz===1?1:sz);
+            this.A[src]=(this.A[src]+((sz===1&&src===7)?2:inc))>>>0;
+            this.A[dst]=(this.A[dst]+((sz===1&&dst===7)?2:inc))>>>0;
+            this.subFlags(a,b,(a-b)>>>0,sz,false);cyc=sz===4?20:12
+          }
+        }else{
+          const dn=(op>>>9)&7,dir=!!(op&0x0100),scode=(op>>>6)&3;
+          if(scode===3){const sz=dir?4:2,mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,sz,true),v=e.read();e.finish();const b=sz===2?s16x(v):v,a=this.A[dn],r=(a-b)>>>0;this.subFlags(a,b,r,4,false);cyc=this.addaCycles(mode,reg,sz)}
+          else{
+            const sz=[1,2,4][scode],mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,sz,dir?false:true);
+            if(dir){const a=e.read(),b=this.regGet('D',dn,sz),r=(a^b)>>>0;e.write(r);e.finish();this.logicFlags(r,sz);cyc=this.eorCycles(mode,reg,sz)}
+            else{const b=e.read(),a=this.regGet('D',dn,sz),r=(a-b)>>>0;e.finish();this.subFlags(a,b,r,sz,false);cyc=this.cmpCycles(mode,reg,sz)}
+          }
+        }
+      }
+      else if(top===0xC){
+        if((op&0xF1F0)===0xC100){
+          const rx=(op>>>9)&7,ry=op&7,mem=!!(op&8),x=this.flag(4)?1:0;let a,b,wr;
+          if(mem){const dy=ry===7?2:1,dx=rx===7?2:1;this.A[ry]=(this.A[ry]-dy)>>>0;b=this.bus.read8(this.A[ry]);this.A[rx]=(this.A[rx]-dx)>>>0;a=this.bus.read8(this.A[rx]);wr=v=>this.bus.write8(this.A[rx],v);cyc=18}else{a=this.D[rx]&255;b=this.D[ry]&255;wr=v=>this.regSet('D',rx,1,v);cyc=6}
+          const q=this.bcdAdd8(a,b,x);wr(q[0]);this.bcdFlags(q[0],q[1])
+        }
+        else if((op&0xF0C0)===0xC0C0){
+          const signed=!!(op&0x0100),dn=(op>>>9)&7,mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,2,true),v=e.read();e.finish();
+          const a=this.D[dn]&0xFFFF,b=v&0xFFFF,r=signed?((sgn(a,16)*sgn(b,16))|0):Math.imul(a,b)>>>0;this.D[dn]=r>>>0;this.logicFlags(r,4);cyc=70+this.eaCycles(mode,reg,2)
+        }else if((op&0xF1F8)===0xC140){const x=(op>>>9)&7,y=op&7,t=this.D[x];this.D[x]=this.D[y];this.D[y]=t;cyc=6}
+        else if((op&0xF1F8)===0xC148){const x=(op>>>9)&7,y=op&7,t=this.A[x];this.A[x]=this.A[y];this.A[y]=t;cyc=6}
+        else if((op&0xF1F8)===0xC188){const x=(op>>>9)&7,y=op&7,t=this.D[x];this.D[x]=this.A[y];this.A[y]=t;cyc=6}
+        else{
+          const dn=(op>>>9)&7,dir=!!(op&0x0100),scode=(op>>>6)&3;if(scode===3)cyc=this.stopUnsupported(op,pc0);else{
+            const sz=[1,2,4][scode],mode=(op>>>3)&7,reg=op&7,e=this.ea(mode,reg,sz,!dir);
+            if(!dir){const a=this.regGet('D',dn,sz),b=e.read(),r=(a&b)>>>0;this.regSet('D',dn,sz,r);e.finish();this.logicFlags(r,sz);cyc=this.aluToDnCycles(mode,reg,sz)}
+            else{const a=e.read(),b=this.regGet('D',dn,sz),r=(a&b)>>>0;e.write(r);e.finish();this.logicFlags(r,sz);cyc=this.aluToMemCycles(mode,reg,sz)}
+          }
+        }
+      }
+      else if(top===0xE)cyc=this.doShift(op);
+      else cyc=this.stopUnsupported(op,pc0);
+    }catch(err){
+      this.halted=true;this.reason=(err&&err.message?err.message:String(err))+` at PC $${hex(pc0,6)} opcode $${hex(op,4)}`;cyc=4
+    }
+    this.cycles+=cyc;
+    this.bus.advance(cyc);
+    const irq=this.bus.takeIRQ()||0;if(irq&&this.interrupt(irq))this.bus.ackIRQ(irq);
+    const record=runtimeMonitor&&((this.traceDivider++&31)===0);
+    if(record){this.tracePC[this.tracePos]=pc0>>>0;this.traceOP[this.tracePos]=op&0xFFFF;this.tracePos=(this.tracePos+1)&127;if(this.traceCount<128)this.traceCount++;}
+    return cyc
+  }
+}
+
+function log(s){$('#log').textContent+=s+'\n';$('#log').scrollTop=1e9}
+function fmt(n){if(!n)return '—';return n>=1048576?(n/1048576).toFixed(2)+' MB':n>=1024?(n/1024).toFixed(0)+' KB':n+' B'}
+function rd16(a){let m=regions.main;if(!m||a<0||a+1>=m.length)return 0;return (m[a]<<8)|m[a+1]}
+function rd32(a){return ((rd16(a)<<16)>>>0)|rd16(a+2)}
+function crc32(buf){let c=0xffffffff;for(const b of buf){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return (c^0xffffffff)>>>0}
+async function inflateRaw(data){
+ if(typeof DecompressionStream==='undefined')throw Error('Browser senza DecompressionStream');
+ let ds=new DecompressionStream('deflate-raw');
+ let ab=await new Response(new Blob([data]).stream().pipeThrough(ds)).arrayBuffer();
+ return new Uint8Array(ab)
+}
+async function readZip(file){
+ const u=new Uint8Array(await file.arrayBuffer()),dv=new DataView(u.buffer,u.byteOffset,u.byteLength),out=[];
+ let e=-1;for(let i=u.length-22;i>=Math.max(0,u.length-65558);i--)if(dv.getUint32(i,true)===0x06054b50){e=i;break}
+ if(e<0)throw Error('EOCD ZIP non trovato');
+ let total=dv.getUint16(e+10,true),off=dv.getUint32(e+16,true);
+ for(let i=0;i<total;i++){
+  if(dv.getUint32(off,true)!==0x02014b50)throw Error('Central directory non valida');
+  let method=dv.getUint16(off+10,true),crc=dv.getUint32(off+16,true),cs=dv.getUint32(off+20,true),us=dv.getUint32(off+24,true);
+  let nl=dv.getUint16(off+28,true),el=dv.getUint16(off+30,true),cl=dv.getUint16(off+32,true),lo=dv.getUint32(off+42,true);
+  let name=new TextDecoder().decode(u.slice(off+46,off+46+nl));
+  let lnl=dv.getUint16(lo+26,true),lel=dv.getUint16(lo+28,true),start=lo+30+lnl+lel,comp=u.slice(start,start+cs),data;
+  if(name.endsWith('/')){off+=46+nl+el+cl;continue}
+  if(method===0)data=comp; else if(method===8)data=await inflateRaw(comp); else throw Error('Metodo ZIP '+method+' non supportato: '+name);
+  out.push({name:name.split('/').pop(),data,crc,calc:crc32(data),usize:us,sourceZip:file.name});
+  off+=46+nl+el+cl
+ }
+ return out
+}
+
+
+// -----------------------------------------------------------------------------
+// Folder ROM pool. Only ZIP central-directory metadata is indexed. ROM payloads
+// are decompressed lazily, in memory, only when a recipe actually requests them.
+// -----------------------------------------------------------------------------
+async function readZipDirectory(file){
+ const tailStart=Math.max(0,file.size-65558),tail=new Uint8Array(await file.slice(tailStart).arrayBuffer()),tdv=new DataView(tail.buffer,tail.byteOffset,tail.byteLength);
+ let rel=-1;for(let i=tail.length-22;i>=0;i--)if(tdv.getUint32(i,true)===0x06054b50){rel=i;break}
+ if(rel<0)throw Error('EOCD ZIP non trovato: '+file.name);
+ const total=tdv.getUint16(rel+10,true),cdSize=tdv.getUint32(rel+12,true),cdOff=tdv.getUint32(rel+16,true);
+ const cd=new Uint8Array(await file.slice(cdOff,cdOff+cdSize).arrayBuffer()),dv=new DataView(cd.buffer,cd.byteOffset,cd.byteLength),out=[];
+ let off=0;
+ for(let i=0;i<total&&off+46<=cd.length;i++){
+  if(dv.getUint32(off,true)!==0x02014b50)break;
+  const method=dv.getUint16(off+10,true),crc=dv.getUint32(off+16,true)>>>0,cs=dv.getUint32(off+20,true),us=dv.getUint32(off+24,true);
+  const nl=dv.getUint16(off+28,true),el=dv.getUint16(off+30,true),cl=dv.getUint16(off+32,true),lo=dv.getUint32(off+42,true);
+  const full=new TextDecoder().decode(cd.slice(off+46,off+46+nl)),name=full.split('/').pop();
+  if(name)out.push({name,fullName:full,crc,csize:cs,usize:us,method,localOffset:lo,zipFile:file,zipName:file.name});
+  off+=46+nl+el+cl
+ }
+ return out
+}
+async function extractPoolEntry(e){
+ const key=(e.zipFile.webkitRelativePath||e.zipFile.name)+'@'+e.localOffset;
+ if(romEntryCache.has(key))return romEntryCache.get(key);
+ const h=new Uint8Array(await e.zipFile.slice(e.localOffset,e.localOffset+30).arrayBuffer()),dv=new DataView(h.buffer,h.byteOffset,h.byteLength);
+ if(dv.getUint32(0,true)!==0x04034b50)throw Error('Local ZIP header non valido: '+e.zipName+' / '+e.name);
+ const nl=dv.getUint16(26,true),el=dv.getUint16(28,true),start=e.localOffset+30+nl+el;
+ const comp=new Uint8Array(await e.zipFile.slice(start,start+e.csize).arrayBuffer());let data;
+ if(e.method===0)data=comp;else if(e.method===8)data=await inflateRaw(comp);else throw Error('Metodo ZIP '+e.method+' non supportato: '+e.name);
+ const calc=crc32(data)>>>0;if(calc!==(e.crc>>>0))throw Error('CRC errato estraendo '+e.name+' da '+e.zipName);
+ const q={name:e.name,data,crc:e.crc,calc,usize:e.usize,sourceZip:e.zipName};romEntryCache.set(key,q);return q
+}
+function addPoolIndex(map,key,e){if(key===undefined||key===null)return;let a=map.get(key);if(!a)map.set(key,a=[]);a.push(e)}
+async function indexRomFolder(files){
+ const zips=[...files].filter(f=>/\.zip$/i.test(f.name)).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+ romFolderFiles=zips;romFolderCRC.clear();romFolderName.clear();romFolderZip.clear();romEntryCache.clear();
+ const sel=$('#folderSet');sel.innerHTML='';sel.style.display='none';$('#folderLoad').style.display='none';
+ for(let i=0;i<zips.length;i++){
+  const z=zips[i];$('#status').textContent=`Indicizzazione cartella ROM… ${i+1}/${zips.length} · ${z.name}`;
+  try{
+   const entries=await readZipDirectory(z);romFolderZip.set(romsetName(z.name),z);
+   for(const e of entries){addPoolIndex(romFolderCRC,e.crc>>>0,e);addPoolIndex(romFolderName,e.name.toLowerCase(),e)}
+   const o=document.createElement('option');o.value=String(i);o.textContent=z.name;sel.appendChild(o)
+  }catch(err){log('ZIP index saltato '+z.name+': '+err.message)}
+  if((i&7)===7)await new Promise(r=>setTimeout(r,0))
+ }
+ if(zips.length){sel.style.display='inline-block';$('#folderLoad').style.display='inline-block'}
+ $('#status').innerHTML=`<span class="good">Cartella indicizzata</span> · ${zips.length} ZIP · ${romFolderCRC.size} CRC distinti · nessuna ROM estratta`;
+ log(`ROM folder pool: ${zips.length} ZIP · ${romFolderCRC.size} CRC · payload lazy/in-memory`)
+}
+function poolFind(ref){
+ const q=String(ref);if(q[0]==='#'){const c=parseInt(q.slice(1),16)>>>0;return romFolderCRC.get(c)?.[0]||null}
+ return romFolderName.get(q.toLowerCase())?.[0]||null
+}
+const GFX_REFS_BY_MODE={
+ '1941crc':['#01d1cb11','#aeaa3509','#ff77985a','#983be58f'],
+ 'area88crc':['#db9376f8','#392151b4','#81436481','#e246ed9f','#9cd6e2a3','#0b8e0df4','#8b9e75b9','#db6acdcf','#4219b622','#bac5dec5','#e6bae179','#c8f04223','#15ccf981','#9336db6a','#9b8e1363','#3968f4b5'],
+ 'sf2crc':['#22c9cc8e','#57213be8','#ba529b4f','#4b1b33a8','#2c7e2229','#b5548f17','#14b84312','#5e9cd89a','#994bfa58','#3e66ad9d','#c1befaa8','#0627c831'],
+ 'sf2cecrc':['#03b0d852','#cdb5f027','#840289ec','#e2799472','#ba8a2761','#21e3f87d','#e584bfb5','#befc47df','#960687d5','#d6ec9a0a','#978ecd18','#ed2c67f6'],
+ 'captcommbcrc':['#f863071c','#4b03c308','#3383ea96','#b8e1f4cf'],
+ 'kodr1crc':['#e45b8701','#a7750322','#5f74bf78','#5e5303bf','#113358f3','#38853c44','#9ef36604','#402b9b4f'],
+ '1941':['41-5m.7a','41-7m.9a','41-1m.3a','41-3m.5a'],
+ 'ghouls':['dm-05.3a','dm-07.3f','dm-06.3c','dm-08.3g','09.4a','18.7a','13.4e','22.7e','11.4c','20.7c','15.4g','24.7g','10.4b','19.7b','14.4f','23.7f','12.4d','21.7d','16.4h','25.7h'],
+ 'area88':['ar_09.4b','ar_01.4a','ar_13.9b','ar_05.9a','ar_24.5e','ar_17.5c','ar_38.8h','ar_32.8f','ar_10.5b','ar_02.5a','ar_14.10b','ar_06.10a','ar_25.7e','ar_18.7c','ar_39.9h','ar_33.9f'],
+ '3wonders':['rt-5m.7a','rt-7m.9a','rt-1m.3a','rt-3m.5a','rt-6m.8a','rt-8m.10a','rt-2m.4a','rt-4m.6a'],
+ 'sf2':['sf2-5m.4a','sf2-7m.6a','sf2-1m.3a','sf2-3m.5a','sf2-6m.4c','sf2-8m.6c','sf2-2m.3c','sf2-4m.5c','sf2-13m.4d','sf2-15m.6d','sf2-9m.3d','sf2-11m.5d'],
+ 'sf2ce':['s92-1m.3a','s92-3m.5a','s92-2m.4a','s92-4m.6a','s92-5m.7a','s92-7m.9a','s92-6m.8a','s92-8m.10a','s92-10m.3c','s92-12m.5c','s92-11m.4c','s92-13m.6c'],
+ 'kod':['kd-5m.4a','kd-7m.6a','kd-1m.3a','kd-3m.5a','kd-6m.4c','kd-8m.6c','kd-2m.8a','kd-4m.10a'],
+ 'captcomm':['cc-5m.3a','cc-7m.5a','cc-1m.4a','cc-3m.6a','cc-6m.7a','cc-8m.9a','cc-2m.8a','cc-4m.10a'],
+ 'dino':['cd-1m.3a','cd-3m.5a','cd-2m.4a','cd-4m.6a','cd-5m.7a','cd-6m.8a','cd-7m.9a','cd-8m.10a'],
+ 'pang3':['pa3-01m.2c','pa3-07m.2f'],
+ 'knights':['kr-5m.3a','kr-7m.5a','kr-1m.4a','kr-3m.6a','kr-6m.7a','kr-8m.9a','kr-2m.8a','kr-4m.10a']
+};
+function collectSpecRefs(s){
+ const refs=[];for(const row of s.main||[])for(const x of row)if(typeof x==='string'&&x!=='interleave'&&x!=='wordswap'&&x!=='linear16')refs.push(x);
+ if(s.z80)refs.push(s.z80);for(const x of s.oki||[])refs.push(x);for(const x of s.qsoundSamples||[])refs.push(x);for(const x of GFX_REFS_BY_MODE[s.gfxMode]||[])refs.push(x);
+ return [...new Set(refs)]
+}
+async function hydrateSpecFromFolder(s){
+ if(!romFolderFiles.length)return 0;let n=0;
+ for(const ref of collectSpecRefs(s)){
+  if(file(ref))continue;const e=poolFind(ref);if(!e)continue;
+  const q=await extractPoolEntry(e);pkg.push(q);n++;log(`ROM pool + ${q.name} [$${hex(q.calc,8)}] ← ${q.sourceZip}`)
+ }
+ return n
+}
+const FAMILY_PARENT_ZIPS={forgottn:['forgottn'],ghouls:['ghouls'],strider:['strider'],dynwar:['dynwar'],willow:['willow'],unsquad:['unsquad','area88'],ffight:['ffight'],mercs:['mercs'],mtwins:['mtwins'],msword:['msword'],cawing:['cawing'],nemo:['nemo'],sf2:['sf2ce','sf2'],kod:['kod'],captcomm:['captcomm'],knights:['knights'],varth:['varth'],qad:['qad'],wof:['wof'],dino:['dino'],punisher:['punisher'],slammast:['slammast'],megaman:['megaman'],pang3:['pang3']};
+async function mergeFamilyParent(s){
+ if(!s?.generic||!romFolderFiles.length)return 0;const cur=romsetName(currentZipName),cands=[];
+ if(/^sf2ce/.test(cur))cands.push('sf2ce');
+ for(const x of FAMILY_PARENT_ZIPS[s.family]||[])if(!cands.includes(x))cands.push(x);
+ const parent=cands.map(x=>romFolderZip.get(x)).find(Boolean);if(!parent||romsetName(parent.name)===cur)return 0;
+ $('#status').textContent=`Clone ${cur}: recupero parent ${parent.name}…`;
+ const pp=await readZip(parent),have=new Set(pkg.map(x=>x.calc>>>0));let n=0;
+ for(const q of pp)if(!have.has(q.calc>>>0)){pkg.push(q);have.add(q.calc>>>0);n++}
+ if(n)log(`Parent pool: ${parent.name} · ${n} ROM condivise aggiunte in RAM`);return n
+}
+
+// -----------------------------------------------------------------------------
+// Z80 sound CPU core shared with the JSD emulator family.
+// -----------------------------------------------------------------------------
+const F={S:0x80,Z:0x40,Y:0x20,H:0x10,X:0x08,P:0x04,N:0x02,C:0x01};
+const parity=v=>{v&=255;v^=v>>4;v&=15;return ((0x6996>>v)&1)===0};
+const signed=v=>(v&128)?v-256:v;
+class Z80{
+  constructor(read,write,input,output,opRead=null){this.read=read;this.write=write;this.input=input;this.output=output;this.opRead=opRead||read;this.reset()}
+  reset(){this.a=this.f=this.b=this.c=this.d=this.e=this.h=this.l=0;this.a2=this.f2=this.b2=this.c2=this.d2=this.e2=this.h2=this.l2=0;this.ix=this.iy=0;this.sp=0xffff;this.pc=0;this.i=this.r=0;this.iff1=this.iff2=0;this.im=0;this.halted=false;this.eiDelay=0;this.cycles=0;this.lastPC=0;this.lastOp=0}
+  get af(){return(this.a<<8)|this.f}set af(v){this.a=v>>8&255;this.f=v&255}get bc(){return(this.b<<8)|this.c}set bc(v){this.b=v>>8&255;this.c=v&255}get de(){return(this.d<<8)|this.e}set de(v){this.d=v>>8&255;this.e=v&255}get hl(){return(this.h<<8)|this.l}set hl(v){this.h=v>>8&255;this.l=v&255}
+  rb(a){return this.read(a&65535)&255}wb(a,v){this.write(a&65535,v&255)}rw(a){return this.rb(a)|(this.rb(a+1)<<8)}ww(a,v){this.wb(a,v);this.wb(a+1,v>>8)}
+  fetch(){const v=this.opRead(this.pc&65535)&255;this.pc=(this.pc+1)&65535;this.r=(this.r&128)|((this.r+1)&127);return v}imm(){const v=this.rb(this.pc);this.pc=(this.pc+1)&65535;return v}imm16(){const l=this.imm(),h=this.imm();return l|(h<<8)}push(v){this.sp=(this.sp-1)&65535;this.wb(this.sp,v>>8);this.sp=(this.sp-1)&65535;this.wb(this.sp,v)}pop(){const l=this.rb(this.sp);this.sp=(this.sp+1)&65535;const h=this.rb(this.sp);this.sp=(this.sp+1)&65535;return l|(h<<8)}
+  cond(y){switch(y&7){case 0:return!(this.f&F.Z);case 1:return!!(this.f&F.Z);case 2:return!(this.f&F.C);case 3:return!!(this.f&F.C);case 4:return!(this.f&F.P);case 5:return!!(this.f&F.P);case 6:return!(this.f&F.S);default:return!!(this.f&F.S)}}
+  getRP(p,pfx){if(p===0)return this.bc;if(p===1)return this.de;if(p===2)return pfx==='ix'?this.ix:pfx==='iy'?this.iy:this.hl;return this.sp}setRP(p,v,pfx){v&=65535;if(p===0)this.bc=v;else if(p===1)this.de=v;else if(p===2){if(pfx==='ix')this.ix=v;else if(pfx==='iy')this.iy=v;else this.hl=v}else this.sp=v}
+  getRP2(p,pfx){return p===3?this.af:this.getRP(p,pfx)}setRP2(p,v,pfx){if(p===3)this.af=v;else this.setRP(p,v,pfx)}
+  getH(pfx){return pfx==='ix'?this.ix:pfx==='iy'?this.iy:this.hl}setH(v,pfx){v&=65535;if(pfx==='ix')this.ix=v;else if(pfx==='iy')this.iy=v;else this.hl=v}
+  getR(n,pfx,addr){switch(n){case 0:return this.b;case 1:return this.c;case 2:return this.d;case 3:return this.e;case 4:return pfx?this.getH(pfx)>>8:this.h;case 5:return pfx?this.getH(pfx)&255:this.l;case 6:return this.rb(addr===undefined?this.hl:addr);default:return this.a}}
+  setR(n,v,pfx,addr){v&=255;switch(n){case 0:this.b=v;break;case 1:this.c=v;break;case 2:this.d=v;break;case 3:this.e=v;break;case 4:if(pfx)this.setH((this.getH(pfx)&255)|(v<<8),pfx);else this.h=v;break;case 5:if(pfx)this.setH((this.getH(pfx)&0xff00)|v,pfx);else this.l=v;break;case 6:this.wb(addr===undefined?this.hl:addr,v);break;default:this.a=v}}
+  flagsSZ(v){v&=255;return(v&0xa8)|(v===0?F.Z:0)|(parity(v)?F.P:0)}
+  add8(v,carry=0){const a=this.a,c=carry&&(this.f&F.C)?1:0,r=a+v+c,x=r&255;this.f=(x&0xa8)|(x===0?F.Z:0)|(((a^v^x)&0x10)?F.H:0)|((~(a^v)&(a^x)&0x80)?F.P:0)|(r>255?F.C:0);this.a=x}
+  sub8(v,carry=0,compare=false){const a=this.a,c=carry&&(this.f&F.C)?1:0,r=a-v-c,x=r&255;this.f=F.N|(x&0x80)|(x===0?F.Z:0)|(((a^v^x)&0x10)?F.H:0)|(((a^v)&(a^x)&0x80)?F.P:0)|(r<0?F.C:0)|(compare?(v&0x28):(x&0x28));if(!compare)this.a=x}
+  logic(v,op){if(op===4){this.a&=v;this.f=F.H}else if(op===5){this.a^=v;this.f=0}else{this.a|=v;this.f=0}this.a&=255;this.f|=this.flagsSZ(this.a)}
+  alu(y,v){switch(y){case 0:this.add8(v);break;case 1:this.add8(v,1);break;case 2:this.sub8(v);break;case 3:this.sub8(v,1);break;case 4:case 5:case 6:this.logic(v,y);break;case 7:this.sub8(v,0,true)}}
+  inc8(v){const r=(v+1)&255;this.f=(this.f&F.C)|(r&0xa8)|(r===0?F.Z:0)|((v&15)===15?F.H:0)|(v===0x7f?F.P:0);return r}
+  dec8(v){const r=(v-1)&255;this.f=(this.f&F.C)|F.N|(r&0xa8)|(r===0?F.Z:0)|((v&15)===0?F.H:0)|(v===0x80?F.P:0);return r}
+  add16(a,b){const r=a+b,x=r&65535;this.f=(this.f&(F.S|F.Z|F.P))|((x>>8)&0x28)|(((a^b^x)&0x1000)?F.H:0)|(r>65535?F.C:0);return x}
+  adc16(a,b,sub=false){const c=(this.f&F.C)?1:0,r=sub?a-b-c:a+b+c,x=r&65535;this.f=(x>>8)&0xa8;if(x===0)this.f|=F.Z;if(((a^b^x)&0x1000)!==0)this.f|=F.H;if(sub){this.f|=F.N;if(((a^b)&(a^x)&0x8000)!==0)this.f|=F.P;if(r<0)this.f|=F.C}else{if((~(a^b)&(a^x)&0x8000)!==0)this.f|=F.P;if(r>65535)this.f|=F.C}return x}
+  daa(){let a=this.a,adj=0,c=this.f&F.C;if((this.f&F.H)||(a&15)>9)adj|=6;if(c||a>0x99){adj|=0x60;c=F.C}const old=a;a=(this.f&F.N)?a-adj:a+adj;a&=255;this.a=a;this.f=(this.f&F.N)|c|(a&0xa8)|(a===0?F.Z:0)|(parity(a)?F.P:0)|(((old^a)&0x10)?F.H:0)}
+  rotA(kind){let a=this.a,c;switch(kind){case 0:c=a>>7;a=((a<<1)|c)&255;break;case 1:c=a&1;a=(a>>1)|(c<<7);break;case 2:{const oc=this.f&F.C?1:0;c=a>>7;a=((a<<1)|oc)&255;break}default:{const oc=this.f&F.C?1:0;c=a&1;a=(a>>1)|(oc<<7)}}this.a=a;this.f=(this.f&(F.S|F.Z|F.P))|(a&0x28)|(c?F.C:0)}
+  rotate(v,y){let c=0,r=v;switch(y){case 0:c=v>>7;r=(v<<1)|c;break;case 1:c=v&1;r=(v>>1)|(c<<7);break;case 2:{const q=this.f&F.C?1:0;c=v>>7;r=(v<<1)|q;break}case 3:{const q=this.f&F.C?1:0;c=v&1;r=(v>>1)|(q<<7);break}case 4:c=v>>7;r=v<<1;break;case 5:c=v&1;r=(v>>1)|(v&0x80);break;case 6:c=v>>7;r=(v<<1)|1;break;case 7:c=v&1;r=v>>1}r&=255;this.f=this.flagsSZ(r)|(c?F.C:0);return r}
+  bit(v,b){const mask=1<<b;this.f=(this.f&F.C)|F.H|(v&0x28)|((v&mask)?0:(F.Z|F.P))|(b===7&&(v&0x80)?F.S:0)}
+  nmi(){if(this.halted)this.halted=false;this.iff2=this.iff1;this.iff1=0;this.push(this.pc);this.pc=0x66;this.cycles+=11;return 11}
+  irq(vector=0xff){if(!this.iff1||this.eiDelay)return 0;if(this.halted)this.halted=false;this.iff1=this.iff2=0;this.push(this.pc);if(this.im===2)this.pc=this.rw((this.i<<8)|vector);else this.pc=0x38;const c=this.im===2?19:13;this.cycles+=c;return c}
+  step(){if(this.halted){this.cycles+=4;return 4}this.lastPC=this.pc;let op=this.fetch();this.lastOp=op;let c,prefixCycles=0;if(op===0xdd||op===0xfd){let p=op===0xdd?'ix':'iy',n=this.fetch();while(n===0xdd||n===0xfd){prefixCycles+=4;p=n===0xdd?'ix':'iy';n=this.fetch()}if(n===0xcb){const d=signed(this.imm()),q=this.fetch();c=prefixCycles+this.execCB(q,p,(this.getH(p)+d)&65535,true)}else if(n===0xed)c=prefixCycles+4+this.execED(this.fetch());else c=prefixCycles+4+this.execBase(n,p)}else if(op===0xcb)c=this.execCB(this.fetch());else if(op===0xed)c=this.execED(this.fetch());else c=this.execBase(op);if(this.eiDelay>0)this.eiDelay--;this.cycles+=c;return c}
+  execBase(op,pfx){const x=op>>6,y=(op>>3)&7,z=op&7,p=y>>1,q=y&1;let a,v,n,disp,addr,extra=0;const idxAddr=()=>{if(!pfx)return this.hl;if(addr===undefined){disp=signed(this.imm());addr=(this.getH(pfx)+disp)&65535;extra=8}return addr};
+    if(x===0){switch(z){
+      case 0:if(y===0)return 4;if(y===1){[this.a,this.a2]=[this.a2,this.a];[this.f,this.f2]=[this.f2,this.f];return 4}if(y===2){n=signed(this.imm());this.b=(this.b-1)&255;if(this.b){this.pc=(this.pc+n)&65535;return 13}return 8}if(y===3){n=signed(this.imm());this.pc=(this.pc+n)&65535;return 12}n=signed(this.imm());if(this.cond(y-4)){this.pc=(this.pc+n)&65535;return 12}return 7;
+      case 1:if(!q){this.setRP(p,this.imm16(),pfx);return 10}this.setH(this.add16(this.getH(pfx),this.getRP(p,pfx)),pfx);return pfx?11:11;
+      case 2:if(!q){if(p===0)this.wb(this.bc,this.a);else if(p===1)this.wb(this.de,this.a);else if(p===2){a=this.imm16();this.ww(a,this.getH(pfx))}else{a=this.imm16();this.wb(a,this.a)}}else{if(p===0)this.a=this.rb(this.bc);else if(p===1)this.a=this.rb(this.de);else if(p===2){a=this.imm16();this.setH(this.rw(a),pfx)}else{a=this.imm16();this.a=this.rb(a)}}return p<2?7:(p===2?16:13);
+      case 3:this.setRP(p,(this.getRP(p,pfx)+(q?-1:1))&65535,pfx);return 6;
+      case 4:addr=y===6?idxAddr():undefined;v=this.getR(y,pfx,addr);this.setR(y,this.inc8(v),pfx,addr);return(y===6?11:4)+extra;
+      case 5:addr=y===6?idxAddr():undefined;v=this.getR(y,pfx,addr);this.setR(y,this.dec8(v),pfx,addr);return(y===6?11:4)+extra;
+      case 6:if(y===6&&pfx){addr=idxAddr();n=this.imm();this.setR(y,n,pfx,addr);return 15}else{n=this.imm();this.setR(y,n,pfx);return y===6?10:7}
+      case 7:switch(y){case 0:case 1:case 2:case 3:this.rotA(y);break;case 4:this.daa();break;case 5:this.a^=255;this.f=(this.f&(F.S|F.Z|F.P|F.C))|F.H|F.N|(this.a&0x28);break;case 6:this.f=(this.f&(F.S|F.Z|F.P))|(this.a&0x28)|F.C;break;case 7:{const c=this.f&F.C;this.f=(this.f&(F.S|F.Z|F.P))|(this.a&0x28)|(c?F.H:0)|(c?0:F.C)}}return 4}
+    }else if(x===1){if(op===0x76){this.halted=true;return 4}if(pfx&&(y===6||z===6))addr=idxAddr();const rpfx=pfx&&y!==6&&z!==6?pfx:null;v=this.getR(z,rpfx,addr);this.setR(y,v,rpfx,addr);return(y===6||z===6?7:4)+extra
+    }else if(x===2){if(pfx&&z===6)addr=idxAddr();this.alu(y,this.getR(z,pfx,addr));return(z===6?7:4)+extra
+    }else switch(z){
+      case 0:if(this.cond(y)){this.pc=this.pop();return 11}return 5;
+      case 1:if(!q){this.setRP2(p,this.pop(),pfx);return 10}switch(y){case 1:this.pc=this.pop();return 10;case 3:[this.b,this.b2]=[this.b2,this.b];[this.c,this.c2]=[this.c2,this.c];[this.d,this.d2]=[this.d2,this.d];[this.e,this.e2]=[this.e2,this.e];[this.h,this.h2]=[this.h2,this.h];[this.l,this.l2]=[this.l2,this.l];return 4;case 5:this.pc=this.getH(pfx);return 4;case 7:this.sp=this.getH(pfx);return 6}return 4;
+      case 2:a=this.imm16();if(this.cond(y))this.pc=a;return 10;
+      case 3:switch(y){case 0:this.pc=this.imm16();return 10;case 2:n=this.imm();this.output((this.a<<8)|n,this.a);return 11;case 3:n=this.imm();this.a=this.input((this.a<<8)|n)&255;return 11;case 4:a=this.rw(this.sp);this.ww(this.sp,this.getH(pfx));this.setH(a,pfx);return 19;case 5:[this.de,this.hl]=[this.hl,this.de];return 4;case 6:this.iff1=this.iff2=0;return 4;case 7:this.iff1=this.iff2=1;this.eiDelay=2;return 4}return 4;
+      case 4:a=this.imm16();if(this.cond(y)){this.push(this.pc);this.pc=a;return 17}return 10;
+      case 5:if(!q){this.push(this.getRP2(p,pfx));return 11}if(y===1){a=this.imm16();this.push(this.pc);this.pc=a;return 17}return 4;
+      case 6:this.alu(y,this.imm());return 7;
+      case 7:this.push(this.pc);this.pc=y*8;return 11
+    }return 4
+  }
+  execCB(op,pfx,addr,indexed=false){const x=op>>6,y=(op>>3)&7,z=op&7;let a,v,r;if(indexed){a=addr;v=this.rb(a)}else{a=z===6?this.hl:undefined;v=this.getR(z,null,a)}if(x===0){r=this.rotate(v,y);if(indexed){this.wb(a,r);if(z!==6)this.setR(z,r)}else this.setR(z,r,null,a)}else if(x===1){this.bit(v,y);if(indexed)this.f=(this.f&~0x28)|((a>>8)&0x28)}else{r=x===2?v&~(1<<y):v|(1<<y);if(indexed){this.wb(a,r);if(z!==6)this.setR(z,r)}else this.setR(z,r,null,a)}if(indexed)return x===1?20:23;return z===6?(x===1?12:15):8}
+  execED(op){const x=op>>6,y=(op>>3)&7,z=op&7,p=y>>1,q=y&1;let a,v,r;if(x===1){switch(z){
+      case 0:v=this.input(this.bc)&255;if(y!==6)this.setR(y,v);this.f=(this.f&F.C)|this.flagsSZ(v);return 12;
+      case 1:this.output(this.bc,y===6?0:this.getR(y));return 12;
+      case 2:this.hl=this.adc16(this.hl,this.getRP(p),!q);return 15;
+      case 3:a=this.imm16();if(!q)this.ww(a,this.getRP(p));else this.setRP(p,this.rw(a));return 20;
+      case 4:v=this.a;this.a=0;this.sub8(v);return 8;
+      case 5:this.pc=this.pop();this.iff1=this.iff2;return 14;
+      case 6:this.im=[0,0,1,2,0,0,1,2][y];return 8;
+      case 7:switch(y){case 0:this.i=this.a;return 9;case 1:this.r=this.a;return 9;case 2:this.a=this.i;this.f=(this.f&F.C)|(this.flagsSZ(this.a)&~F.P)|(this.iff2?F.P:0);return 9;case 3:this.a=this.r;this.f=(this.f&F.C)|(this.flagsSZ(this.a)&~F.P)|(this.iff2?F.P:0);return 9;case 4:{a=this.hl;v=this.rb(a);r=((this.a&15)<<4)|(v>>4);this.a=(this.a&0xf0)|(v&15);this.wb(a,r);this.f=(this.f&F.C)|this.flagsSZ(this.a);return 18}case 5:{a=this.hl;v=this.rb(a);r=((v<<4)|(this.a&15))&255;this.a=(this.a&0xf0)|(v>>4);this.wb(a,r);this.f=(this.f&F.C)|this.flagsSZ(this.a);return 18}}return 8}
+    }if(x===2&&y>=4){const dec=y&1,rep=y>=6;switch(z){case 0:return this.blockLD(dec,rep);case 1:return this.blockCP(dec,rep);case 2:return this.blockIN(dec,rep);case 3:return this.blockOUT(dec,rep)} }return 8}
+  blockLD(dec,rep){const v=this.rb(this.hl);this.wb(this.de,v);this.hl=(this.hl+(dec?-1:1))&65535;this.de=(this.de+(dec?-1:1))&65535;this.bc=(this.bc-1)&65535;const q=(this.a+v)&255;this.f=(this.f&(F.S|F.Z|F.C))|(this.bc?F.P:0)|(q&F.X)|((q<<4)&F.Y);if(rep&&this.bc){this.pc=(this.pc-2)&65535;return 21}return 16}
+  blockCP(dec,rep){const v=this.rb(this.hl),a=this.a,r=(a-v)&255,c=this.f&F.C,h=((a^v^r)&16)?F.H:0,n=(r-(h?1:0))&255;this.hl=(this.hl+(dec?-1:1))&65535;this.bc=(this.bc-1)&65535;this.f=c|F.N|(r&F.S)|(r===0?F.Z:0)|h|(this.bc?F.P:0)|(n&F.X)|((n&2)<<4);if(rep&&this.bc&&r){this.pc=(this.pc-2)&65535;return 21}return 16}
+  blockIN(dec,rep){const port=this.bc,v=this.input(port)&255;this.wb(this.hl,v);this.hl=(this.hl+(dec?-1:1))&65535;this.b=(this.b-1)&255;const sum=v+((this.c+(dec?-1:1))&255),pv=((sum&7)^this.b)&255;this.f=(this.b&0xa8)|(this.b===0?F.Z:0)|(v&0x80?F.N:0)|(sum>255?(F.H|F.C):0)|(parity(pv)?F.P:0);if(rep&&this.b){this.pc=(this.pc-2)&65535;return 21}return 16}
+  blockOUT(dec,rep){const v=this.rb(this.hl);this.output(this.bc,v);this.hl=(this.hl+(dec?-1:1))&65535;this.b=(this.b-1)&255;const sum=v+(this.hl&255),pv=((sum&7)^this.b)&255;this.f=(this.b&0xa8)|(this.b===0?F.Z:0)|(v&0x80?F.N:0)|(sum>255?(F.H|F.C):0)|(parity(pv)?F.P:0);if(rep&&this.b){this.pc=(this.pc-2)&65535;return 21}return 16}
+  state(){return{a:this.a,f:this.f,b:this.b,c:this.c,d:this.d,e:this.e,h:this.h,l:this.l,a2:this.a2,f2:this.f2,b2:this.b2,c2:this.c2,d2:this.d2,e2:this.e2,h2:this.h2,l2:this.l2,ix:this.ix,iy:this.iy,sp:this.sp,pc:this.pc,i:this.i,r:this.r,iff1:this.iff1,iff2:this.iff2,im:this.im,halted:this.halted,eiDelay:this.eiDelay,cycles:this.cycles}}
+  loadState(s){for(const k of Object.keys(this.state()))if(k in s)this[k]=s[k]}
+}
+
+
+// -----------------------------------------------------------------------------
+// MAME CPS-1 registry
+// Recognition is intentionally separate from electrical compatibility.
+// The family rules cover the current cps1.cpp GAME/CONS names and the common
+// split CPS-1 bootleg drivers (fcrash / cps1bl_*). A standard MAME archive name
+// is therefore recognised even when its exact ROM wiring is not implemented yet.
+// -----------------------------------------------------------------------------
+const EXACT_SPECS=[
+ // CRC-only recipes: generated from user-provided ZIP metadata only.
+ // No ROM bytes are embedded in this HTML.
+ {id:'1941',romset:'1941',title:'1941: Counter Attack (World / legacy names)',
+  crcs:[0x9deb1e75,0xd63942b3,0xdf201112,0x816a818f,0x4e9648ca],
+  main:[
+   ['interleave','#9deb1e75','#d63942b3',0x000000],
+   ['interleave','#df201112','#816a818f',0x040000],
+   ['wordswap','#4e9648ca',0x080000]
+  ],
+  gfxMode:'1941crc',z80:'#0f9d8527',oki:['#d1f15aeb','#15aec3a6']},
+
+ {id:'area88',romset:'area88',title:'Area 88 (Japan)',
+  crcs:[0x65030392,0xc48170de,0x33e9694b,0x7cc8fb9e,0xf6e80386,0xbe36c145,0x86d98ff3,0x758893d3],
+  main:[
+   ['interleave','#65030392','#c48170de',0x000000],
+   ['interleave','#33e9694b','#7cc8fb9e',0x040000],
+   ['interleave','#f6e80386','#be36c145',0x080000],
+   ['interleave','#86d98ff3','#758893d3',0x0c0000]
+  ],
+  gfxMode:'area88crc',z80:'#f3dd1367',oki:['#584b43a9']},
+
+ {id:'sf2',romset:'sf2',title:'Street Fighter II: The World Warrior (World 910522 / legacy names)',
+  crcs:[0xfe39ee33,0xfb92cd74,0x69a0a301,0x5e22db70,0x8bf9f1e5,0x626ef934,0xbb4af315,0xc02a13eb],
+  main:[
+   ['interleave','#fe39ee33','#fb92cd74',0x000000],
+   ['interleave','#69a0a301','#5e22db70',0x040000],
+   ['interleave','#8bf9f1e5','#626ef934',0x080000],
+   ['interleave','#bb4af315','#c02a13eb',0x0c0000]
+  ],
+  gfxMode:'sf2crc',z80:'#a4823a1b',oki:['#7f162009','#beade53f']},
+
+ {id:'sf2ce',romset:'sf2ce',title:"Street Fighter II': Champion Edition (World / legacy names)",
+  crcs:[0x3f846b74,0x99f1cca4,0x925a7877],
+  main:[
+   ['wordswap','#3f846b74',0x000000],
+   ['wordswap','#99f1cca4',0x080000],
+   ['wordswap','#925a7877',0x100000]
+  ],
+  gfxMode:'sf2cecrc',z80:'#08f6b60e',oki:['#7f162009','#beade53f']},
+
+ {id:'captcomm',romset:'captcommb',title:'Captain Commando (bootleg)',
+  crcs:[0xcb71ed7a,0x47cb2e87,0x79794279,0xb01077ba,0xf863071c,0x4b03c308,0x3383ea96,0xb8e1f4cf],
+  main:[
+   ['interleave','#cb71ed7a','#47cb2e87',0x000000],
+   ['interleave','#79794279','#b01077ba',0x100000]
+  ],
+  gfxMode:'captcommbcrc',z80:'#698e8b58',oki:['#096115fb'],bootlegVariant:'captcommb'},
+
+ {id:'1941',title:'1941: Counter Attack',test:n=>n.includes('41em_30.11f')&&n.includes('41-32m.8h'),
+  main:[['interleave','41em_30.11f','41em_35.11h',0],['interleave','41em_31.12f','41em_36.12h',0x40000],['wordswap','41-32m.8h',0x80000]],
+  gfxMode:'1941',z80:'41_9.12b',oki:['41_18.11c','41_19.12c']},
+ {id:'ghouls',title:"Ghouls'n Ghosts",test:n=>n.includes('dme_29.10h')&&n.includes('dm-17.7j'),
+  main:[['interleave','dme_29.10h','dme_30.10j',0],['interleave','dme_27.9h','dme_28.9j',0x40000],['linear16','dm-17.7j',0x80000]],
+  gfxMode:'ghouls',z80:'26.10a',oki:[]},
+ {id:'area88',title:'Area 88',test:n=>n.includes('ar_36.12f')&&n.includes('ar22b.1a'),
+  main:[
+   ['interleave','ar_36.12f','ar_42.12h',0x00000],
+   ['interleave','ar_37.13f','ar_43.13h',0x40000],
+   ['interleave','ar_34.10f','ar_40.10h',0x80000],
+   ['interleave','ar_35.11f','ar_41.11h',0xc0000]
+  ],
+  gfxMode:'area88',z80:'ar_23.13c',oki:['ar_30.12e']},
+ {id:'3wonders',title:'Three Wonders',test:n=>n.includes('rte_30a.11f')&&n.includes('rt24b.1a'),
+  main:[
+   ['interleave','rte_30a.11f','rte_35a.11h',0x00000],
+   ['interleave','rte_31a.12f','rte_36a.12h',0x40000],
+   ['interleave','rt_28a.9f','rt_33a.9h',0x80000],
+   ['interleave','rte_29a.10f','rte_34a.10h',0xc0000]
+  ],
+  gfxMode:'3wonders',z80:'rt_9.12b',oki:['rt_18.11c','rt_19.12c']},
+
+ // Exact MAME parent recipes used as reference targets for the broader registry.
+ {id:'sf2',romset:'sf2',title:'Street Fighter II: The World Warrior',
+  test:n=>n.includes('sf2e_30g.11e')&&n.includes('sf2e_37g.11f')&&n.includes('sf2_9.12a'),
+  main:[
+   ['interleave','sf2e_30g.11e','sf2e_37g.11f',0x000000],
+   ['interleave','sf2e_31g.12e','sf2e_38g.12f',0x040000],
+   ['interleave','sf2e_28g.9e','sf2e_35g.9f',0x080000],
+   ['interleave','sf2_29b.10e','sf2_36b.10f',0x0c0000]
+  ],
+  gfxMode:'sf2',z80:'sf2_9.12a',oki:['sf2_18.11c','sf2_19.12c']},
+
+ {id:'sf2ce',romset:'sf2ce',title:"Street Fighter II': Champion Edition",
+  test:n=>n.includes('s92e_23b.8f')&&n.includes('s92_22b.7f')&&n.includes('s92_09.11a'),
+  main:[
+   ['wordswap','s92e_23b.8f',0x000000],
+   ['wordswap','s92_22b.7f',0x080000],
+   ['wordswap','s92_21a.6f',0x100000]
+  ],
+  gfxMode:'sf2ce',z80:'s92_09.11a',oki:['s92_18.11c','s92_19.12c']},
+
+ {id:'kod',romset:'kodr1',title:'The King of Dragons (World 910711, rev 1 / legacy names)',
+  crcs:[0xc7414fd4,0xa5bf40d2,0x1fffc7bd,0x89e57a82,0x9367bcd9,0x4ca6a48a,0x6a0ba878,0xb509b39d],
+  main:[
+   ['interleave','#c7414fd4','#a5bf40d2',0x000000],
+   ['interleave','#1fffc7bd','#89e57a82',0x040000],
+   ['interleave','#9367bcd9','#4ca6a48a',0x080000],
+   ['interleave','#6a0ba878','#b509b39d',0x0c0000]
+  ],
+  gfxMode:'kodr1crc',z80:'#f5514510',oki:['#69ecb2c8','#02d851c1']},
+
+ {id:'kod',romset:'kod',title:'The King of Dragons',
+  test:n=>n.includes('kde_30a.11e')&&n.includes('kde_37a.11f')&&n.includes('kd_9.12a'),
+  main:[
+   ['interleave','kde_30a.11e','kde_37a.11f',0x000000],
+   ['interleave','kde_31a.12e','kde_38a.12f',0x040000],
+   ['interleave','kd_28.9e','kd_35.9f',0x080000],
+   ['interleave','kd_29.10e','kd_36a.10f',0x0c0000]
+  ],
+  gfxMode:'kod',z80:'kd_9.12a',oki:['kd_18.11c','kd_19.12c']},
+
+ {id:'captcomm',romset:'captcomm',title:'Captain Commando',
+  test:n=>n.includes('cce_23f.8f')&&n.includes('cc_22f.7f')&&n.includes('cc_09.11a'),
+  main:[
+   ['wordswap','cce_23f.8f',0x000000],
+   ['wordswap','cc_22f.7f',0x080000],
+   ['interleave','cc_24f.9e','cc_28f.9f',0x100000]
+  ],
+  gfxMode:'captcomm',z80:'cc_09.11a',oki:['cc_18.11c','cc_19.12c']},
+
+ {id:'dino',romset:'dino',title:'Cadillacs and Dinosaurs',
+  test:n=>n.includes('cde_23a.8f')&&n.includes('cde_22a.7f')&&n.includes('cd_q.5k'),
+  main:[
+   ['wordswap','cde_23a.8f',0x000000],
+   ['wordswap','cde_22a.7f',0x080000],
+   ['wordswap','cde_21a.6f',0x100000]
+  ],
+  gfxMode:'dino',z80:'cd_q.5k',qsound:true,kabuki:'dino',
+  qsoundSamples:['cd-q1.1k','cd-q2.2k','cd-q3.3k','cd-q4.4k']},
+
+ {id:'pang3',romset:'pang3',title:'Pang! 3 (Europe 950601)',
+  test:n=>n.includes('pa3e_17a.11l')&&n.includes('pa3e_16a.10l')&&n.includes('pa3_11.11f'),
+  main:[
+   ['wordswap','pa3e_17a.11l',0x000000],
+   ['wordswap','pa3e_16a.10l',0x080000]
+  ],
+  gfxMode:'pang3',z80:'pa3_11.11f',oki:['pa3_05.10d','pa3_06.11d'],
+  mach215:true,soundNoBank:true},
+
+ {id:'knights',romset:'knights',title:'Knights of the Round',
+  test:n=>n.includes('kr_23e.8f')&&n.includes('kr_22.7f')&&n.includes('kr_09.11a'),
+  main:[
+   ['wordswap','kr_23e.8f',0x000000],
+   ['wordswap','kr_22.7f',0x080000]
+  ],
+  gfxMode:'knights',z80:'kr_09.11a',oki:['kr_18.11c','kr_19.12c']}
+];
+
+const MAME_CPS1_FAMILIES=[
+ {id:'forgottn',re:/^(forgottn|lostwrld)/,title:'Forgotten Worlds / Lost Worlds',cpsb:'B01',mainMode:'hybrid'},
+ {id:'ghouls',re:/^(ghouls|daimakai)/,title:"Ghouls'n Ghosts / Daimakaimura",cpsb:'B01'},
+ {id:'strider',re:/^strider/,title:'Strider',cpsb:'B01',mainMode:'hybrid'},
+ {id:'dynwar',re:/^dynwar/,title:'Dynasty Wars / Tenchi wo Kurau',cpsb:'B02',mainMode:'hybrid'},
+ {id:'willow',re:/^willow/,title:'Willow',cpsb:'B03',mainMode:'hybrid'},
+ {id:'unsquad',re:/^(unsquad|area88)/,title:'U.N. Squadron / Area 88',cpsb:'B11',mainMode:'pairs4'},
+ {id:'ffight',re:/^(ffight|fcrash)/,title:'Final Fight',cpsb:'B04',mainMode:'hybrid'},
+ {id:'1941',re:/^1941/,title:'1941: Counter Attack',cpsb:'B05'},
+ {id:'mercs',re:/^mercs/,title:'Mercs / Senjou no Ookami II',cpsb:'B12',mainMode:'hybrid'},
+ {id:'mtwins',re:/^(mtwins|chikij|mtwinsb)/,title:'Mega Twins / Chiki Chiki Boys',cpsb:'B14',mainMode:'hybrid'},
+ {id:'msword',re:/^msword/,title:'Magic Sword',cpsb:'B13',mainMode:'hybrid'},
+ {id:'cawing',re:/^cawing/,title:'Carrier Air Wing / U.S. Navy',cpsb:'B16',mainMode:'hybrid'},
+ {id:'nemo',re:/^nemo/,title:'Nemo',cpsb:'B15',mainMode:'hybrid'},
+ {id:'sf2',re:/^sf2/,title:'Street Fighter II',cpsb:'B11',mainMode:'pairs4'},
+ {id:'3wonders',re:/^(3wonders|wonder3)/,title:'Three Wonders / Wonder 3',cpsb:'BT1'},
+ {id:'kod',re:/^kod/,title:'The King of Dragons',cpsb:'BT2',mainMode:'pairs4'},
+ {id:'captcomm',re:/^captcomm/,title:'Captain Commando',cpsb:'BT3',mainMode:'wordsPair'},
+ {id:'knights',re:/^knights/,title:'Knights of the Round',cpsb:'BT4',mainMode:'words'},
+ {id:'cworld2j',re:/^cworld2j/,title:'Adventure Quiz Capcom World 2',cpsb:'BT6'},
+ {id:'varth',re:/^varth/,title:'Varth',cpsb:'B04',mainMode:'pairs4'},
+ {id:'qad',re:/^qad/,title:'Quiz & Dragons',cpsb:'BT7',mainMode:'pairs2'},
+ {id:'wof',re:/^(wof|wofpic|wofr1bl)/,title:'Warriors of Fate / Tenchi wo Kurau II',cpsb:'QS1',qsound:true,mainMode:'words'},
+ {id:'dino',re:/^(dino|dinopic)/,title:'Cadillacs and Dinosaurs',cpsb:'QS2',qsound:true,mainMode:'words'},
+ {id:'punisher',re:/^(punisher|punipic)/,title:'The Punisher',cpsb:'QS3',qsound:true,mainMode:'words'},
+ {id:'slammast',re:/^(slammast|slampic|mbomber|mbombrd)/,title:'Saturday Night Slam Masters / Muscle Bomber',cpsb:'QS4',qsound:true,mainMode:'words'},
+ {id:'gulunpa',re:/^gulunpa/,title:'Gulun.Pa!',cpsb:'B21'},
+ {id:'pnickj',re:/^pnickj/,title:'Pnickies',cpsb:'B21'},
+ {id:'qtono2j',re:/^qtono2j/,title:'Quiz Tonosama no Yabou 2',cpsb:'B21'},
+ {id:'megaman',re:/^(megaman|rockmanj)/,title:'Mega Man / Rockman: The Power Battle',cpsb:'B21',mainMode:'words'},
+ {id:'ganbare',re:/^(pmonster|ganbare|pokonyan|mpumpkin)/,title:'Late CPS-1 / redemption',cpsb:'B21'},
+ {id:'pang3',re:/^pang3/,title:'Pang! 3',cpsb:'B21',mainMode:'words'},
+ {id:'cps1mult',re:/^cps1mult/,title:'CPS1 Multi Game',cpsb:'B21',special:true},
+ {id:'changer',re:/^(wofch|sfzch|sfach|sfzbch)/,title:'CPS Changer',cpsb:'B21',special:true},
+ {id:'kenseim',re:/^kenseim/,title:'Ken Sei Mogura: Street Fighter II',cpsb:'B21',special:true}
+];
+
+// Known split-driver aliases whose hardware differs from a genuine CPS-1 B-board.
+// Family regexes above already recognise most of them; this list is retained
+// for diagnostics and future special handlers.
+const CPS1_SPLIT_BOOTLEGS=new Set([
+ 'captcommb2','knightsb3','sf2mdt','sf2mdta','sf2mdtb','sf2ceb','sf2ceb2','sf2ceb3','sf2ceb4','sf2ceb5',
+ 'cawingbl','kodb','varthb','wofpic','wofpic2','wofr1bl','dinopic','dinopic2',
+ 'punipic','punipic2','punipic3','slampic','slampic2','mtwinsb','fcrash'
+]);
+
+function file(n){
+ if(typeof n==='number')return pkg.find(x=>(x.calc>>>0)===(n>>>0));
+ const q=String(n);if(q[0]==='#'){const c=parseInt(q.slice(1),16)>>>0;return pkg.find(x=>(x.calc>>>0)===c)}
+ if(q.includes('|')){for(const z of q.split('|')){const f=file(z);if(f)return f}return null}
+ return pkg.find(x=>x.name.toLowerCase()===q.toLowerCase())
+}
+function romsetName(name){
+ return String(name||'').split(/[\\/]/).pop().replace(/\.zip$/i,'').replace(/\s*\(\d+\)$/,'').trim().toLowerCase()
+}
+function familyForSet(id){return MAME_CPS1_FAMILIES.find(f=>f.re.test(id))||null}
+function setSpecificCpsb(id,fam){
+ if(fam==='ghouls'&&id==='daimakair')return'B21';
+ if(fam==='strider'){if(id==='strideruc')return'B17';if(id==='striderjr')return'B21'}
+ if(fam==='dynwar'&&id==='dynwarjr')return'B21';
+ if(fam==='unsquad'&&id==='area88r')return'B21';
+ if(fam==='ffight'){
+  if(id==='ffightub'||id==='ffightj3')return'B03';
+  if(id==='ffightuc'||id==='ffightj4')return'B05';
+  if(id==='ffightj1')return'B01';
+  if(id==='ffightj2')return'B02';
+  if(id==='ffightae')return'B21';
+  return'B04'
+ }
+ if(fam==='cawing'){if(id==='cawingu')return'B05';if(id==='cawingjr')return'B21';return'B16'}
+ if(fam==='captcomm'&&id==='captcommb2')return'BT4';
+ if(fam==='sf2'){
+  // World Warrior revisions use the same STF29 graphics mapper but several
+  // different CPS-B chips.  Keep these exact: a wrong layer/priority register
+  // layout can make perfectly valid sprites disappear behind a tile layer.
+  const wwCpsb={
+   sf2:'B11',sf2ea:'B17',sf2eb:'B17',sf2ed:'B05',sf2ee:'B18',sf2ef:'B15',sf2em:'B17',sf2en:'B17',
+   sf2ua:'B17',sf2ub:'B17',sf2uc:'B12',sf2ud:'B05',sf2ue:'B18',sf2uf:'B15',sf2ug:'B11',sf2uh:'B13',sf2ui:'B14',sf2uk:'B17',sf2um:'B17',
+   sf2j:'B13',sf2j17:'B17',sf2ja:'B17',sf2jc:'B12',sf2jf:'B15',sf2jh:'B13',sf2jl:'B17',
+   sf2qp1:'B17',sf2qp2:'B14',sf2thndr:'B17',sf2thndr2:'B17'
+  };
+  if(wwCpsb[id])return wwCpsb[id];
+  if(/^sf2ce/.test(id)||/^sf2(hf|hfu|hfj)/.test(id)||/^sf2(rb|red|v004|acc|amf|dkot|level|m\d|yyc|koryu|dongb|re|mkot)/.test(id))return'B21';
+  return'B17'
+ }
+ if(fam==='varth'){if(id==='varthj')return'BT5';if(id==='varthjr')return'B21';return'B04'}
+ if(fam==='qad'&&id==='qadjr')return'B21';
+ if(fam==='slammast'&&/^mbombrd/.test(id))return'QS5';
+ if(fam==='changer'&&id==='wofch')return'QS1';
+ if(fam==='pang3'&&id==='pang3b3')return'B17';
+ return null
+}
+function detect(zipName=''){
+ const names=pkg.map(x=>x.name.toLowerCase()),crcs=new Set(pkg.map(x=>x.calc>>>0));
+ const exact=EXACT_SPECS.find(s=>(s.test&&s.test(names))||(s.crcs&&s.crcs.every(c=>crcs.has(c>>>0))));
+ if(exact)return {...exact,sourceZip:romsetName(zipName),romset:exact.romset||romsetName(zipName)||exact.id,generic:false,layoutSafe:true,layoutNote:'MAME wiring verificato'};
+ const id=romsetName(zipName),fam=familyForSet(id);
+ if(!fam)return null;
+ const split=CPS1_SPLIT_BOOTLEGS.has(id);
+ return {
+  id,romset:id,family:fam.id,title:`${fam.title} [${id}]`,generic:true,
+  cpsb:setSpecificCpsb(id,fam.id)||fam.cpsb,qsound:!!fam.qsound,kabuki:(fam.qsound&&['wof','dino','punisher','slammast'].includes(fam.id))?fam.id:null,special:!!fam.special||split,
+  mainMode:fam.mainMode||'adaptive',splitBootleg:split,layoutSafe:false,layoutNote:'family loader pending'
+ }
+}
+
+function be32a(a,o){return (((a[o]||0)<<24)|((a[o+1]||0)<<16)|((a[o+2]||0)<<8)|(a[o+3]||0))>>>0}
+function mainImageScore(a){
+ if(!a||a.length<8)return-999;
+ const sp=be32a(a,0),pc=be32a(a,4);let s=0;
+ if((sp&0xff0000)===0xff0000)s+=14;else if(sp>=0x900000&&sp<=0xffffff)s+=4;else s-=8;
+ if(!(pc&1)&&pc<a.length)s+=14;else s-=12;
+ if(pc+1<a.length){const op=(a[pc]<<8)|a[pc+1];if(op!==0&&op!==0xffff)s+=4}
+ for(let v=2;v<8;v++){const q=be32a(a,v*4);if(q===0||q===0xffffffff)s+=0;else if(!(q&1)&&(q<a.length||(q&0xff0000)===0xff0000))s++}
+ return s
+}
+function socketInfo(name){
+ const m=name.toLowerCase().match(/\.(\d+)([a-z])$/);return m?{row:+m[1],col:m[2]}:null
+}
+function mainFileScore(f){
+ const n=f.name.toLowerCase(),z=f.data.length,si=socketInfo(n);let s=0;
+ if(f.sourceZip&&romsetName(f.sourceZip)===romsetName(currentZipName))s+=80;
+ if(z!==0x20000&&z!==0x40000&&z!==0x80000)return-1000;
+ if(maskSlot(n))return-1000;
+ if(/\.(?:12b|13c|10a|5k|14a|14c)$/.test(n))s-=100;
+ if(si){
+  if(si.row>=11)s+=28; else if(si.row>=9)s+=12; else if(si.row>=6)s+=5;
+  if(/[efghjl]/.test(si.col))s+=14; else if(/[abcd]/.test(si.col))s-=12;
+ }
+ if(/(?:^|[_-])(?:2[1-9]|3\d|4[0-3])(?:[a-z])?\./.test(n))s+=12;
+ if(/(?:32m|23[a-z]?|22[a-z]?|21[a-z]?)[.-]/.test(n))s+=10;
+ if(z===0x80000)s+=4;
+ return s
+}
+function interleavePair(out,a,b,off){
+ const n=Math.min(a.data.length,b.data.length);
+ for(let i=0;i<n;i++){out[off+i*2]=a.data[i];out[off+i*2+1]=b.data[i]}
+ return n*2
+}
+function wordSwapInto(out,a,off){
+ for(let i=0;i+1<a.data.length;i+=2){out[off+i]=a.data[i+1];out[off+i+1]=a.data[i]}
+ return a.data.length
+}
+function trimMain(m){
+ let end=m.length;while(end>0x100000&&m[end-1]===0xff)end--;
+ return m.slice(0,Math.max(0x100000,(end+1)&~1))
+}
+function bestPairForRow(row){
+ const q=pkg.filter(f=>f.data.length===0x20000&&socketInfo(f.name)?.row===row)
+  .map(f=>({f,sc:mainFileScore(f),si:socketInfo(f.name)})).filter(x=>x.sc>0)
+  .sort((a,b)=>b.sc-a.sc||a.si.col.localeCompare(b.si.col));
+ if(q.length<2)return null;
+ // Prefer two different columns, then put the alphabetically lower socket on the even byte.
+ let pair=[q[0],q.find(x=>x.si.col!==q[0].si.col)].filter(Boolean);
+ if(pair.length<2)return null;
+ pair.sort((x,y)=>x.si.col.localeCompare(y.si.col));
+ return {row,even:pair[0].f,odd:pair[1].f,score:pair[0].sc+pair[1].sc}
+}
+function programWords(){
+ return pkg.filter(f=>f.data.length===0x80000&&mainFileScore(f)>0)
+  .filter(f=>{const si=socketInfo(f.name);return !si||/[efghjl]/.test(si.col)})
+  .sort((a,b)=>{
+   const A=socketInfo(a.name),B=socketInfo(b.name);
+   if(A&&B&&A.row!==B.row)return B.row-A.row;
+   return mainFileScore(b)-mainFileScore(a)||a.name.localeCompare(b.name)
+  })
+}
+function candidateRows(){
+ const rows=[...new Set(pkg.filter(f=>f.data.length===0x20000&&mainFileScore(f)>0).map(f=>socketInfo(f.name)?.row).filter(Number.isFinite))];
+ return rows
+}
+function rowOrderForMode(mode,rows){
+ const has=r=>rows.includes(r);
+ if(mode==='pairs4'){
+  if(has(13)&&has(12))return [12,13,10,11].filter(has);
+  return [11,12,9,10].filter(has)
+ }
+ if(mode==='pairs2'){
+  if(has(12)&&has(13))return[12,13];
+  if(has(11)&&has(12))return[11,12];
+ }
+ if(mode==='hybrid'){
+  if(has(12)&&has(13)&&!has(11))return[12,13];
+  if(has(11)&&has(12))return[11,12];
+  return rows.slice().sort((a,b)=>b-a).slice(0,2).sort((a,b)=>a-b)
+ }
+ return rows.slice().sort((a,b)=>a-b)
+}
+function buildFamilyMain(s,mode){
+ const out=new Uint8Array(0x400000);out.fill(0xff);let used=[],off=0;
+ const rows=candidateRows(),order=rowOrderForMode(mode,rows),words=programWords();
+ if(mode==='hybrid'){
+  for(const r of order.slice(0,2)){const p=bestPairForRow(r);if(p){interleavePair(out,p.even,p.odd,off);used.push(p.even.name,p.odd.name);off+=0x40000}}
+  if(words[0]){wordSwapInto(out,words[0],0x80000);used.push(words[0].name)}
+ }else if(mode==='pairs4'||mode==='pairs2'){
+  for(const r of order.slice(0,mode==='pairs4'?4:2)){const p=bestPairForRow(r);if(p){interleavePair(out,p.even,p.odd,off);used.push(p.even.name,p.odd.name);off+=0x40000}}
+ }else if(mode==='words'){
+  off=0;for(const w of words.slice(0,4)){wordSwapInto(out,w,off);used.push(w.name);off+=w.data.length}
+ }else if(mode==='wordsPair'){
+  off=0;for(const w of words.slice(0,2)){wordSwapInto(out,w,off);used.push(w.name);off+=w.data.length}
+  // Captain Commando style: one interleaved pair follows the first 1 MiB.
+  const pairRows=rows.slice().sort((a,b)=>a-b);
+  for(const r of pairRows){const p=bestPairForRow(r);if(p){interleavePair(out,p.even,p.odd,off);used.push(p.even.name,p.odd.name);break}}
+ }else return null;
+ const im=trimMain(out),sc=mainImageScore(im);
+ return {image:im,score:sc,used}
+}
+function buildMainGeneric(s){
+ const modes=[s.mainMode,'hybrid','pairs4','pairs2','words','wordsPair'].filter((x,i,a)=>x&&a.indexOf(x)===i);
+ let best=null;
+ for(const mode of modes){
+  const q=buildFamilyMain(s,mode);if(!q)continue;
+  // Strong preference for the documented family layout when its reset vectors are valid.
+  q.rank=q.score+(mode===s.mainMode&&q.score>=12?20:0);
+  if(!best||q.rank>best.rank)best={...q,mode}
+ }
+ if(!best){
+  s._mainNames=new Set();s.layoutScore=-999;s.layoutSafe=false;s.layoutNote='nessun layout 68000 candidato';
+  return new Uint8Array(0x100000)
+ }
+ s._mainNames=new Set(best.used.map(x=>x.toLowerCase()));
+ s.layoutScore=best.score;s.layoutSafe=best.score>=12;
+ s.layoutNote=`${best.mode} · reset score ${best.score} · ${best.used.join(', ')}`;
+ return best.image
+}
+function pang3Mach215Decrypt(m){
+ // Pang! 3 94916-10: CP1B9K enables Mach215 encryption for $080000-$0fffff.
+ // Only the low byte of each 68000 word is encrypted (MAME init_pang3).
+ const end=Math.min(0x100000,m.length);
+ for(let a=0x80000;a+1<end;a+=2){
+  const src=((m[a]<<8)|m[a+1])&0xffff;let dst=src&0xff00;
+  if( src&0x01)dst^=0x04;
+  if( src&0x02)dst^=0x21;
+  if( src&0x04)dst^=0x01;
+  if(~src&0x08)dst^=0x50;
+  if( src&0x10)dst^=0x40;
+  if( src&0x20)dst^=0x06;
+  if( src&0x40)dst^=0x08;
+  if(~src&0x80)dst^=0x88;
+  m[a]=(dst>>>8)&255;m[a+1]=dst&255
+ }
+ return m
+}
+function buildMain(s){
+ if(s.generic)return buildMainGeneric(s);
+ const m=new Uint8Array(0x200000);m.fill(0xff);
+ for(const x of s.main){
+  if(x[0]==='interleave'){let a=file(x[1]),b=file(x[2]);if(!a||!b)continue;for(let i=0;i<Math.min(a.data.length,b.data.length);i++){m[x[3]+i*2]=a.data[i];m[x[3]+i*2+1]=b.data[i]}}
+  else if(x[0]==='wordswap'){let a=file(x[1]);if(!a)continue;for(let i=0;i+1<a.data.length;i+=2){m[x[2]+i]=a.data[i+1];m[x[2]+i+1]=a.data[i]}}
+  else if(x[0]==='linear16'){let a=file(x[1]);if(!a)continue;m.set(a.data,x[2])}
+ }
+ if(s.mach215)pang3Mach215Decrypt(m);
+ let end=m.length;while(end>0&&m[end-1]===0xff)end--;return m.slice(0,Math.max(end,0x100000))
+}
+function groupWordSkip6(out,data,base){
+ let pos=base;for(let i=0;i+1<data.length;i+=2,pos+=8){out[pos]=data[i];out[pos+1]=data[i+1]}
+}
+function load64Byte(out,data,base){for(let i=0;i<data.length;i++)out[base+i*8]=data[i]}
+function maskSlot(n){
+ const m=n.toLowerCase().match(/(?:^|[-_])([1-8])m\./);return m?+m[1]:0
+}
+function gfxCandidate(f,s){
+ const n=f.name.toLowerCase(),z=f.data.length;if(z<0x10000||z>0x200000)return false;
+ if(s._mainNames?.has(n))return false;
+ if(/\.(?:12b|13c|10a|5k)$/.test(n))return false;
+ if(/\.(?:11c|12c|11e|12e)$/.test(n)&&/(?:^|[_-])(?:18|19|30)(?:[^0-9]|$)/.test(n))return false;
+ if(maskSlot(n))return true;
+ const m=n.match(/\.(\d+)([a-h])$/);if(m&&+m[1]<=10)return true;
+ return z>=0x80000
+}
+function buildGfxGeneric(s){
+ let files=pkg.filter(f=>gfxCandidate(f,s));
+ const masks=files.filter(f=>maskSlot(f.name));
+ if(masks.length>=4){
+  const bySlot=new Map();for(const f of masks)bySlot.set(maskSlot(f.name),f);
+  const maxLen=Math.max(...masks.map(f=>f.data.length)),banks=([2,4,6,8].some(k=>bySlot.has(k))?2:1);
+  const out=new Uint8Array(maxLen*4*banks);
+  const layout=[[5,0],[7,2],[1,4],[3,6],[6,maxLen*4+0],[8,maxLen*4+2],[2,maxLen*4+4],[4,maxLen*4+6]];
+  for(const [slot,base] of layout){const f=bySlot.get(slot);if(f)groupWordSkip6(out,f.data,base)}
+  s._gfxNames=new Set(masks.map(f=>f.name.toLowerCase()));s.gfxHeuristic='mask ROM 64-bit word';
+  return out
+ }
+ const groups=new Map();
+ for(const f of files){const z=f.data.length;if(!groups.has(z))groups.set(z,[]);groups.get(z).push(f)}
+ let chosen=[...groups.values()].sort((a,b)=>(b.length*b[0].data.length)-(a.length*a[0].data.length))[0]||[];
+ chosen=chosen.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+ if(chosen.length>=8){
+  const usable=Math.floor(chosen.length/8)*8,sz=chosen[0].data.length,out=new Uint8Array((usable/8)*sz*8);
+  for(let g=0;g<usable/8;g++)for(let lane=0;lane<8;lane++)load64Byte(out,chosen[g*8+lane].data,g*sz*8+lane);
+  s._gfxNames=new Set(chosen.slice(0,usable).map(f=>f.name.toLowerCase()));s.gfxHeuristic='EPROM 64-bit byte lanes (heuristic)';
+  return out
+ }
+ if(chosen.length>=4){
+  const usable=Math.floor(chosen.length/4)*4,sz=chosen[0].data.length,out=new Uint8Array((usable/4)*sz*4);
+  for(let g=0;g<usable/4;g++)for(let lane=0;lane<4;lane++)groupWordSkip6(out,chosen[g*4+lane].data,g*sz*4+lane*2);
+  s._gfxNames=new Set(chosen.slice(0,usable).map(f=>f.name.toLowerCase()));s.gfxHeuristic='EPROM 64-bit word lanes (heuristic)';
+  return out
+ }
+ s._gfxNames=new Set();s.gfxHeuristic='GFX layout unresolved';return new Uint8Array(0)
+}
+function buildGfx(s){
+ if(s.gfxMode==='1941crc'){
+  const out=new Uint8Array(0x200000);
+  for(const [n,b] of [['#01d1cb11',0],['#aeaa3509',2],['#ff77985a',4],['#983be58f',6]]){
+   const f=file(n);if(f)groupWordSkip6(out,f.data,b)
+  }
+  return out
+ }
+ if(s.gfxMode==='area88crc'){
+  const out=new Uint8Array(0x200000);
+  const a=[
+   ['#db9376f8',0],['#392151b4',1],['#81436481',2],['#e246ed9f',3],
+   ['#9cd6e2a3',4],['#0b8e0df4',5],['#8b9e75b9',6],['#db6acdcf',7],
+   ['#4219b622',0x100000],['#bac5dec5',0x100001],['#e6bae179',0x100002],['#c8f04223',0x100003],
+   ['#15ccf981',0x100004],['#9336db6a',0x100005],['#9b8e1363',0x100006],['#3968f4b5',0x100007]
+  ];
+  for(const [n,b] of a){const f=file(n);if(f)load64Byte(out,f.data,b)}
+  return out
+ }
+ if(s.gfxMode==='sf2crc'){
+  const out=new Uint8Array(0x600000);
+  for(const [n,b] of [
+   ['#22c9cc8e',0x000000],['#57213be8',0x000002],['#ba529b4f',0x000004],['#4b1b33a8',0x000006],
+   ['#2c7e2229',0x200000],['#b5548f17',0x200002],['#14b84312',0x200004],['#5e9cd89a',0x200006],
+   ['#994bfa58',0x400000],['#3e66ad9d',0x400002],['#c1befaa8',0x400004],['#0627c831',0x400006]
+  ]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}
+  return out
+ }
+ if(s.gfxMode==='sf2cecrc'){
+  const out=new Uint8Array(0x600000);
+  for(const [n,b] of [
+   ['#03b0d852',0x000000],['#cdb5f027',0x000002],['#840289ec',0x000004],['#e2799472',0x000006],
+   ['#ba8a2761',0x200000],['#21e3f87d',0x200002],['#e584bfb5',0x200004],['#befc47df',0x200006],
+   ['#960687d5',0x400000],['#d6ec9a0a',0x400002],['#978ecd18',0x400004],['#ed2c67f6',0x400006]
+  ]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}
+  return out
+ }
+ if(s.gfxMode==='captcommbcrc'){
+  // MAME reports four 1 MiB graphics ROMs. This bootleg differs from the
+  // original Capcom board; keep it CRC-recognised and use the four 16-bit
+  // lanes as the closest CPS-1-compatible raw region.
+  const out=new Uint8Array(0x400000);
+  for(const [n,b] of [
+   ['#f863071c',0],['#4b03c308',2],['#3383ea96',4],['#b8e1f4cf',6]
+  ]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}
+  return out
+ }
+ if(s.gfxMode==='pang3'){
+  // Unique 94916-10 / CP1B1F board: each 16-Mbit ROM stores both 32-bit
+  // halves of the 64-bit graphics bus. MAME ROM_CONTINUE switches A19.
+  const out=new Uint8Array(0x400000),a=file('pa3-01m.2c'),b=file('pa3-07m.2f');
+  if(a){
+   const h=Math.min(0x100000,a.data.length);
+   groupWordSkip6(out,a.data.subarray(0,h),0x000000);
+   if(a.data.length>0x100000)groupWordSkip6(out,a.data.subarray(0x100000,Math.min(0x200000,a.data.length)),0x000004)
+  }
+  if(b){
+   const h=Math.min(0x100000,b.data.length);
+   groupWordSkip6(out,b.data.subarray(0,h),0x000002);
+   if(b.data.length>0x100000)groupWordSkip6(out,b.data.subarray(0x100000,Math.min(0x200000,b.data.length)),0x000006)
+  }
+  return out
+ }
+ if(s.generic)return buildGfxGeneric(s);
+ if(s.id==='1941'){
+  const out=new Uint8Array(0x200000);
+  for(const [n,b] of [['41-5m.7a',0],['41-7m.9a',2],['41-1m.3a',4],['41-3m.5a',6]]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}
+  return out
+ }
+ if(s.id==='ghouls'){
+  const out=new Uint8Array(0x300000);
+  for(const [n,b] of [['dm-05.3a',0],['dm-07.3f',2],['dm-06.3c',4],['dm-08.3g',6]]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}
+  const bank0=['09.4a','18.7a','13.4e','22.7e','11.4c','20.7c','15.4g','24.7g'];
+  const bank1=['10.4b','19.7b','14.4f','23.7f','12.4d','21.7d','16.4h','25.7h'];
+  for(let lane=0;lane<8;lane++){let f=file(bank0[lane]);if(f)load64Byte(out,f.data,0x200000+lane);f=file(bank1[lane]);if(f)load64Byte(out,f.data,0x280000+lane)}
+  return out
+ }
+ if(s.id==='area88'){
+  const out=new Uint8Array(0x200000);
+  const a=[
+   ['ar_09.4b',0],['ar_01.4a',1],['ar_13.9b',2],['ar_05.9a',3],['ar_24.5e',4],['ar_17.5c',5],['ar_38.8h',6],['ar_32.8f',7],
+   ['ar_10.5b',0x100000],['ar_02.5a',0x100001],['ar_14.10b',0x100002],['ar_06.10a',0x100003],['ar_25.7e',0x100004],['ar_18.7c',0x100005],['ar_39.9h',0x100006],['ar_33.9f',0x100007]
+  ];
+  for(const [n,b] of a){const f=file(n);if(f)load64Byte(out,f.data,b)}return out
+ }
+ if(s.id==='3wonders'){
+  const out=new Uint8Array(0x400000);
+  for(const [n,b] of [
+   ['rt-5m.7a',0x000000],['rt-7m.9a',0x000002],['rt-1m.3a',0x000004],['rt-3m.5a',0x000006],
+   ['rt-6m.8a',0x200000],['rt-8m.10a',0x200002],['rt-2m.4a',0x200004],['rt-4m.6a',0x200006]
+  ]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}return out
+ }
+ if(s.id==='sf2'){
+  const out=new Uint8Array(0x600000);
+  for(const [n,b] of [
+   ['sf2-5m.4a',0x000000],['sf2-7m.6a',0x000002],['sf2-1m.3a',0x000004],['sf2-3m.5a',0x000006],
+   ['sf2-6m.4c',0x200000],['sf2-8m.6c',0x200002],['sf2-2m.3c',0x200004],['sf2-4m.5c',0x200006],
+   ['sf2-13m.4d',0x400000],['sf2-15m.6d',0x400002],['sf2-9m.3d',0x400004],['sf2-11m.5d',0x400006]
+  ]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}return out
+ }
+ if(s.id==='sf2ce'){
+  const out=new Uint8Array(0x600000);
+  for(const [n,b] of [
+   ['s92-1m.3a',0x000000],['s92-3m.5a',0x000002],['s92-2m.4a',0x000004],['s92-4m.6a',0x000006],
+   ['s92-5m.7a',0x200000],['s92-7m.9a',0x200002],['s92-6m.8a',0x200004],['s92-8m.10a',0x200006],
+   ['s92-10m.3c',0x400000],['s92-12m.5c',0x400002],['s92-11m.4c',0x400004],['s92-13m.6c',0x400006]
+  ]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}return out
+ }
+ if(s.gfxMode==='kodr1crc'){
+  const out=new Uint8Array(0x400000);
+  for(const [n,b] of [
+   ['#e45b8701',0x000000],['#a7750322',0x000002],['#5f74bf78',0x000004],['#5e5303bf',0x000006],
+   ['#113358f3',0x200000],['#38853c44',0x200002],['#9ef36604',0x200004],['#402b9b4f',0x200006]
+  ]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}return out
+ }
+ if(s.id==='kod'){
+  const out=new Uint8Array(0x400000);
+  for(const [n,b] of [
+   ['kd-5m.4a',0x000000],['kd-7m.6a',0x000002],['kd-1m.3a',0x000004],['kd-3m.5a',0x000006],
+   ['kd-6m.4c',0x200000],['kd-8m.6c',0x200002],['kd-2m.3c',0x200004],['kd-4m.5c',0x200006]
+  ]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}return out
+ }
+ if(s.id==='dino'){
+  const out=new Uint8Array(0x400000);
+  for(const [n,b] of [
+   ['cd-1m.3a',0x000000],['cd-3m.5a',0x000002],['cd-2m.4a',0x000004],['cd-4m.6a',0x000006],
+   ['cd-5m.7a',0x200000],['cd-7m.9a',0x200002],['cd-6m.8a',0x200004],['cd-8m.10a',0x200006]
+  ]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}return out
+ }
+ if(s.id==='captcomm'){
+  const out=new Uint8Array(0x400000);
+  for(const [n,b] of [
+   ['cc-5m.3a',0x000000],['cc-7m.5a',0x000002],['cc-1m.4a',0x000004],['cc-3m.6a',0x000006],
+   ['cc-6m.7a',0x200000],['cc-8m.9a',0x200002],['cc-2m.8a',0x200004],['cc-4m.10a',0x200006]
+  ]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}return out
+ }
+ if(s.id==='knights'){
+  const out=new Uint8Array(0x400000);
+  for(const [n,b] of [
+   ['kr-5m.3a',0x000000],['kr-7m.5a',0x000002],['kr-1m.4a',0x000004],['kr-3m.6a',0x000006],
+   ['kr-6m.7a',0x200000],['kr-8m.9a',0x200002],['kr-2m.8a',0x200004],['kr-4m.10a',0x200006]
+  ]){const f=file(n);if(f)groupWordSkip6(out,f.data,b)}return out
+ }
+ return new Uint8Array(0)
+}
+function soundCpuScore(f,s){
+ const n=f.name.toLowerCase();if(s._mainNames?.has(n)||s._gfxNames?.has(n))return-999;
+ let q=0,z=f.data.length;if(z<0x8000||z>0x40000)return-999;
+ if(/\.(?:12b|13c|10a|5k)$/.test(n))q+=50;
+ if(/(?:^|[_-])(?:9|23|26)(?:[^0-9]|$)/.test(n))q+=10;
+ if(z===0x10000)q+=12;if(z===0x20000)q+=6;return q
+}
+function buildQSoundRegionFromFile(z){
+ if(!z)return null;const zr=new Uint8Array(0x28000);zr.fill(0xff);
+ zr.set(z.data.subarray(0,Math.min(0x8000,z.data.length)),0);
+ if(z.data.length>0x8000)zr.set(z.data.subarray(0x8000,Math.min(0x20000,z.data.length)),0x10000);
+ return zr
+}
+function buildSoundGeneric(s){
+ if(s.qsound){
+  const cand=pkg.filter(f=>/\.5k$/i.test(f.name)||f.data.length===0x20000).sort((a,b)=>soundCpuScore(b,s)-soundCpuScore(a,s));
+  const z=cand[0]||null,zr=buildQSoundRegionFromFile(z);
+  const used=new Set([...(s._mainNames||[]),...(s._gfxNames||[])]);if(z)used.add(z.name.toLowerCase());
+  const samples=pkg.filter(f=>!used.has(f.name.toLowerCase())&&f.data.length>=0x40000&&f.data.length<=0x100000&&/(?:-q[1-8]\.|_q[1-8]\.|\.[1-8]k$)/i.test(f.name));
+  const olen=samples.reduce((a,b)=>a+b.data.length,0),qs=new Uint8Array(olen);let p=0;for(const f of samples){qs.set(f.data,p);p+=f.data.length}
+  s.soundHeuristic=z?`QSound Z80 ${z.name} · Kabuki ${s.kabuki||'?'}`:'QSound Z80 non identificato';return{z80:zr,oki:qs}
+ }
+ const zs=pkg.map(f=>({f,score:soundCpuScore(f,s)})).sort((a,b)=>b.score-a.score),z=zs[0]?.score>0?zs[0].f:null;
+ let zr=null;if(z){zr=new Uint8Array(0x18000);zr.set(z.data.slice(0,0x8000),0);zr.set(z.data.slice(0x8000,0x10000),0x10000)}
+ const used=new Set([...(s._mainNames||[]),...(s._gfxNames||[])]);if(z)used.add(z.name.toLowerCase());
+ const samples=pkg.filter(f=>!used.has(f.name.toLowerCase())&&f.data.length>=0x20000&&f.data.length<=0x100000&&/\.(?:11c|12c|11e|12e|7c|8c)$/.test(f.name.toLowerCase()));
+ const olen=samples.reduce((a,b)=>a+b.data.length,0),oki=new Uint8Array(olen);let p=0;for(const f of samples){oki.set(f.data,p);p+=f.data.length}
+ s.soundHeuristic=z?`Z80 ${z.name}`:'Z80 non identificato';return{z80:zr,oki}
+}
+function buildSound(s){
+ if(s.generic)return buildSoundGeneric(s);
+ let z=file(s.z80),zr=null;
+ if(s.qsound)zr=buildQSoundRegionFromFile(z);else if(z){zr=new Uint8Array(0x18000);zr.set(z.data.slice(0,0x8000),0);if(!s.soundNoBank)zr.set(z.data.slice(0x8000,0x10000),0x10000)}
+ let os=[];for(const n of (s.qsound?s.qsoundSamples:s.oki)||[]){let f=file(n);if(f)os.push(f.data)}
+ let olen=os.reduce((a,b)=>a+b.length,0),oki=new Uint8Array(olen),p=0;for(const a of os){oki.set(a,p);p+=a.length}
+ return {z80:zr,oki}
+}
+
+const CPS_PROFILES={
+ '1941':{
+  name:'YI24B · CPS-B-05',idReg:0x20,idValue:0x0005,layerCtrl:0x28,paletteCtrl:0x32,buttons:2,
+  enables:[0x02,0x08,0x20],priorities:[0x2a,0x2c,0x2e,0x30],
+  bankSizes:[0x8000,0,0,0],
+  ranges:[
+   {type:1,start:0x0000,end:0x1fff,bank:0},{type:8,start:0x2000,end:0x3fff,bank:0},
+   {type:2,start:0x4000,end:0x47ff,bank:0},{type:4,start:0x4800,end:0x7fff,bank:0}
+  ]
+ },
+ 'ghouls':{
+  name:'DM620 · CPS-B-01',idReg:-1,idValue:0,layerCtrl:0x26,paletteCtrl:0x30,buttons:2,
+  enables:[0x02,0x04,0x08],priorities:[0x28,0x2a,0x2c,0x2e],
+  bankSizes:[0x8000,0x2000,0x2000,0],
+  ranges:[
+   {type:8,start:0x8000,end:0xbfff,bank:1},{type:1,start:0x2000,end:0x3fff,bank:2},
+   {type:1|2|4|8|16,start:0x00000,end:0x1ffff,bank:0}
+  ]
+ },
+ 'area88':{
+  name:'AR22B · CPS-B-11',idReg:0x32,idValue:0x0401,layerCtrl:0x26,paletteCtrl:0x30,buttons:2,
+  enables:[0x08,0x10,0x20],priorities:[0x28,0x2a,0x2c,0x2e],
+  bankSizes:[0x4000,0x4000,0,0],
+  ranges:[
+   {type:1,start:0x0000,end:0x2fff,bank:0},{type:2,start:0x3000,end:0x3fff,bank:0},
+   {type:4,start:0x4000,end:0x5fff,bank:1},{type:8,start:0x6000,end:0x7fff,bank:1}
+  ]
+ },
+ '3wonders':{
+  name:'RT24B · CPS-B-21 BT1',idReg:0x32,idValue:0x0800,layerCtrl:0x28,paletteCtrl:0x30,buttons:2,
+  enables:[0x20,0x04,0x08],priorities:[0x26,0x24,0x22,0x20],
+  mult:{factor1:0x0e,factor2:0x0c,resultLo:0x0a,resultHi:0x08},
+  bankSizes:[0x8000,0x8000,0,0],
+  ranges:[
+   {type:1,start:0x0000,end:0x53ff,bank:0},{type:2,start:0x5400,end:0x6fff,bank:0},
+   {type:8,start:0x7000,end:0x7fff,bank:0},{type:8,start:0x0000,end:0x3fff,bank:1},
+   {type:4,start:0x2800,end:0x7fff,bank:1},{type:1,start:0x5400,end:0x7fff,bank:1}
+  ]
+ },
+ 'sf2':{
+  name:'STF29 · CPS-B-11',idReg:0x32,idValue:0x0401,layerCtrl:0x26,paletteCtrl:0x30,buttons:3,
+  enables:[0x08,0x10,0x20],priorities:[0x28,0x2a,0x2c,0x2e],in2Addr:0x36,
+  bankSizes:[0x8000,0x8000,0x8000,0],
+  ranges:[
+   {type:1,start:0x00000,end:0x07fff,bank:0},
+   {type:1,start:0x08000,end:0x0ffff,bank:1},
+   {type:1,start:0x10000,end:0x11fff,bank:2},
+   {type:8,start:0x02000,end:0x03fff,bank:2},
+   {type:2,start:0x04000,end:0x04fff,bank:2},
+   {type:4,start:0x05000,end:0x07fff,bank:2}
+  ]
+ },
+ 'sf2ce':{
+  name:'S9263B · CPS-B-21 DEF',idReg:-1,idValue:0,layerCtrl:0x26,paletteCtrl:0x30,buttons:3,
+  enables:[0x02,0x04,0x08],priorities:[0x28,0x2a,0x2c,0x2e],in2Addr:0x36,
+  mult:{factor1:0x00,factor2:0x02,resultLo:0x04,resultHi:0x06},
+  bankSizes:[0x8000,0x8000,0x8000,0],
+  ranges:[
+   {type:1,start:0x00000,end:0x07fff,bank:0},
+   {type:1,start:0x08000,end:0x0ffff,bank:1},
+   {type:1,start:0x10000,end:0x11fff,bank:2},
+   {type:8,start:0x02000,end:0x03fff,bank:2},
+   {type:2,start:0x04000,end:0x04fff,bank:2},
+   {type:4,start:0x05000,end:0x07fff,bank:2}
+  ]
+ },
+ 'kod':{
+  name:'KD29B · CPS-B-21 BT2',idReg:-1,idValue:0,layerCtrl:0x20,paletteCtrl:0x30,buttons:2,
+  enables:[0x30,0x08,0x30],priorities:[0x2e,0x2c,0x2a,0x28],in2Addr:0x36,out2Addr:0x34,
+  mult:{factor1:0x1e,factor2:0x1c,resultLo:0x1a,resultHi:0x18},
+  bankSizes:[0x8000,0x8000,0,0],
+  ranges:[
+   {type:1,start:0x0000,end:0x7fff,bank:0},
+   {type:1,start:0x8000,end:0x8fff,bank:1},
+   {type:4,start:0x9000,end:0xbfff,bank:1},
+   {type:2,start:0xc000,end:0xd7ff,bank:1},
+   {type:8,start:0xd800,end:0xffff,bank:1}
+  ]
+ },
+ 'captcomm':{
+  name:'CC63B · CPS-B-21 BT3',idReg:-1,idValue:0,layerCtrl:0x20,paletteCtrl:0x30,buttons:2,
+  enables:[0x20,0x12,0x12],priorities:[0x2e,0x2c,0x2a,0x28],in2Addr:0x36,in3Addr:0x38,out2Addr:0x34,
+  mult:{factor1:0x06,factor2:0x04,resultLo:0x02,resultHi:0x00},
+  bankSizes:[0x8000,0x8000,0,0],
+  ranges:[
+   {type:1|4,start:0x0000,end:0x7fff,bank:0},
+   {type:1|2|4|8,start:0x8000,end:0xffff,bank:1}
+  ]
+ },
+ 'dino':{
+  name:'CD63B · CPS-B-21 QS2',idReg:-1,idValue:0,layerCtrl:0x0a,paletteCtrl:0x04,buttons:3,
+  enables:[0x16,0x16,0x16],priorities:[0x0c,0x0e,0x00,0x02],in2Addr:0x36,in3Addr:0x38,out2Addr:0x34,ignoreLayerEnable:true,
+  bankSizes:[0x8000,0x8000,0,0],
+  ranges:[
+   {type:1|2|4|8,start:0x0000,end:0x7fff,bank:0},
+   {type:1|2|4|8,start:0x8000,end:0xffff,bank:1}
+  ]
+ },
+ 'pang3':{
+  name:'CP1B1F · CPS-B-21 DEF · Mach215',idReg:0x32,idValue:0xffff,layerCtrl:0x26,paletteCtrl:0x30,buttons:1,pang3:true,
+  enables:[0x02,0x04,0x08],priorities:[0x28,0x2a,0x2c,0x2e],
+  mult:{factor1:0x00,factor2:0x02,resultLo:0x04,resultHi:0x06},
+  bankSizes:[0x10000,0,0,0],
+  ranges:[
+   {type:1|2|4|8,start:0x0000,end:0xffff,bank:0}
+  ]
+ },
+ 'knights':{
+  name:'KR63B · CPS-B-21 BT4',idReg:-1,idValue:0,layerCtrl:0x28,paletteCtrl:0x30,buttons:2,
+  enables:[0x20,0x10,0x02],priorities:[0x26,0x24,0x22,0x20],in2Addr:0x36,out2Addr:0x34,
+  mult:{factor1:0x06,factor2:0x04,resultLo:0x02,resultHi:0x00},
+  bankSizes:[0x8000,0x8000,0,0],
+  ranges:[
+   {type:1|4,start:0x0000,end:0x7fff,bank:0},
+   {type:2,start:0x8000,end:0x9fff,bank:1},
+   {type:1|4,start:0x8000,end:0xcfff,bank:1},
+   {type:8,start:0xd000,end:0xffff,bank:1}
+  ]
+ }
+
+}
+
+// Register layouts from current MAME cps1_v.cpp. For generic sets the graphics
+// mapper is deliberately permissive; exact PAL mapping remains the next step.
+const CPSB_BASE={
+ B01:{idReg:-1,idValue:0,layerCtrl:0x26,priorities:[0x28,0x2a,0x2c,0x2e],paletteCtrl:0x30,enables:[0x02,0x04,0x08]},
+ B02:{idReg:0x20,idValue:0x0002,layerCtrl:0x2c,priorities:[0x2a,0x28,0x26,0x24],paletteCtrl:0x22,enables:[0x02,0x04,0x08]},
+ B03:{idReg:0x24,idValue:0x0003,layerCtrl:0x30,priorities:[0x2e,0x2c,0x2a,0x28],paletteCtrl:0x26,enables:[0x20,0x10,0x08]},
+ B04:{idReg:0x20,idValue:0x0004,layerCtrl:0x2e,priorities:[0x26,0x30,0x28,0x32],paletteCtrl:0x2a,enables:[0x02,0x04,0x08]},
+ B05:{idReg:0x20,idValue:0x0005,layerCtrl:0x28,priorities:[0x2a,0x2c,0x2e,0x30],paletteCtrl:0x32,enables:[0x02,0x08,0x20]},
+ B11:{idReg:0x32,idValue:0x0401,layerCtrl:0x26,priorities:[0x28,0x2a,0x2c,0x2e],paletteCtrl:0x30,enables:[0x08,0x10,0x20]},
+ B12:{idReg:0x20,idValue:0x0402,layerCtrl:0x2c,priorities:[0x2a,0x28,0x26,0x24],paletteCtrl:0x22,enables:[0x02,0x04,0x08]},
+ B13:{idReg:0x2e,idValue:0x0403,layerCtrl:0x22,priorities:[0x24,0x26,0x28,0x2a],paletteCtrl:0x2c,enables:[0x20,0x02,0x04]},
+ B14:{idReg:0x1e,idValue:0x0404,layerCtrl:0x12,priorities:[0x14,0x16,0x18,0x1a],paletteCtrl:0x1c,enables:[0x08,0x20,0x10]},
+ B15:{idReg:0x0e,idValue:0x0405,layerCtrl:0x02,priorities:[0x04,0x06,0x08,0x0a],paletteCtrl:0x0c,enables:[0x04,0x02,0x20]},
+ B16:{idReg:0x00,idValue:0x0406,layerCtrl:0x0c,priorities:[0x0a,0x08,0x06,0x04],paletteCtrl:0x02,enables:[0x10,0x0a,0x0a]},
+ B17:{idReg:0x08,idValue:0x0407,layerCtrl:0x14,priorities:[0x12,0x10,0x0e,0x0c],paletteCtrl:0x0a,enables:[0x08,0x14,0x02]},
+ B18:{idReg:0x10,idValue:0x0408,layerCtrl:0x1c,priorities:[0x1a,0x18,0x16,0x14],paletteCtrl:0x12,enables:[0x10,0x08,0x02]},
+ B21:{idReg:-1,idValue:0,layerCtrl:0x26,priorities:[0x28,0x2a,0x2c,0x2e],paletteCtrl:0x30,enables:[0x02,0x04,0x08]},
+ BT1:{idReg:0x32,idValue:0x0800,layerCtrl:0x28,priorities:[0x26,0x24,0x22,0x20],paletteCtrl:0x30,enables:[0x20,0x04,0x08],mult:{factor1:0x0e,factor2:0x0c,resultLo:0x0a,resultHi:0x08}},
+ BT2:{idReg:-1,idValue:0,layerCtrl:0x20,priorities:[0x2e,0x2c,0x2a,0x28],paletteCtrl:0x30,enables:[0x30,0x08,0x30],mult:{factor1:0x1e,factor2:0x1c,resultLo:0x1a,resultHi:0x18}},
+ BT3:{idReg:-1,idValue:0,layerCtrl:0x20,priorities:[0x2e,0x2c,0x2a,0x28],paletteCtrl:0x30,enables:[0x20,0x12,0x12],mult:{factor1:0x06,factor2:0x04,resultLo:0x02,resultHi:0x00}},
+ BT4:{idReg:-1,idValue:0,layerCtrl:0x28,priorities:[0x26,0x24,0x22,0x20],paletteCtrl:0x30,enables:[0x20,0x10,0x02],mult:{factor1:0x06,factor2:0x04,resultLo:0x02,resultHi:0x00}},
+ BT5:{idReg:-1,idValue:0,layerCtrl:0x20,priorities:[0x2e,0x2c,0x2a,0x28],paletteCtrl:0x30,enables:[0x20,0x04,0x02],mult:{factor1:0x0e,factor2:0x0c,resultLo:0x0a,resultHi:0x08}},
+ BT6:{idReg:-1,idValue:0,layerCtrl:0x20,priorities:[0x2e,0x2c,0x2a,0x28],paletteCtrl:0x30,enables:[0x20,0x14,0x14]},
+ BT7:{idReg:-1,idValue:0,layerCtrl:0x2c,priorities:[-1,-1,-1,-1],paletteCtrl:0x12,enables:[0x14,0x02,0x14]},
+ QS1:{idReg:-1,idValue:0,layerCtrl:0x22,priorities:[0x24,0x26,0x28,0x2a],paletteCtrl:0x2c,enables:[0x10,0x08,0x04]},
+ QS2:{idReg:-1,idValue:0,layerCtrl:0x0a,priorities:[0x0c,0x0e,0x00,0x02],paletteCtrl:0x04,enables:[0x16,0x16,0x16]},
+ QS3:{idReg:0x0e,idValue:0x0c00,layerCtrl:0x12,priorities:[0x14,0x16,0x08,0x0a],paletteCtrl:0x0c,enables:[0x04,0x02,0x20]},
+ QS4:{idReg:0x2e,idValue:0x0c01,layerCtrl:0x16,priorities:[0x00,0x02,0x28,0x2a],paletteCtrl:0x2c,enables:[0x04,0x08,0x10]},
+ QS5:{idReg:0x1e,idValue:0x0c02,layerCtrl:0x2a,priorities:[0x2c,0x2e,0x30,0x32],paletteCtrl:0x1c,enables:[0x04,0x08,0x10]}
+};
+function cpsTimingForSpec(s){
+ const id=String(s?.romset||s?.sourceZip||s?.id||'').toLowerCase(),fam=String(s?.family||s?.id||'').toLowerCase();
+ let mainHz=CPS_CPU_HZ,z80Hz=CPS_Z80_HZ,label='10 MHz';
+ const twelveFamilies=new Set(['cworld2j','varth','qad','pnickj','qtono2j','megaman','pang3','cps1mult']);
+ if(twelveFamilies.has(fam)||twelveFamilies.has(id))mainHz=CPS_CPU_HZ_DASH;
+ if(['striderjr','dynwarjr','area88r','cawingjr','ffightae'].includes(id))mainHz=CPS_CPU_HZ_DASH;
+ if(fam==='sf2'||id.startsWith('sf2')){
+   const forced10=new Set(['sf2amf3','sf2ceblp','sf2mkot','sf2cems6a','sf2cems6b','sf2cems6c','sf2ceds6']);
+   if(!forced10.has(id)&&(/^(sf2ce|sf2hf|sf2rb|sf2red|sf2v004|sf2acc|sf2amf|sf2dkot|sf2level|sf2m\d|sf2yyc|sf2koryu|sf2dongb|sf2re)/.test(id)||s?.id==='sf2ce'))mainHz=CPS_CPU_HZ_DASH
+ }
+ if(fam==='changer'&&id!=='wofch')mainHz=CPS_CPU_HZ_DASH;
+ if(s?.qsound||['wof','dino','punisher','slammast'].includes(fam)||id==='wofch'){mainHz=CPS_CPU_HZ_DASH;z80Hz=CPS_QSOUND_Z80_HZ}
+ if(mainHz===CPS_CPU_HZ_DASH)label='12 MHz';
+ return {mainHz,z80Hz,label,qsound:z80Hz===CPS_QSOUND_Z80_HZ}
+}
+const SF2_STF29_SETS=new Set([
+ 'sf2','sf2ea','sf2eb','sf2ed','sf2ee','sf2ef','sf2em','sf2en',
+ 'sf2ua','sf2ub','sf2uc','sf2ud','sf2ue','sf2uf','sf2ug','sf2uh','sf2ui','sf2uk','sf2um',
+ 'sf2j','sf2j17','sf2ja','sf2jc','sf2jf','sf2jh','sf2jl','sf2qp1','sf2qp2','sf2thndr','sf2thndr2'
+]);
+function resolveProfile(s){
+ if(!s)return null;
+ if(CPS_PROFILES[s.id])return CPS_PROFILES[s.id];
+ const b=CPSB_BASE[s.cpsb]||CPSB_BASE.B21;
+ const id=String(s.romset||s.id||'').toLowerCase();
+ // All official World Warrior revisions above share STF29.  Previously only the
+ // parent `sf2` got that PAL map; clones fell through to the permissive mapper.
+ if(SF2_STF29_SETS.has(id)){
+  const stf=CPS_PROFILES.sf2;
+  return {
+   ...stf,...b,name:`STF29 · ${s.cpsb||'B17'}`,buttons:3,
+   in2Addr:(id==='sf2ee'||id==='sf2ue')?0x3c:0x36,
+   bankSizes:stf.bankSizes,ranges:stf.ranges
+  }
+ }
+ if((s.family||s.id)==='captcomm'){
+  const cc=CPS_PROFILES.captcomm;return {...cc,...b,name:`CC63B · ${s.cpsb||'BT3'}`,bankSizes:cc.bankSizes,ranges:cc.ranges,in2Addr:0x36,in3Addr:0x38,out2Addr:0x34}
+ }
+ if((s.family||s.id)==='dino'){
+  const cd=CPS_PROFILES.dino;return {...cd,...b,name:`CD63B · ${s.cpsb||'QS2'}`,bankSizes:cd.bankSizes,ranges:cd.ranges,ignoreLayerEnable:true,in2Addr:0x36,in3Addr:0x38,out2Addr:0x34}
+ }
+ return {
+  ...b,name:`${s.cpsb||'B21'} · generic PAL mapper`,
+  buttons:/^sf2/.test(s.id)?3:2,in2Addr:-1,in3Addr:-1,out2Addr:-1,
+  bankSizes:[0x20000,0,0,0],
+  ranges:[{type:1|2|4|8|16,start:0x00000,end:0x1ffff,bank:0}]
+ }
+}
+class EEPROM93C46x16{
+ constructor(){this.mem=new Uint16Array(64);this.mem.fill(0xffff);this.writeEnabled=false;this.resetLines()}
+ resetLines(){this.cs=false;this.clk=false;this.di=0;this.doBit=1;this.bits=[];this.mode='cmd';this.addr=0;this.dataBits=[];this.out=[];this.outPos=0}
+ begin(){this.bits=[];this.mode='cmd';this.dataBits=[];this.out=[];this.outPos=0;this.doBit=1}
+ end(){this.bits=[];this.mode='cmd';this.dataBits=[];this.out=[];this.outPos=0;this.doBit=1}
+ queueRead(word){
+  // 93C46 read returns a leading zero then 16 MSB-first data bits.
+  this.out=[0];for(let i=15;i>=0;i--)this.out.push((word>>>i)&1);
+  this.outPos=0;this.doBit=this.out[0];this.mode='read'
+ }
+ clockRise(){
+  if(this.mode==='read'){
+   if(this.outPos+1<this.out.length){this.outPos++;this.doBit=this.out[this.outPos]}
+   else{ // sequential read: continue with the following EEPROM word
+    this.addr=(this.addr+1)&63;this.queueRead(this.mem[this.addr]);this.outPos=1;this.doBit=this.out[1]
+   }
+   return
+  }
+  if(this.mode==='writeData'||this.mode==='writeAll'){
+   this.dataBits.push(this.di&1);
+   if(this.dataBits.length===16){
+    let w=0;for(const b of this.dataBits)w=((w<<1)|b)&0xffff;
+    if(this.writeEnabled){
+     if(this.mode==='writeData')this.mem[this.addr&63]=w;
+     else this.mem.fill(w)
+    }
+    this.mode='done';this.doBit=1
+   }
+   return
+  }
+  if(this.mode==='done')return;
+  // Ignore leading zeroes until the Microwire start bit.
+  if(!this.bits.length&&!(this.di&1))return;
+  this.bits.push(this.di&1);
+  if(this.bits.length<9)return;
+  const opcode=(this.bits[1]<<1)|this.bits[2];
+  let addr=0;for(let i=3;i<9;i++)addr=(addr<<1)|this.bits[i];this.addr=addr&63;
+  if(opcode===2){this.queueRead(this.mem[this.addr]);return}
+  if(opcode===1){this.mode='writeData';this.dataBits=[];return}
+  if(opcode===3){if(this.writeEnabled)this.mem[this.addr]=0xffff;this.mode='done';this.doBit=1;return}
+  // Opcode 00: EWDS/WRAL/ERAL/EWEN selected by the two high address bits.
+  const sub=(addr>>>4)&3;
+  if(sub===0){this.writeEnabled=false;this.mode='done'}
+  else if(sub===3){this.writeEnabled=true;this.mode='done'}
+  else if(sub===2){if(this.writeEnabled)this.mem.fill(0xffff);this.mode='done'}
+  else{this.mode='writeAll';this.dataBits=[]}
+ }
+ writePort(v){
+  v&=0xff;const ncs=!!(v&0x80),nclk=!!(v&0x40);this.di=v&1;
+  if(!this.cs&&ncs)this.begin();
+  if(this.cs&&!ncs)this.end();
+  if(ncs&&!this.clk&&nclk)this.clockRise();
+  this.cs=ncs;this.clk=nclk
+ }
+ readPort(){return this.doBit&1}
+}
+class CPS1Bus{
+ constructor(rom,profile,timing){
+  this.rom=rom;this.profile=profile;this.work=new Uint8Array(0x10000);this.gfx=new Uint8Array(0x30000);this.qsound=!!timing?.qsound;this.pang3=!!profile?.pang3;this.eeprom=this.pang3?new EEPROM93C46x16():null;this.qram0=new Uint8Array(0x1000);this.qram1=new Uint8Array(0x1000);
+  this.a=new Uint16Array(0x20);this.b=new Uint16Array(0x20);this.palette=new Uint16Array(0xc00);
+  // CPS-1 object RAM is delayed by exactly one frame.  objBuffer contains the
+  // list latched at the PREVIOUS VBlank.  At the next VBlank the visible frame
+  // is snapshotted first, then current OBJ RAM replaces objBuffer for the next frame.
+  this.objBuffer=new Uint8Array(0x800);
+  this.objDisplayBase=-1;this.objPendingBase=-1;this.spriteCount=0;this.spriteLast=-1;this.objLatches=0;this.spriteDropEvents=0;this.prevSpriteCount=0;
+  // Frame-coherent video snapshot.  Rendering happens later (30 FPS by default),
+  // so live CPS-A/CPS-B/GFX RAM cannot be used: the VBlank ISR may already have
+  // prepared the next frame.  Copy into fixed typed arrays to avoid GC churn.
+  this.videoA=new Uint16Array(0x20);this.videoB=new Uint16Array(0x20);
+  this.videoPalette=new Uint16Array(0xc00);this.videoGfx=new Uint8Array(0x30000);this.videoObj=new Uint8Array(0x800);
+  this.videoValid=false;this.videoFrame=-1;this.videoObjBase=-1;
+  this.paletteCtrlUsed=0;this.palettePageSrc=[-1,-1,-1,-1,-1,-1];
+  // IN1 is a 16-bit player port: P1 low byte, P2 high byte. IN0/SYSTEM is 8-bit
+  // and appears on the high data byte at $800018, low byte reads $FF.
+  this.in1=0xffff;this.system8=0xff;this.dips8=[0xff,0xff,0xff];
+  this.sound=0;this.fade=0;this.frame=0;this.scan=0;this.raster=0;this.irq=0;this.paletteCopies=0;
+  this.soundWrites=0;this.lastIORead={addr:0,value:0};this.lastIOWrite={addr:0,value:0};
+  this.ioReadHits=Object.create(null);this.ioWriteHits=Object.create(null);
+  this.a[0]=0x9200;this.a[1]=0x9000;this.a[2]=0x9040;this.a[3]=0x9080;this.a[4]=0x9100;
+  this.cpuHz=timing?.mainHz||CPS_CPU_HZ;this.cpl=Math.round(this.cpuHz/CPS_FPS/CPS_LINES);
+ }
+ resetTiming(){
+  this.frame=0;this.scan=0;this.raster=0;this.irq=0;
+  this.objBuffer.fill(0);this.videoObj.fill(0);this.videoGfx.fill(0);this.videoA.fill(0);this.videoB.fill(0);this.videoPalette.fill(0);this.videoValid=false;this.videoFrame=-1;this.videoObjBase=-1;
+  if(this.qsound){this.qram0.fill(0);this.qram1.fill(0)}if(this.eeprom)this.eeprom.resetLines();
+  this.objDisplayBase=-1;this.objPendingBase=-1;this.spriteCount=0;this.spriteLast=-1;this.objLatches=0;this.spriteDropEvents=0;this.prevSpriteCount=0
+ }
+ markRead(addr,value){
+  if(!runtimeMonitor)return value;
+  this.lastIORead.addr=addr&0xffffff;this.lastIORead.value=value&0xffff;
+  const k=hex(addr&0xffffff,6);this.ioReadHits[k]=(this.ioReadHits[k]||0)+1;return value
+ }
+ markWrite(addr,value){
+  if(!runtimeMonitor)return;
+  this.lastIOWrite.addr=addr&0xffffff;this.lastIOWrite.value=value&0xffff;
+  const k=hex(addr&0xffffff,6);this.ioWriteHits[k]=(this.ioWriteHits[k]||0)+1
+ }
+ io16(addr){
+  addr&=0xfffffe;let v=0xffff;
+  if(addr===0x800000||addr===0x800010)v=this.in1;
+  else if(addr===0x800018)v=((this.system8&255)<<8)|0xff;
+  else if(addr===0x80001a)v=((this.dips8[0]&255)<<8)|0xff;
+  else if(addr===0x80001c)v=((this.dips8[1]&255)<<8)|0xff;
+  else if(addr===0x80001e)v=((this.dips8[2]&255)<<8)|0xff;
+  else if(addr>=0x800100&&addr<=0x80013e)v=this.a[(addr-0x800100)>>1];
+  else if(this.pang3&&addr===0x80017a)v=this.eeprom.readPort();
+  else if(addr>=0x800140&&addr<=0x80017e){
+    const o=(addr-0x800140)&0x3e,m=this.profile.mult;
+    if(this.profile.idReg>=0&&o===this.profile.idReg)v=this.profile.idValue&0xffff;
+    else if(m&&o===m.resultLo){
+      const q=(this.b[m.factor1>>1]*this.b[m.factor2>>1])>>>0;v=q&0xffff
+    }else if(m&&o===m.resultHi){
+      const q=(this.b[m.factor1>>1]*this.b[m.factor2>>1])>>>0;v=(q>>>16)&0xffff
+    }else if(this.profile.in2Addr>=0&&o===this.profile.in2Addr)v=0xffff;
+    else if(this.profile.in3Addr>=0&&o===this.profile.in3Addr)v=0xffff;
+    else v=0xffff; // MAME cps1_cps_b_r: undefined/non-special registers read high
+  }
+  return this.markRead(addr,v)
+ }
+ read8(addr){
+  addr&=0xffffff;
+  if(addr<this.rom.length)return this.rom[addr];
+  if(this.qsound){
+   if(addr>=0xf18000&&addr<=0xf19fff)return (addr&1)?this.qram0[(addr-0xf18000)>>1]:0xff;
+   if(addr>=0xf1e000&&addr<=0xf1ffff)return (addr&1)?this.qram1[(addr-0xf1e000)>>1]:0xff;
+   if(addr>=0xf1c000&&addr<=0xf1c007)return 0xff;
+   if(addr>=0xf00000&&addr<=0xf0ffff){const q=regions.z80,o=addr-0xf00000;return q?.[o]??0xff}
+  }
+  if(addr>=0x800000&&addr<0x800200){const w=this.io16(addr&~1);return (addr&1)?w&255:w>>>8}
+  if(addr>=0x900000&&addr<=0x92ffff)return this.gfx[addr-0x900000];
+  if(addr>=0xff0000)return this.work[addr&0xffff];
+  return 0xff
+ }
+ read16(addr){
+  addr&=0xffffff;if(addr&1)throw Error('Address error read16 $'+hex(addr));
+  if(addr>=0x800000&&addr<0x800200)return this.io16(addr);
+  return ((this.read8(addr)<<8)|this.read8(addr+1))>>>0
+ }
+ read32(addr){return ((this.read16(addr)*0x10000)+this.read16((addr+2)&0xffffff))>>>0}
+ setReg(arr,base,addr,v,sz){
+  const i=((addr&~1)-base)>>1;let w=arr[i]||0;
+  if(sz===2)w=v&0xffff;else if(addr&1)w=(w&0xff00)|(v&255);else w=((v&255)<<8)|(w&255);
+  arr[i]=w;return i
+ }
+ write8(addr,v){
+  addr&=0xffffff;v&=255;
+  if(this.qsound){
+   if(addr>=0xf18000&&addr<=0xf19fff){if(addr&1)this.qram0[(addr-0xf18000)>>1]=v;return}
+   if(addr>=0xf1e000&&addr<=0xf1ffff){if(addr&1)this.qram1[(addr-0xf1e000)>>1]=v;return}
+   if(addr>=0xf1c004&&addr<=0xf1c007){this.markWrite(addr,v);return}
+  }
+  if(addr>=0x800100&&addr<=0x80013f){const i=this.setReg(this.a,0x800100,addr,v,1);this.markWrite(addr,v);if(i===5)this.copyPalette();return}
+  if(this.pang3&&(addr&0xfffffe)===0x80017a){if(addr&1)this.eeprom.writePort(v);this.markWrite(addr,v);return}
+  if(addr>=0x800140&&addr<=0x80017f){
+   this.setReg(this.b,0x800140,addr,v,1);
+   this.markWrite(addr,v);return
+  }
+  if(addr>=0x800180&&addr<=0x800187){this.sound=v;this.soundWrites++;this.markWrite(addr,v);return}
+  if(addr>=0x800188&&addr<=0x80018f){this.fade=v;this.markWrite(addr,v);return}
+  if(addr>=0x900000&&addr<=0x92ffff){this.gfx[addr-0x900000]=v;return}
+  if(addr>=0xff0000){this.work[addr&0xffff]=v;return}
+ }
+ write16(addr,v){
+  addr&=0xffffff;v&=0xffff;if(addr&1)throw Error('Address error write16 $'+hex(addr));
+  if(addr>=0x800100&&addr<=0x80013f){const i=this.setReg(this.a,0x800100,addr,v,2);this.markWrite(addr,v);if(i===5)this.copyPalette();return}
+  if(this.pang3&&addr===0x80017a){this.eeprom.writePort(v&0xff);this.markWrite(addr,v);return}
+  if(addr>=0x800140&&addr<=0x80017f){
+   this.setReg(this.b,0x800140,addr,v,2);
+   this.markWrite(addr,v);return
+  }
+  if(addr>=0x800180&&addr<=0x800186){this.sound=v&255;this.soundWrites++;this.markWrite(addr,v);return}
+  if(addr>=0x800188&&addr<=0x80018e){this.fade=v&255;this.markWrite(addr,v);return}
+  this.write8(addr,v>>>8);this.write8(addr+1,v)
+ }
+ write32(addr,v){this.write16(addr,v>>>16);this.write16(addr+2,v)}
+ gfxWord(off){off&=0x3ffff;if(off<0||off+1>=this.gfx.length)return 0;return (this.gfx[off]<<8)|this.gfx[off+1]}
+ base(reg,boundary){
+  let x=((this.a[reg]&0xffff)<<8)&0x3ffff;
+  return x&~(boundary-1)
+ }
+ getPaletteControl(){
+  // CPS-B palette control is game/board specific. Do not guess it from unrelated
+  // CPS-B writes: a false 0x01..0x3f value here remaps whole 0x200-colour pages.
+  return this.b[this.profile.paletteCtrl>>1]&0x003f
+ }
+ copyPalette(){
+  const base=this.base(5,0x400),ctrl=this.getPaletteControl();
+  // Match CPS-1 palette-page compression: leading disabled pages do NOT advance
+  // the gfxram source; once the first page has been copied, disabled pages do.
+  let srcWord=0,started=false;
+  this.paletteCtrlUsed=ctrl;this.palettePageSrc.fill(-1);
+  for(let page=0;page<6;page++){
+    if(ctrl&(1<<page)){
+      this.palettePageSrc[page]=srcWord>>>9;
+      const dst=page*0x200;
+      for(let off=0;off<0x200;off++)
+        this.palette[dst+off]=this.gfxWord(base+(srcWord+off)*2);
+      srcWord+=0x200;started=true
+    }else if(started){
+      srcWord+=0x200
+    }
+  }
+  this.paletteCopies++
+ }
+ captureVideoFrame(){
+  // Capture the raster state at VBlank START, before the IRQ handler can write
+  // scroll/layer/priority registers for the next frame.  This keeps sprites,
+  // tilemaps, priority masks and palette from different frames from being mixed.
+  this.videoA.set(this.a);this.videoB.set(this.b);this.videoPalette.set(this.palette);this.videoGfx.set(this.gfx);
+  this.videoObj.set(this.objBuffer);this.videoObjBase=this.objDisplayBase;
+  this.videoFrame=this.frame;this.videoValid=true
+ }
+ latchObjects(){
+  this.objLatches=(this.objLatches+1)>>>0;
+  // Hardware/MAME: current OBJ RAM is copied at VBlank and becomes visible on
+  // the FOLLOWING frame.  One software buffer is therefore enough when the
+  // just-finished frame is captured before this copy.
+  const base=this.base(0,0x800);this.objPendingBase=base;
+  for(let i=0;i<0x800;i++)this.objBuffer[i]=this.gfx[(base+i)&0x3ffff]||0;
+  this.objDisplayBase=base
+ }
+ advance(c){
+  this.raster+=c;
+  while(this.raster>=this.cpl){
+    this.raster-=this.cpl;this.scan++;
+    if(this.scan===240){this.captureVideoFrame();this.latchObjects();this.irq=2}
+    if(this.scan>=CPS_LINES){this.scan=0;this.frame++}
+  }
+ }
+ takeIRQ(){return this.irq|0}
+ ackIRQ(level){if((this.irq|0)===(level|0))this.irq=0}
+ setP1(bit,down){const m=1<<(bit&7);if(down)this.in1&=~m;else this.in1|=m;this.in1&=0xffff}
+ setP2(bit,down){const m=1<<((bit&7)+8);if(down)this.in1&=~m;else this.in1|=m;this.in1&=0xffff}
+ setSystem(bit,down){const m=1<<(bit&7);if(down)this.system8&=~m;else this.system8|=m;this.system8&=255}
+ setDip(bank,bit,on){const m=1<<(bit&7);if(on)this.dips8[bank]&=~m;else this.dips8[bank]|=m;this.dips8[bank]&=255}
+}
+
+const OKI_STEP_TABLE=[16,17,19,21,23,25,28,31,34,37,41,45,50,55,60,66,73,80,88,97,107,118,130,143,157,173,190,209,230,253,279,307,337,371,408,449,494,544,598,658,724,796,876,963,1060,1166,1282,1411,1552];
+const OKI_INDEX_SHIFT=[-1,-1,-1,-1,2,4,6,8];
+const YM_NOTE_MAP=[0,1,2,2,3,4,5,5,6,7,8,8,9,10,11,11];
+const KABUKI_KEYS={
+ wof:[0x01234567,0x54163072,0x5151,0x51],dino:[0x76543210,0x24601357,0x4343,0x43],
+ punisher:[0x67452103,0x75316024,0x2222,0x22],slammast:[0x54321076,0x65432107,0x3131,0x19]
+};
+function kabukiBitswap1(src,key,sel){if(sel&(1<<((key>>>0)&7)))src=(src&0xfc)|((src&1)<<1)|((src&2)>>1);if(sel&(1<<((key>>>4)&7)))src=(src&0xf3)|((src&4)<<1)|((src&8)>>1);if(sel&(1<<((key>>>8)&7)))src=(src&0xcf)|((src&0x10)<<1)|((src&0x20)>>1);if(sel&(1<<((key>>>12)&7)))src=(src&0x3f)|((src&0x40)<<1)|((src&0x80)>>1);return src&255}
+function kabukiBitswap2(src,key,sel){if(sel&(1<<((key>>>12)&7)))src=(src&0xfc)|((src&1)<<1)|((src&2)>>1);if(sel&(1<<((key>>>8)&7)))src=(src&0xf3)|((src&4)<<1)|((src&8)>>1);if(sel&(1<<((key>>>4)&7)))src=(src&0xcf)|((src&0x10)<<1)|((src&0x20)>>1);if(sel&(1<<((key>>>0)&7)))src=(src&0x3f)|((src&0x40)<<1)|((src&0x80)>>1);return src&255}
+function kabukiByte(src,k1,k2,xor,sel){src=kabukiBitswap1(src,k1&0xffff,sel&255);src=((src&0x7f)<<1)|((src&0x80)>>7);src=kabukiBitswap2(src,k1>>>16,sel&255);src^=xor;src=((src&0x7f)<<1)|((src&0x80)>>7);src=kabukiBitswap2(src,k2&0xffff,sel>>>8);src=((src&0x7f)<<1)|((src&0x80)>>7);return kabukiBitswap1(src,k2>>>16,sel>>>8)}
+function kabukiCps1Decode(rom,keyName){const keys=KABUKI_KEYS[keyName],op=new Uint8Array(0x8000);if(!keys||!rom)return op;const [k1,k2,ak,xk]=keys,raw=rom.slice(0,0x8000);for(let a=0;a<0x8000&&a<raw.length;a++){op[a]=kabukiByte(raw[a],k1,k2,xk,(a+ak)&0xffff);rom[a]=kabukiByte(raw[a],k1,k2,xk,(((a^0x1fc0)+ak+1)&0xffff))}return op}
+class CPSQSoundBus{
+ constructor(rom,samples,main,spec){this.rom=rom||new Uint8Array(0);this.samples=samples||new Uint8Array(0);this.main=main;this.spec=spec;this.oprom=kabukiCps1Decode(this.rom,spec?.kabuki||spec?.family||spec?.id);this.reset()}
+ reset(){this.bank=0;this.qaddr=0;this.qdata=0;this.status=0x80;this.irqAcc=0;this.qwrites=0}
+ read(a){a&=0xffff;if(a<0x8000)return this.rom[a]??0xff;if(a>=0x8000&&a<=0xbfff){const o=0x10000+(this.bank&0x0f)*0x4000+(a-0x8000);return this.rom[o]??0xff}if(a>=0xc000&&a<=0xcfff)return this.main.qram0[a-0xc000];if(a===0xd007)return this.status;if(a>=0xf000)return this.main.qram1[a-0xf000];return 0xff}
+ opRead(a){a&=0xffff;if(a<0x8000)return this.oprom[a]??this.rom[a]??0xff;return this.read(a)}
+ write(a,v){a&=0xffff;v&=255;if(a>=0xc000&&a<=0xcfff){this.main.qram0[a-0xc000]=v;return}if(a===0xd000){this.qaddr=(this.qaddr&0xff00)|v;return}if(a===0xd001){this.qaddr=(this.qaddr&0x00ff)|(v<<8);return}if(a===0xd002){this.qdata=v;this.qwrites++;this.status=0x80;return}if(a===0xd003){this.bank=v&0x0f;return}if(a>=0xf000){this.main.qram1[a-0xf000]=v;return}}
+ tickYm(dt,z80){this.irqAcc+=dt;const p=1/250;while(this.irqAcc>=p){this.irqAcc-=p;if(z80)z80.irq(0xff)}}
+ mix(out){out.fill(0)}
+}
+class CPS1SoundBus{
+ constructor(rom,okiRom,mainBus){
+  this.rom=rom||new Uint8Array(0);this.okiRom=okiRom||new Uint8Array(0);this.main=mainBus;this.ram=new Uint8Array(0x800);
+  this.ymRegs=new Uint8Array(256);this.ymFreq=new Float64Array(8);this.ymGain=new Float64Array(8);this.ymPhase=new Float64Array(8);this.ymKey=new Uint8Array(8);
+  this.okiVoices=Array.from({length:4},()=>({active:false,pos:0,end:0,signal:-2,step:0,volume:0,last:0,frac:0}));
+  this.reset()
+ }
+ reset(){
+  this.ram.fill(0);this.bank=0;this.ymAddr=0;this.ymRegs.fill(0);this.ymWrites=0;this.okiWrites=0;this.okiLast=0;this.okiPin7=1;this.latchReads=0;this.lastRead=0;this.lastWrite=0;
+  this.ymStatus=0;this.ymCtrl=0;this.ymAccA=0;this.ymAccB=0;this.ymFreq.fill(0);this.ymGain.fill(0);this.ymPhase.fill(0);this.ymKey.fill(0);this.okiPending=-1;
+  for(const v of this.okiVoices){v.active=false;v.pos=v.end=0;v.signal=-2;v.step=0;v.volume=0;v.last=0;v.frac=0}
+ }
+ read(a){a&=0xffff;this.lastRead=a;
+  if(a<0x8000)return this.rom[a]??0xff;
+  if(a>=0x8000&&a<=0xbfff){const o=0x10000+(this.bank&1)*0x4000+(a-0x8000);return this.rom[o]??0xff}
+  if(a>=0xd000&&a<=0xd7ff)return this.ram[a-0xd000];
+  if(a===0xf001)return this.ymStatus&3;
+  if(a===0xf002){let q=0;for(let i=0;i<4;i++)if(this.okiVoices[i].active)q|=1<<i;return q}
+  if(a===0xf008){this.latchReads++;return this.main.sound&255}
+  if(a===0xf00a)return this.main.fade&255;
+  return 0xff
+ }
+ write(a,v){a&=0xffff;v&=255;this.lastWrite=a;
+  if(a>=0xd000&&a<=0xd7ff){this.ram[a-0xd000]=v;return}
+  if(a===0xf000){this.ymAddr=v;return}
+  if(a===0xf001){this.writeYm(this.ymAddr,v);this.ymWrites++;return}
+  if(a===0xf002){this.okiLast=v;this.okiWrites++;this.writeOki(v);return}
+  if(a===0xf004){this.bank=v&1;return}
+  if(a===0xf006){this.okiPin7=v&1;return}
+ }
+ writeYm(r,v){
+  r&=255;this.ymRegs[r]=v;
+  if(r===0x08){const ch=v&7;this.ymKey[ch]=(v&0x78)?1:0;this.updateYmChannel(ch)}
+  else if((r>=0x20&&r<=0x27)||(r>=0x28&&r<=0x2f)||(r>=0x30&&r<=0x37)||(r>=0x60&&r<=0x7f))this.updateYmChannel(r&7);
+  else if(r===0x14){
+   if(v&0x10)this.ymStatus&=~1;if(v&0x20)this.ymStatus&=~2;this.ymCtrl=v;
+   if(!(v&1))this.ymAccA=0;if(!(v&2))this.ymAccB=0
+  }
+ }
+ updateYmChannel(ch){
+  const kc=this.ymRegs[0x28+ch]&0x7f,oct=(kc>>>4)&7,semi=YM_NOTE_MAP[kc&15]+((this.ymRegs[0x30+ch]>>>2)&63)/64;
+  const midi=12*(oct+1)+semi;this.ymFreq[ch]=440*Math.pow(2,(midi-69)/12);
+  let tl=127;for(let slot=0;slot<4;slot++)tl=Math.min(tl,this.ymRegs[0x60+slot*8+ch]&0x7f);
+  this.ymGain[ch]=0.075*Math.pow(10,-tl*0.75/20)
+ }
+ tickYm(dt,z80){
+  const clock=3579545,ctrl=this.ymCtrl;
+  if(ctrl&1){const idx=((this.ymRegs[0x10]<<2)|(this.ymRegs[0x11]&3))&1023,p=64*Math.max(1,1024-idx)/clock;this.ymAccA+=dt;if(this.ymAccA>=p){this.ymAccA%=p;if(ctrl&4)this.ymStatus|=1}}
+  if(ctrl&2){const idx=this.ymRegs[0x12],p=1024*Math.max(1,256-idx)/clock;this.ymAccB+=dt;if(this.ymAccB>=p){this.ymAccB%=p;if(ctrl&8)this.ymStatus|=2}}
+  if(z80&&(((this.ymStatus&1)&&(ctrl&4))||((this.ymStatus&2)&&(ctrl&8))))z80.irq(0xff)
+ }
+ writeOki(v){
+  if(this.okiPending>=0){
+   const sample=this.okiPending,voiceMask=(v>>>4)&15,vol=v&15;this.okiPending=-1;
+   for(let i=0;i<4;i++)if(voiceMask&(1<<i))this.startOkiVoice(i,sample,vol);
+   return
+  }
+  if(v&0x80){this.okiPending=v&0x7f;return}
+  const stop=(v>>>3)&15;for(let i=0;i<4;i++)if(stop&(1<<i))this.okiVoices[i].active=false
+ }
+ startOkiVoice(ch,sample,vol){
+  const t=sample*8,r=this.okiRom;if(t+5>=r.length)return;
+  const start=(r[t]<<16)|(r[t+1]<<8)|r[t+2],end=(r[t+3]<<16)|(r[t+4]<<8)|r[t+5];
+  if(start>=r.length||end<start)return;
+  const q=this.okiVoices[ch];q.active=true;q.pos=start*2;q.end=Math.min((end+1)*2,r.length*2);q.signal=-2;q.step=0;q.volume=Math.pow(10,-3*(vol&15)/20);q.last=0;q.frac=0
+ }
+ decodeOki(q){
+  if(!q.active||q.pos>=q.end){q.active=false;q.last=0;return 0}
+  const by=this.okiRom[q.pos>>>1]||0,n=(q.pos&1)?(by&15):(by>>>4);q.pos++;
+  const st=OKI_STEP_TABLE[q.step],diff=(st>>>3)+((n&1)?(st>>>2):0)+((n&2)?(st>>>1):0)+((n&4)?st:0);
+  q.signal+=(n&8)?-diff:diff;if(q.signal>2047)q.signal=2047;else if(q.signal<-2048)q.signal=-2048;
+  q.step+=OKI_INDEX_SHIFT[n&7];if(q.step<0)q.step=0;else if(q.step>48)q.step=48;
+  q.last=(q.signal/2048)*q.volume;if(q.pos>=q.end)q.active=false;return q.last
+ }
+ mix(out,sampleRate){
+  const okiRate=1000000/(this.okiPin7?132:165),twopi=Math.PI*2;
+  for(let i=0;i<out.length;i++){
+   let sm=0;
+   for(let ch=0;ch<8;ch++)if(this.ymKey[ch]&&this.ymFreq[ch]>5){let ph=this.ymPhase[ch]+twopi*this.ymFreq[ch]/sampleRate;if(ph>twopi)ph-=twopi;this.ymPhase[ch]=ph;sm+=(Math.sin(ph)+0.12*Math.sin(ph*2+ch*0.17))*this.ymGain[ch]}
+   let os=0;for(const q of this.okiVoices){q.frac+=okiRate/sampleRate;while(q.active&&q.frac>=1){this.decodeOki(q);q.frac-=1}os+=q.last}
+   sm+=os*0.42;out[i]=Math.max(-1,Math.min(1,sm*0.8))
+  }
+ }
+}
+class CPSAudioEngine{
+ constructor(){
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error('WebAudio non disponibile');
+  this.ctx=new AC({latencyHint:'interactive'});this.sound=null;this.enabled=true;
+  this.node=this.ctx.createScriptProcessor(1024,0,1);this.gain=this.ctx.createGain();this.gain.gain.value=0.75;
+  this.node.onaudioprocess=e=>{const out=e.outputBuffer.getChannelData(0);out.fill(0);if(this.enabled&&this.sound)this.sound.mix(out,e.outputBuffer.sampleRate)};
+  this.node.connect(this.gain);this.gain.connect(this.ctx.destination)
+ }
+ bind(sound){this.sound=sound||null}
+ async resume(){this.enabled=true;if(this.ctx.state!=='running')await this.ctx.resume()}
+ async suspend(){this.enabled=false;if(this.ctx.state==='running')await this.ctx.suspend()}
+}
+async function ensureAudio(){
+ if(!audioWanted)return;
+ try{if(!audioEngine)audioEngine=new CPSAudioEngine();audioEngine.bind(machine?.soundBus||null);await audioEngine.resume();const b=$('#audioBtn');if(b)b.textContent='🔊 Audio ON'}catch(e){log('AUDIO: '+e.message)}
+}
+async function toggleAudio(){
+ audioWanted=!audioWanted;const b=$('#audioBtn');
+ if(audioWanted){await ensureAudio()}else{if(audioEngine)await audioEngine.suspend();if(b)b.textContent='🔇 Audio OFF'}
+}
+function gfxMap(type,code){
+ const p=machine?.bus?.profile;if(!p)return -1;
+ const shift=type===1?1:type===2?0:type===4?1:type===8?3:0;
+ let c=(code<<shift)>>>0;
+ for(const r of p.ranges){
+  if(!(r.type&type)||c<r.start||c>r.end)continue;
+  let base=0;for(let i=0;i<r.bank;i++)base+=p.bankSizes[i]||0;
+  const bs=p.bankSizes[r.bank]||0;if(!bs)return -1;
+  return ((base+(c&(bs-1)))>>>shift)>>>0
+ }
+ return -1
+}
+function palette32(w){
+ const br=0x0f+(((w>>>12)&15)<<1);
+ const cv=n=>Math.max(0,Math.min(255,((n*0x11*br/0x2d)|0)));
+ const r=cv((w>>>8)&15),g=cv((w>>>4)&15),b=cv(w&15);
+ return (0xff000000|(b<<16)|(g<<8)|r)>>>0
+}
+function tileData(size,code,set8=0){
+ if(code<0||!regions.gfx)return null;
+ const key=size+':'+code+':'+set8;let t=tileCache.get(key);if(t)return t;
+ t=new Uint8Array(size*size);
+ for(let y=0;y<size;y++)for(let x=0;x<size;x++)t[y*size+x]=cpsPixel(regions.gfx,code,x,y,size,set8);
+ if(tileCache.size>8192)tileCache.clear();tileCache.set(key,t);return t
+}
+function tileIndex(size,col,row){
+ if(size===8)return (row&0x1f)+((col&0x3f)<<5)+((row&0x20)<<6);
+ if(size===16)return (row&0x0f)+((col&0x3f)<<4)+((row&0x30)<<6);
+ return (row&0x07)+((col&0x3f)<<3)+((row&0x38)<<6)
+}
+function currentVideoView(){
+ const b=machine.bus;
+ if(b.videoValid)return {bus:b,a:b.videoA,b:b.videoB,palette:b.videoPalette,gfx:b.videoGfx,obj:b.videoObj,objBase:b.videoObjBase,frame:b.videoFrame};
+ return {bus:b,a:b.a,b:b.b,palette:b.palette,gfx:b.gfx,obj:b.objBuffer,objBase:b.objDisplayBase,frame:b.frame}
+}
+function videoBase(v,reg,boundary){
+ let x=((v.a[reg]&0xffff)<<8)&0x3ffff;return x&~(boundary-1)
+}
+function videoGfxWord(v,off){
+ off&=0x3ffff;const g=v.gfx;if(off<0||off+1>=g.length)return 0;return (g[off]<<8)|g[off+1]
+}
+function layerEnabled(v,type,enableMask){
+ const p=v.bus.profile,lc=v.b[p.layerCtrl>>1]&0xffff,vc=v.a[17]&0xffff;
+ if(!p.ignoreLayerEnable&&!(lc&enableMask))return false;
+ if(type===4&&!(vc&0x0004))return false;
+ if(type===8&&!(vc&0x0008))return false;
+ return true
+}
+function layerParams(layer){
+ const p=machine.bus.profile;
+ if(layer===1)return {size:8,areg:1,type:2,palGroup:0x20,enable:p.enables[0]};
+ if(layer===2)return {size:16,areg:2,type:4,palGroup:0x40,enable:p.enables[1]};
+ if(layer===3)return {size:32,areg:3,type:8,palGroup:0x60,enable:p.enables[2]};
+ return null
+}
+function rasterLayer(buf,pal,maskBuf,size,areg,type,palGroup,enableMask,highOnly=false,v=currentVideoView()){
+ const bus=v.bus,vc=v.a[17]&0xffff;if(!layerEnabled(v,type,enableMask))return;
+ const base=videoBase(v,areg,0x4000),sx=s16x(v.a[6+(areg-1)*2]||0),sy=s16x(v.a[7+(areg-1)*2]||0);
+ const mw=size*64,coordMask=mw-1,shift=size===8?3:size===16?4:5,tileMask=size-1,colShift=size===8?5:size===16?4:3;
+ const rowscroll=(type===4)&&!!(vc&1),otherBase=rowscroll?videoBase(v,4,0x800):0,otherOff=v.a[16]&0x3ff;
+ const priorities=bus.profile.priorities||[];
+ for(let y=0;y<CPS_VISIBLE_H;y++){
+  const screenY=y+CPS_VISIBLE_Y,wy=(screenY+sy)&coordMask,row=wy>>shift,py=wy&tileMask;
+  const rowBase=size===8?((row&0x1f)+((row&0x20)<<6)):size===16?((row&0x0f)+((row&0x30)<<6)):((row&0x07)+((row&0x38)<<6));
+  let sxLine=sx;
+  if(rowscroll){const rv=videoGfxWord(v,otherBase+(((screenY+otherOff)&0x3ff)<<1));sxLine+=s16x(rv)}
+  let lastIdx=-1,td=null,at=0,priority=0,flipx=false,flipy=false;
+  for(let x=0;x<384;x++){
+   const wx=(x+64+sxLine)&coordMask,col=wx>>shift,px=wx&tileMask,idx=rowBase+((col&0x3f)<<colShift);
+   if(idx!==lastIdx){
+    lastIdx=idx;const off=base+idx*4,raw=videoGfxWord(v,off);at=videoGfxWord(v,off+2);
+    const mapped=gfxMap(type,size===32?(raw&0x3fff):raw);
+    td=mapped<0?null:tileData(size,mapped,size===8?((idx>>5)&1):0);
+    flipx=!!(at&0x20);flipy=!!(at&0x40);priority=0;
+    if(highOnly){const group=(at&0x0180)>>>7,pa=priorities[group];if(pa!==undefined&&pa>=0)priority=v.b[pa>>1]&0xffff}
+   }
+   if(!td)continue;
+   const xx=flipx?tileMask-px:px,yy=flipy?tileMask-py:py,pen=td[yy*size+xx];if(pen===15)continue;
+   const pos=screenY*384+x;
+   // MAME set_transmask(group, priorityReg ^ 0xffff, 0x8000):
+   // a priority-register bit of 1 means that pen sits in front of sprites.
+   if(highOnly){if(priority&(1<<pen))maskBuf[pos]=1}
+   else buf[pos]=pal[((at&0x1f)+palGroup)*16+pen]
+  }
+ }
+}
+function drawLayer(buf,pal,size,areg,type,palGroup,enableMask,v){
+ rasterLayer(buf,pal,null,size,areg,type,palGroup,enableMask,false,v)
+}
+function markHighLayer(maskBuf,layer,v){
+ const q=layerParams(layer);if(!q)return;
+ rasterLayer(null,null,maskBuf,q.size,q.areg,q.type,q.palGroup,q.enable,true,v)
+}
+function objWord(buf,o){o&=0x7ff;return ((buf[o]<<8)|buf[(o+1)&0x7ff])&0xffff}
+function drawSpriteTile(buf,pal,prio,mappedCode,attr,sx,sy,fx,fy){
+ // mappedCode is already PAL-mapped.  CPS-1 block children stay inside that bank.
+ const td=tileData(16,mappedCode);if(!td)return;
+ for(let y=0;y<16;y++){const dy=(sy+y)&0x1ff;if(dy<CPS_VISIBLE_Y||dy>=CPS_VISIBLE_Y+CPS_VISIBLE_H)continue;const py=fy?15-y:y;
+  for(let x=0;x<16;x++){const actualX=(sx+x)&0x1ff;if(actualX<64||actualX>=448)continue;const dx=actualX-64,px=fx?15-x:x,pen=td[py*16+px];if(pen===15)continue;
+   const at=dy*384+dx;if(prio&&prio[at])continue;
+   buf[at]=pal[(attr&0x1f)*16+pen]
+  }
+ }
+}
+function drawSprites(buf,pal,prio,v=currentVideoView()){
+ const b=v.bus,ob=v.obj;let last=-4;
+ const captBoot=spec?.bootlegVariant==='captcommb';
+ for(let o=0;o<0x800;o+=8){
+  const y=objWord(ob,o+2),at=objWord(ob,o+6);
+  if((captBoot&&y>=0x8000)||(!captBoot&&(at&0xff00)===0xff00)){last=o-8;break}
+  last=o
+ }
+ b.spriteLast=last;b.spriteCount=last<0?0:((last>>3)+1);
+ if(b.prevSpriteCount>0&&b.spriteCount===0)b.spriteDropEvents++;
+ b.prevSpriteCount=b.spriteCount;
+ if(last<0)return;
+ // Native CPS-1 ordering: walk OBJ RAM from low to high address; later entries
+ // overwrite earlier sprite pixels.  This matches MAME's base += 4 traversal.
+ for(let o=0;o<=last;o+=8){
+  const x=objWord(ob,o)&0x1ff,y=objWord(ob,o+2)&0x1ff,raw=objWord(ob,o+4),at=objWord(ob,o+6);
+  const code=gfxMap(1,raw);if(code<0)continue;
+  const fx=!!(at&0x20),fy=!!(at&0x40),nx=((at>>>8)&15)+1,ny=((at>>>12)&15)+1;
+  for(let by=0;by<ny;by++)for(let bx=0;bx<nx;bx++){
+   const cx=fx?(nx-1-bx):bx,cy=fy?(ny-1-by):by;
+   const c=((code&~0x0f)+((code+cx)&0x0f)+0x10*cy)>>>0;
+   const sx=(x+bx*16)&0x1ff,sy=(y+by*16)&0x1ff;
+   drawSpriteTile(buf,pal,prio,c,at,sx,sy,fx,fy)
+  }
+ }
+}
+let cpsPriorityMask=null;
+function applyCPSFlip(buf,v=currentVideoView()){
+ if(!(v.a[0x22>>1]&0x8000))return;
+ for(let y=CPS_VISIBLE_Y;y<CPS_VISIBLE_Y+(CPS_VISIBLE_H>>1);y++){
+  const yy=(CPS_VISIBLE_Y+CPS_VISIBLE_H-1)-y;
+  for(let x=0;x<384;x++){
+   const xx=383-x,a=y*384+x,b=yy*384+xx,t=buf[a];buf[a]=buf[b];buf[b]=t
+  }
+ }
+}
+function renderCPS(){
+ const c=$('#screen'),ctx=c.getContext('2d');
+ if(!machine){drawMainPlaceholder();return}
+ if(!screenImage){screenImage=ctx.createImageData(384,256);screen32=new Uint32Array(screenImage.data.buffer);cpsPriorityMask=new Uint8Array(384*256)}
+ const v=currentVideoView(),bus=v.bus,pal=screenPalette32||(screenPalette32=new Uint32Array(0xc00));
+ for(let i=0;i<pal.length;i++)pal[i]=palette32(v.palette[i]);
+ screen32.fill(pal[0xbff]||0xff080808);cpsPriorityMask.fill(0);
+ const lc=v.b[bus.profile.layerCtrl>>1]&0xffff;
+ const order=[(lc>>>6)&3,(lc>>>8)&3,(lc>>>10)&3,(lc>>>12)&3];
+ // This is the CPS-1/MAME composition sequence: draw normal layer pixels; if
+ // sprites are the next plane, mark only the high-priority pens of the layer
+ // immediately below them; then sprites reject those marked pixels.
+ for(let i=0;i<4;i++){
+  const layer=order[i];
+  if(layer===0){
+   if(i>0&&order[i-1]!==0)markHighLayer(cpsPriorityMask,order[i-1],v);
+   drawSprites(screen32,pal,cpsPriorityMask,v)
+  }else{
+   const q=layerParams(layer);if(q)drawLayer(screen32,pal,q.size,q.areg,q.type,q.palGroup,q.enable,v)
+  }
+ }
+ applyCPSFlip(screen32,v);
+ ctx.putImageData(screenImage,0,0)
+}
+function drawMainPlaceholder(){
+ let c=$('#screen'),x=c.getContext('2d');x.fillStyle='#05070a';x.fillRect(0,0,c.width,c.height);x.fillStyle='#9bdcff';x.font='16px ui-monospace,monospace';
+ if(!spec){x.fillText('CPSJSD CPS-1',20,34);x.fillStyle='#777';x.fillText('Carica un romset MAME CPS-1 (.zip)',20,62);return}
+ x.fillText(spec.title,20,34);x.fillStyle=spec.layoutSafe?'#8dd596':'#e9c46a';x.fillText(spec.layoutSafe?'ROM mapper pronto':'Romset MAME riconosciuto',20,62);x.fillText(spec.layoutSafe?'68000 pronto':'Layout 68000 da verificare',20,86);x.fillText(spec.layoutSafe?'Premi Power / Run':(spec.layoutNote||'recognized only'),20,110)
+}
+function buildRuntime(){
+ if(!spec||!regions.main)return;
+ running=false;if(raf)cancelAnimationFrame(raf);raf=0;
+ const profile=resolveProfile(spec),timing=cpsTimingForSpec(spec),bus=new CPS1Bus(regions.main,profile,timing),cpu=new M68K(bus);
+ let soundBus=null,z80=null;
+ if(regions.z80?.length){
+  soundBus=timing.qsound?new CPSQSoundBus(regions.z80,regions.oki,bus,spec):new CPS1SoundBus(regions.z80,regions.oki,bus);
+  z80=new Z80(a=>soundBus.read(a),(a,v)=>soundBus.write(a,v),()=>0xff,()=>{},timing.qsound?a=>soundBus.opRead(a):null);
+ }
+ machine={
+  bus,cpu,z80,soundBus,z80Target:0,timing,z80Hz:timing.z80Hz,perfPct:100,perfStamp:0,perfFrame:0,lastRender:0,
+  diag:{ring:new Uint32Array(256),pos:0,count:0,lastSig:'',loopFrames:0,loopText:'nessun loop stabile',reported:false}
+ };
+ if(audioEngine)audioEngine.bind(soundBus);
+ tileCache.clear();screenImage=null;screen32=null;screenPalette32=null;cpsPriorityMask=null;lastTick=0;emuAcc=0;
+ applyGameMode();
+ $('#coreState').className='status good';$('#coreState').textContent=`68000 ${timing.mainHz/1e6} MHz · Z80 ${timing.z80Hz/1e6} MHz · ${profile.name} · monitor OFF · runtime in pausa`;
+ log(`POWER ${spec.id} · SSP $${hex(cpu.A[7],8)} · PC $${hex(cpu.PC,6)} · ${profile.name} · 68K ${timing.mainHz/1e6} MHz · Z80 ${z80?timing.z80Hz/1e6+' MHz':'OFF'} · ${CPS_FPS.toFixed(6)} Hz`);
+ updateRuntimeUI(true);renderCPS()
+}
+function diagSample(pc){
+ if(!runtimeMonitor)return;
+ const d=machine?.diag;if(!d)return;
+ d.ring[d.pos]=pc&0xffffff;d.pos=(d.pos+1)&255;if(d.count<256)d.count++
+}
+function analyzeLoop(){
+ if(!runtimeMonitor)return;
+ const d=machine?.diag;if(!d||d.count<96)return;
+ const vals=[];for(let i=0;i<128;i++)vals.push(d.ring[(d.pos-1-i)&255]);
+ const uniq=[...new Set(vals)].sort((a,b)=>a-b);
+ if(uniq.length<=12){
+  const sig=uniq.map(x=>hex(x,6)).join(',');
+  if(sig===d.lastSig)d.loopFrames++;else{d.lastSig=sig;d.loopFrames=1;d.reported=false}
+  d.loopText=`${uniq.length} PC ricorrenti · ${d.loopFrames} frame · ${uniq.slice(0,8).map(x=>'$'+hex(x,6)).join(' ')}`;
+  if(d.loopFrames>=30&&!d.reported){
+   d.reported=true;
+   const b=machine.bus;
+   log(`LOOP stabile · ${d.loopText} · IO R $${hex(b.lastIORead.addr,6)}=$${hex(b.lastIORead.value,4)} · W $${hex(b.lastIOWrite.addr,6)}=$${hex(b.lastIOWrite.value,4)}`)
+  }
+ }else{d.loopFrames=0;d.lastSig='';d.reported=false;d.loopText=`esecuzione varia · ${uniq.length} PC nel campione`}
+}
+function runSoundFrame(){
+ if(!machine?.z80)return;
+ const z=machine.z80,sb=machine.soundBus,hz=machine.z80Hz;machine.z80Target+=hz/CPS_FPS;
+ let guard=0,limit=hz>4000000?60000:35000,tickBase=z.cycles;
+ while(z.cycles<machine.z80Target&&guard++<limit){
+  if(z.halted){
+   const remain=machine.z80Target-z.cycles;sb?.tickYm(remain/hz,z);
+   if(z.halted){z.cycles=machine.z80Target;tickBase=z.cycles;break}
+   tickBase=z.cycles
+  }
+  z.step();
+  if((guard&63)===0){sb?.tickYm(Math.max(0,z.cycles-tickBase)/hz,z);tickBase=z.cycles}
+ }
+ if(z.cycles>tickBase)sb?.tickYm((z.cycles-tickBase)/hz,z);
+ if(guard>=limit)log('Z80 guard @ $'+hex(z.pc,4))
+}
+function runOneFrame(){
+ if(!machine)return false;const b=machine.bus,c=machine.cpu,target=b.frame+1;let guard=0;
+ while(b.frame<target&&!c.halted&&guard++<120000){
+  if(runtimeMonitor&&(guard&31)===0)diagSample(c.PC);
+  c.step()
+ }
+ runSoundFrame();if(runtimeMonitor)analyzeLoop();
+ if(guard>=120000)log('Frame guard raggiunto @ PC $'+hex(c.PC,6));
+ return !c.halted
+}
+function topHits(o,n=5){return Object.entries(o||{}).sort((a,b)=>b[1]-a[1]).slice(0,n).map(([a,c])=>`$${a}×${c}`).join(' · ')||'—'}
+function updateRuntimeUI(force=false){
+ if(!runtimeMonitor&&!force)return;
+ const c=machine?.cpu,b=machine?.bus,z=machine?.z80,sb=machine?.soundBus,d=machine?.diag;
+ $('#rtPC').textContent=c?hex(c.PC,6):'------';$('#rtSR').textContent=c?hex(c.SR,4):'----';
+ $('#rtFrame').textContent=b?b.frame:'0';$('#rtCycles').textContent=c?c.cycles.toLocaleString():'0';
+ $('#rtZ80').textContent=z?hex(z.pc,4):'----';$('#rtSound').textContent=b?hex(b.sound,2):'--';
+ if(!c||!b){$('#runtimeRegs').textContent='Runtime non avviato.';return}
+ $('#runtimeRegs').textContent=`D0 ${hex(c.D[0],8)}  D1 ${hex(c.D[1],8)}  D2 ${hex(c.D[2],8)}  D3 ${hex(c.D[3],8)}
+A0 ${hex(c.A[0],8)}  A1 ${hex(c.A[1],8)}  A6 ${hex(c.A[6],8)}  A7 ${hex(c.A[7],8)}
+USP ${hex(c.USP,8)} · SSP ${hex(c.SSP,8)} · ${c.supervisor()?'SUPERVISOR':'USER'}
+scan ${b.scan} · IRQ ${b.irq} · IN1 $${hex(b.in1,4)} · SYSTEM $${hex(b.system8,2)} · palette ${b.paletteCopies}`;
+ const a=b.a,p=b.profile;
+ $('#videoRegs').innerHTML=`OBJ ${hex(a[0],4)} · S1 ${hex(a[1],4)} · S2 ${hex(a[2],4)} · S3 ${hex(a[3],4)} · PAL ${hex(a[5],4)}<br>`+
+ `S1 ${s16x(a[6])},${s16x(a[7])} · S2 ${s16x(a[8])},${s16x(a[9])} · S3 ${s16x(a[10])},${s16x(a[11])}<br>`+
+ `CPS-B layer $${hex(b.b[p.layerCtrl>>1],4)} · palctrl cfg $${hex(b.b[p.paletteCtrl>>1],4)} · used $${hex(b.paletteCtrlUsed,4)}<br>`+
+ `PAL src pages → ${b.palettePageSrc.map((q,i)=>q<0?`${i}:—`:`${i}:${q}`).join('  ')}<br>`+
+ `OBJ frame ${b.videoObjBase<0?'—':'$'+hex(b.videoObjBase,5)} · latched ${b.objDisplayBase<0?'—':'$'+hex(b.objDisplayBase,5)} · videoF ${b.videoFrame<0?'—':b.videoFrame} · sprites ${b.spriteCount} · last ${b.spriteLast<0?'—':'$'+hex(b.spriteLast,3)} · drop→0 ${b.spriteDropEvents}`;
+ $('#diagState').innerHTML=`<b>Loop:</b> ${d?.loopText||'—'}<br><b>Ultima lettura I/O:</b> $${hex(b.lastIORead.addr,6)} → $${hex(b.lastIORead.value,4)}<br>`+
+ `<b>Ultima scrittura I/O:</b> $${hex(b.lastIOWrite.addr,6)} ← $${hex(b.lastIOWrite.value,4)}<br>`+
+ `<b>I/O letti:</b> ${topHits(b.ioReadHits)}<br><b>I/O scritti:</b> ${topHits(b.ioWriteHits)}`;
+ if(!z)$('#audioState').innerHTML='Z80 non disponibile nel set.';
+ else if(machine.timing.qsound)$('#audioState').innerHTML=`QSound Z80 PC $${hex(z.pc,4)} · SP $${hex(z.sp,4)} · AF $${hex(z.af,4)} · ${z.halted?'HALT':'RUN'}<br>`+
+ `bank ${sb.bank} · status $${hex(sb.status,2)} · QSound write ${sb.qwrites} · Kabuki ${spec?.kabuki||spec?.family||'?'}<br>`+
+ `shared0 ${b.qram0[0].toString(16).padStart(2,'0')} ${b.qram0[1].toString(16).padStart(2,'0')} · shared1 ${b.qram1[0].toString(16).padStart(2,'0')} ${b.qram1[1].toString(16).padStart(2,'0')} · IRQ 250 Hz`;
+ else $('#audioState').innerHTML=`Z80 PC $${hex(z.pc,4)} · SP $${hex(z.sp,4)} · AF $${hex(z.af,4)} · ${z.halted?'HALT':'RUN'}<br>`+
+ `bank ${sb.bank} · latch $${hex(b.sound,2)} (${sb.latchReads} letture) · fade $${hex(b.fade,2)}<br>`+
+ `YM2151: ${sb.ymWrites} write · status $${hex(sb.ymStatus,2)} · reg $${hex(sb.ymAddr,2)}=$${hex(sb.ymRegs[sb.ymAddr],2)} · OKI: ${sb.okiWrites} write / ${sb.okiVoices.filter(v=>v.active).length} voci`;
+ if(c.halted){$('#coreState').className='status bad';$('#coreState').textContent=c.reason}
+ else{$('#coreState').className='status good';const t=machine.timing;$('#coreState').textContent=(running?'RUN':'PAUSE')+` · ${t.mainHz/1e6}MHz 68K · ${machine.perfPct.toFixed(0)}% realtime · ${p.name} · frame ${b.frame} · PC $${hex(c.PC,6)}`}
+ $('#runBtn').textContent=running?'❚❚ Pausa':'▶ Esegui';
+ $('#runState').textContent=running?'RUN':'PAUSA';
+ $('#runLed').className='led '+(running?'on':'');
+}function runtimeTick(ts){
+ if(!running||!machine)return;
+ if(!lastTick){lastTick=ts;machine.perfStamp=ts;machine.perfFrame=machine.bus.frame}
+ let dt=Math.min(100,ts-lastTick);lastTick=ts;emuAcc=Math.min(12,emuAcc+dt*CPS_FPS*runtimeSpeed/1000);
+ let frames=0,maxFrames=runtimeSpeed>1?10:6;
+ while(emuAcc>=1&&frames<maxFrames&&running){if(!runOneFrame()){running=false;break}emuAcc-=1;frames++}
+ if(frames){
+  if((machine.bus.frame%renderModulo)===0||ts-machine.lastRender>100){renderCPS();machine.lastRender=ts}
+  if(ts-machine.perfStamp>=500){
+   const wall=ts-machine.perfStamp,df=machine.bus.frame-machine.perfFrame;
+   machine.perfPct=wall>0?Math.min(999,(df*1000/CPS_FPS)/wall*100):100;
+   machine.perfStamp=ts;machine.perfFrame=machine.bus.frame;
+   if(!runtimeMonitor&&!machine.cpu.halted){const t=machine.timing;$('#coreState').textContent=`RUN · ${t.mainHz/1e6}MHz 68K · ${machine.perfPct.toFixed(0)}% realtime · ${machine.bus.profile.name}`}
+  }
+  if(runtimeMonitor&&(machine.bus.frame%30)===0)updateRuntimeUI()
+ }
+ if(running)raf=requestAnimationFrame(runtimeTick)
+}
+function toggleRun(){
+ if(!machine)buildRuntime();if(!machine)return;
+ running=!running;lastTick=0;emuAcc=1;updateRuntimeUI(true);
+ if(running){if(raf)cancelAnimationFrame(raf);raf=requestAnimationFrame(runtimeTick)}
+ else if(raf){cancelAnimationFrame(raf);raf=0;renderCPS()}
+}
+async function turboBoot(){
+ if(!machine)buildRuntime();if(!machine)return;
+ running=false;if(raf){cancelAnimationFrame(raf);raf=0}
+ const start=machine.bus.frame,target=start+180;
+ $('#coreState').className='status warn';$('#coreState').textContent='BOOT RAPIDO…';
+ while(machine.bus.frame<target&&!machine.cpu.halted){
+  for(let i=0;i<8&&machine.bus.frame<target&&!machine.cpu.halted;i++)runOneFrame();
+  if(runtimeMonitor)updateRuntimeUI();await new Promise(r=>setTimeout(r,0))
+ }
+ renderCPS();updateRuntimeUI(true);log(`TURBO · ${machine.bus.frame-start} frame eseguiti`)
+}
+function pulseSystem(bit,ms=110){
+ if(!machine)return;machine.bus.setSystem(bit,true);setTimeout(()=>{if(machine)machine.bus.setSystem(bit,false)},ms)
+}
+function applyGameMode(){
+ if(!machine)return;const test=$('#gameMode')?.value==='test';
+ // DSW C bit 7: 1 = Game, 0 = Test on the standard CPS-1 input definitions.
+ machine.bus.setDip(2,7,test)
+}
+function setInputToken(token,down){
+ if(!machine)return;
+ const [kind,n]=token.split(':');const bit=+n;
+ if(kind==='p1')machine.bus.setP1(bit,down);
+ else if(kind==='p2')machine.bus.setP2(bit,down);
+ else if(kind==='sys')machine.bus.setSystem(bit,down)
+}
+function pulseToken(token){
+ const [kind,n]=token.split(':');if(kind==='sys')pulseSystem(+n,120);else{setInputToken(token,true);setTimeout(()=>setInputToken(token,false),120)}
+}
+
+function updateUI(){
+ $('#mainSize').textContent=fmt(regions.main?.length);$('#gfxSize').textContent=fmt(regions.gfx?.length);$('#z80Size').textContent=fmt(regions.z80?.length);$('#okiSize').textContent=fmt(regions.oki?.length);
+ if(spec){let sp=rd32(0),pc=rd32(4),pr=resolveProfile(spec);$('#machine').innerHTML=`<b>${spec.title}</b><br>MAME set <b>${spec.romset||spec.id}</b> · family ${spec.family||spec.id}<br>CPS-1 · MC68000 + Z80 · MAME-exact bit decode · ${pr?.name||''}<br>${spec.generic?(spec.layoutSafe?'FAMILY ROM loader':'RECOGNIZED / layout unresolved'):'EXACT CRC recipe'}${spec.qsound?' · QSound':''}${spec.bootlegVariant?' · '+spec.bootlegVariant:''}${spec.splitBootleg?' · split bootleg driver':''}<br>${romFolderFiles.length?'Folder pool '+romFolderFiles.length+' ZIP · ':''}Reset SSP $${hex(sp,8)} · PC $${hex(pc,8)}`;$('#gameTitle').textContent=spec.title;$('#vectors').textContent=`SSP $${hex(sp,8)}   RESET PC $${hex(pc,8)}`;disasmPC=pc&0xffffff}
+ let rows='<table><tr><th>file</th><th>size</th><th>CRC</th></tr>'+pkg.map(f=>`<tr><td>${f.name}</td><td>${fmt(f.data.length)}</td><td class="${f.crc===f.calc?'good':'bad'}">${hex(f.calc,8)}</td></tr>`).join('')+'</table>';$('#romTable').innerHTML=rows;
+ drawGfx();drawMain();showDisasm()
+}
+function gfxLayout(size,set8=0){
+ const planes=[24,16,8,0];
+ if(size===8)return {inc:64*8,planes,x:Array.from({length:8},(_,i)=>i+(set8?32:0)),y:Array.from({length:8},(_,i)=>i*64)};
+ if(size===16)return {inc:4*16*16,planes,x:Array.from({length:16},(_,i)=>i<8?i:32+i-8),y:Array.from({length:16},(_,i)=>i*64)};
+ return {inc:4*32*32,planes,x:Array.from({length:32},(_,i)=>((i>>3)*32)+(i&7)),y:Array.from({length:32},(_,i)=>i*128)}
+}
+function cpsPixel(g,tile,x,y,size,set8=0){
+ // Exact MAME gfx_element semantics:
+ // readbit(src,n) = src[n/8] & (0x80 >> (n%8))  [MSB first]
+ // plane 0..3 contribute bits 3..0 respectively.
+ const L=gfxLayout(size,set8),bitBase=tile*L.inc+L.y[y]+L.x[x];let v=0;
+ for(let p=0;p<4;p++){
+  const bit=bitBase+L.planes[p],bi=bit>>>3;if(bi>=g.length)continue;
+  if(g[bi]&(0x80>>>(bit&7)))v|=1<<(3-p)
+ }
+ return v
+}
+function maxTilesFor(size,g){return Math.floor((g.length*8)/gfxLayout(size).inc)}
+function drawGfx(){
+ let c=$('#gfx'),cx=c.getContext('2d'),g=regions.gfx;
+ if(!g){cx.fillStyle='#050505';cx.fillRect(0,0,c.width,c.height);cx.fillStyle='#777';cx.font='14px ui-monospace,monospace';cx.fillText('Carica un ROM set CPS-1 per vedere tiles/sprites',18,28);return}
+ let ts=+$('select#tileSize').value,cols=Math.floor(c.width/ts),rows=Math.floor(c.height/ts),per=cols*rows,first=gfxPage*per,total=maxTilesFor(ts,g);
+ if(first>=total){gfxPage=0;first=0}
+ let im=cx.createImageData(c.width,c.height);
+ // Index 15 is deliberately dark instead of white: raw CPS graphics often use it heavily,
+ // and this makes shapes visible even without the game's runtime palette.
+ const pal=[[5,5,5],[34,52,94],[48,97,157],[68,144,194],[62,145,82],[94,183,107],[169,176,65],[204,139,55],[153,64,58],[197,81,75],[124,65,151],[174,93,181],[73,82,92],[116,126,137],[164,176,184],[218,224,228]];
+ for(let t=0;t<per;t++){
+  const tile=first+t;if(tile>=total)break;const tx=(t%cols)*ts,ty=((t/cols)|0)*ts;
+  for(let y=0;y<ts;y++)for(let x=0;x<ts;x++){
+   const v=cpsPixel(g,tile,x,y,ts),r=pal[v],q=((ty+y)*c.width+tx+x)*4;
+   im.data[q]=r[0];im.data[q+1]=r[1];im.data[q+2]=r[2];im.data[q+3]=255
+  }
+ }
+ cx.putImageData(im,0,0);
+ $('#gfxInfo').textContent=`${ts}×${ts} · pagina ${gfxPage} · tile ${first}…${Math.min(total-1,first+per-1)} / ${total}`
+}
+function drawMain(){if(machine)renderCPS();else drawMainPlaceholder()}
+function disOne(pc){
+ let op=rd16(pc),n=2,s='DC.W $'+hex(op,4);
+ if(op===0x4e75)s='RTS';
+ else if(op===0x4e71)s='NOP';
+ else if(op===0x4e70)s='RESET';
+ else if(op===0x4e73)s='RTE';
+ else if((op&0xff00)===0x6000){let cc=(op>>8)&15,d=op&255;if(d===0){d=(rd16(pc+2)<<16)>>16;n=4}else d=(d<<24)>>24;let nm=['BRA','BSR','BHI','BLS','BCC','BCS','BNE','BEQ','BVC','BVS','BPL','BMI','BGE','BLT','BGT','BLE'][cc];s=nm+' $'+hex((pc+n+d)&0xffffff,6)}
+ else if((op&0xf100)===0x7000)s='MOVEQ #'+((op&255)<<24>>24)+',D'+((op>>9)&7);
+ else if((op&0xffc0)===0x4ec0)s='JMP <ea>';
+ else if((op&0xffc0)===0x4e80)s='JSR <ea>';
+ else if((op&0xf1c0)===0x41c0)s='LEA <ea>,A'+((op>>9)&7);
+ return {n,s,op}
+}
+function showDisasm(){
+ if(!regions.main)return;let pc=disasmPC&0xffffff,a=[];for(let i=0;i<90&&pc<regions.main.length;i++){let d=disOne(pc);a.push(hex(pc,6)+'  '+hex(d.op,4)+'  '+d.s);pc+=d.n}$('#disasm').textContent=a.join('\n')
+}
+async function loadSet(f){
+ try{
+  currentZipName=f.name;$('#status').textContent='Lettura ZIP…';pkg=await readZip(f);log(`ZIP ${f.name}: ${pkg.length} file`);
+  spec=detect(f.name);if(!spec)throw Error('Archivio non riconosciuto come romset MAME CPS-1. Mantieni il nome MAME del file .zip.');
+  if(spec.generic)await mergeFamilyParent(spec);else await hydrateSpecFromFolder(spec);
+  regions.main=buildMain(spec);regions.gfx=buildGfx(spec);let s=buildSound(spec);regions.z80=s.z80;regions.oki=s.oki;
+  const prof=resolveProfile(spec),mode=spec.generic?(spec.layoutSafe?'FAMILY BOOT':'RECOGNIZED'):'EXACT';
+  $('#status').innerHTML=`<span class="good">MAME CPS-1</span> · ${spec.title} · ${pkg.length} ROM · ${mode} · reset PC $${hex(rd32(4),8)}`;
+  log(`MAME registry: ${spec.romset||spec.id} · family=${spec.family||spec.id} · ${mode}`);
+  log(`main=${fmt(regions.main.length)} gfx=${fmt(regions.gfx.length)} z80=${fmt(regions.z80?.length)} oki=${fmt(regions.oki?.length)} · ${prof?.name||'profile ?'}`);
+  if(spec.generic)log(`Family layout: ${spec.layoutNote||'—'} · GFX ${spec.gfxHeuristic||'—'} · sound ${spec.soundHeuristic||'—'}${spec.special?' · HARDWARE SPECIALE':''}`);
+  log('GFX decoder: MAME MSB-first · planes 8/4/2/1');
+  log('VIDEO 2.8: frame-coherent VBlank snapshot · 1-frame OBJ delay · CPS-B pen priority masks');if(spec.qsound)log('CPS1.5 QSound: shared RAM F18000/F1E000 · Z80 8MHz · Kabuki opcode/data decode · IRQ 250Hz');
+  if(spec.crcs)log('CRC recipe: identificazione indipendente dai nomi interni del ZIP');
+  log('CPS-B read semantics: MAME 0xFFFF default · C-board extra inputs idle-high');
+  if(spec.romset==='kodr1')log('KOD rev1: CRC recipe attivo (nomi legacy/moderni indipendenti)');
+  if(spec.id==='ghouls')log('GFX Ghouls: DM620 lane order v2 · RAW CPS-1 decoder');
+  gfxPage=0;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelector('[data-page="runtime"]').classList.add('active');$('#page-runtime').classList.add('active');
+  updateUI();
+  if(spec.generic&&!spec.layoutSafe){
+    $('#coreState').className='status warn';$('#coreState').textContent=`Romset ${spec.romset} riconosciuto, ma reset vector 68000 non valido (${spec.layoutNote}).`;
+    drawMainPlaceholder()
+  }else buildRuntime()
+ }catch(e){$('#status').innerHTML='<span class="bad">'+e.message+'</span>';log('ERRORE: '+e.stack)}
+}
+$('#zipFile').onchange=e=>e.target.files[0]&&loadSet(e.target.files[0]);
+$('#folderPick').onchange=async e=>{try{await indexRomFolder(e.target.files)}catch(err){$('#status').innerHTML='<span class="bad">'+err.message+'</span>';log('FOLDER ERROR: '+err.stack)}};
+$('#folderLoad').onclick=()=>{const i=+$('#folderSet').value,f=romFolderFiles[i];if(f)loadSet(f)};
+$('#folderSet').ondblclick=()=>$('#folderLoad').click();
+$('#powerBtn').onclick=()=>{if(spec?.generic&&!spec.layoutSafe){log('POWER bloccato: reset vector 68000 non valido per '+spec.romset);return}ensureAudio();buildRuntime();if(audioEngine)audioEngine.bind(machine?.soundBus)};
+$('#runBtn').onclick=()=>{if(spec?.generic&&!spec.layoutSafe){log('RUN bloccato: reset vector 68000 non valido');return}ensureAudio();toggleRun()};
+$('#audioBtn').onclick=()=>toggleAudio();
+$('#turboBtn').onclick=()=>{if(spec?.generic&&!spec.layoutSafe){log('TURBO bloccato: reset vector 68000 non valido');return}turboBoot()};
+$('#frameBtn').onclick=()=>{if(!machine)buildRuntime();if(machine){running=false;runOneFrame();renderCPS();updateRuntimeUI(true)}};
+$('#stepBtn').onclick=()=>{if(!machine)buildRuntime();if(machine&&!machine.cpu.halted){running=false;machine.cpu.step();renderCPS();updateRuntimeUI(true)}};
+$('#resetBtn').onclick=()=>{if(machine){running=false;machine.bus.work.fill(0);machine.bus.gfx.fill(0);machine.bus.a.fill(0);machine.bus.b.fill(0);machine.bus.palette.fill(0);machine.bus.a[0]=0x9200;machine.bus.a[1]=0x9000;machine.bus.a[2]=0x9040;machine.bus.a[3]=0x9080;machine.bus.a[4]=0x9100;machine.bus.resetTiming();machine.cpu.reset();machine.z80?.reset();if(machine.soundBus)machine.soundBus.reset();machine.z80Target=0;machine.diag.pos=machine.diag.count=machine.diag.loopFrames=0;machine.diag.lastSig='';tileCache.clear();applyGameMode();renderCPS();updateRuntimeUI(true);log('RESET COMPLETO')}};
+$('#fullBtn').onclick=()=>$('#screen').requestFullscreen?.();
+$('#prevGfx').onclick=()=>{gfxPage=Math.max(0,gfxPage-1);drawGfx()};$('#nextGfx').onclick=()=>{gfxPage++;drawGfx()};$('#tileSize').onchange=()=>{gfxPage=0;drawGfx()};
+$('#disasmHere').onclick=()=>{if(machine)disasmPC=machine.cpu.PC&0xffffff;showDisasm()};
+$('#disasmReset').onclick=()=>{disasmPC=rd32(4)&0xffffff;showDisasm()};$('#disasmPrev').onclick=()=>{disasmPC=Math.max(0,disasmPC-0x100);showDisasm()};$('#disasmNext').onclick=()=>{disasmPC+=0x100;showDisasm()};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#page-'+b.dataset.page).classList.add('active')});
+const KEYMAP={
+ ArrowRight:'p1:0',ArrowLeft:'p1:1',ArrowDown:'p1:2',ArrowUp:'p1:3',
+ KeyZ:'p1:4',KeyX:'p1:5',KeyC:'p1:6',
+ KeyL:'p2:0',KeyJ:'p2:1',KeyK:'p2:2',KeyI:'p2:3',
+ KeyN:'p2:4',KeyM:'p2:5',Comma:'p2:6',
+ Digit5:'sys:0',Digit6:'sys:1',F2:'sys:2',Digit1:'sys:4',Digit2:'sys:5'
+};
+const heldKeys=new Set();
+addEventListener('keydown',e=>{
+ const t=KEYMAP[e.code];if(!t||!machine||heldKeys.has(e.code))return;
+ e.preventDefault();heldKeys.add(e.code);setInputToken(t,true);flashVirtual(t,true)
+});
+addEventListener('keyup',e=>{
+ const t=KEYMAP[e.code];if(!t||!machine)return;
+ e.preventDefault();heldKeys.delete(e.code);setInputToken(t,false);flashVirtual(t,false)
+});
+function flashVirtual(token,on){document.querySelectorAll(`[data-input="${token}"]`).forEach(b=>b.classList.toggle('pressed',on))}
+document.querySelectorAll('[data-input]').forEach(b=>{
+ const token=b.dataset.input,pulse=b.dataset.pulse==='1';
+ b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);b.classList.add('pressed');pulse?pulseToken(token):setInputToken(token,true)});
+ const release=e=>{b.classList.remove('pressed');if(!pulse)setInputToken(token,false)};
+ b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('pointerleave',e=>{if(e.buttons)release(e)})
+});
+$('#gameMode').onchange=()=>{applyGameMode();log('DSW C · Game Mode = '+$('#gameMode').value.toUpperCase())};
+$('#videoMode').onchange=()=>{
+ const w=$('#screenWrap'),m=$('#videoMode').value;w.classList.toggle('scanlines',m==='scan');w.classList.toggle('crt',m==='crt')
+};
+$('#speedSel').onchange=()=>runtimeSpeed=+$('select#speedSel').value||1;
+$('#renderSel').onchange=()=>renderModulo=Math.max(1,+$('#renderSel').value||2);
+$('#monitorBtn').onclick=()=>{
+ runtimeMonitor=!runtimeMonitor;
+ $('#monitorBtn').textContent='Monitor: '+(runtimeMonitor?'ON':'OFF');
+ if(machine){
+  if(runtimeMonitor){
+   machine.bus.ioReadHits=Object.create(null);machine.bus.ioWriteHits=Object.create(null);
+   machine.diag.lastSig='';machine.diag.loopFrames=0;machine.diag.reported=false;machine.diag.loopText='monitor attivo';
+   updateRuntimeUI(true)
+  }else{
+   $('#diagState').textContent='Monitor runtime OFF: diagnostica sospesa per massime prestazioni.';
+  }
+ }
+};
+$('#diagClear').onclick=()=>{if(machine){machine.bus.ioReadHits=Object.create(null);machine.bus.ioWriteHits=Object.create(null);machine.diag.lastSig='';machine.diag.loopFrames=0;machine.diag.reported=false;machine.diag.loopText='diagnostica azzerata';updateRuntimeUI(true)}};
+drawMain();
+
+</script>
+
+<script>
+
+(function(){
+'use strict';
+var JSD_SYS='cps1';
+var m=(location.hash||'').match(/(?:^#|&)jsdlaunch=([^&]+)/),JSD_TOKEN=m?decodeURIComponent(m[1]):'',JSD_PARENT=null;
+function postTo(t,type,extra){try{if(t)t.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+function post(type,extra){postTo(JSD_PARENT||window.opener,type,extra)}
+function fileOf(x){return new File([x.bytes],x.name||'game.bin',{type:'application/octet-stream',lastModified:Date.now()})}
+function role(p,r){return (p.files||[]).filter(x=>x.role===r).map(fileOf)}
+function setFiles(sel,fs){var el=document.querySelector(sel);if(!el||!fs.length)return null;var dt=new DataTransfer();fs.forEach(f=>dt.items.add(f));el.files=dt.files;el.dispatchEvent(new Event('change',{bubbles:true}));return el}
+function wait(test,ms,msg){return new Promise((ok,no)=>{var t=Date.now();(function p(){try{if(test())return ok()}catch(_){}if(Date.now()-t>ms)return no(new Error(msg||'caricamento non completato'));setTimeout(p,60)})()})}
+async function inject(p){var games=role(p,'game'),g=games[0];if(!g)throw new Error('ROM set CPS-1 assente');setFiles('#zipFile',[g]);await wait(()=>{var x=document.querySelector('#gameTitle');return x&&x.textContent.trim()&&x.textContent.trim()!=='Nessun ROM set'},12000,'set CPS-1 non caricato');document.querySelector('#powerBtn')?.click();await new Promise(r=>setTimeout(r,120));var rs=document.querySelector('#runState');if(!rs||!/ESEGUI|RUN/i.test(rs.textContent))document.querySelector('#runBtn')?.click();;post('jsd-launch-accepted',{files:(p.files||[]).length})}
+window.addEventListener('message',function(ev){if(!JSD_TOKEN||!ev.data||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;if(ev.data.type==='jsd-probe'){JSD_PARENT=ev.source||JSD_PARENT;postTo(JSD_PARENT,'jsd-emulator-ready');return}if(ev.data.type!=='jsd-launch')return;JSD_PARENT=ev.source||JSD_PARENT;inject(ev.data).catch(e=>post('jsd-launch-error',{error:e&&e.message?e.message:String(e)}))});
+})();
+
+</script>
+</body>
+</html>

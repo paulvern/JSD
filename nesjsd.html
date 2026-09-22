@@ -87,13 +87,13 @@ const NES_PALETTE=[
 class Cartridge{
  constructor(bytes,name='game.nes'){
   if(bytes.length<16||bytes[0]!==0x4e||bytes[1]!==0x45||bytes[2]!==0x53||bytes[3]!==0x1a)throw Error('Header iNES non valido');
-  this.raw=bytes;this.name=name;this.prgBanks=bytes[4];this.chrBanks=bytes[5];this.flags6=bytes[6];this.flags7=bytes[7];this.nes2=(this.flags7&0x0c)===0x08;this.mapperId=(this.flags6>>4)|(this.flags7&0xf0)|(this.nes2?((bytes[8]&0x0f)<<8):0);this.submapper=this.nes2?(bytes[8]>>4):0;this.battery=!!(this.flags6&2);this.trainer=!!(this.flags6&4);this.fourScreen=!!(this.flags6&8);this.baseMirror=(this.flags6&1)?'vertical':'horizontal';this.sramDirty=false;
+  this.raw=bytes;this.name=name;this.prgBanks=bytes[4];this.chrBanks=bytes[5];this.flags6=bytes[6];this.flags7=bytes[7];this.nes2=(this.flags7&0x0c)===0x08;this.mapperId=(this.flags6>>4)|(this.flags7&0xf0)|(this.nes2?((bytes[8]&0x0f)<<8):0);this.submapper=this.nes2?(bytes[8]>>4):0;this.battery=!!(this.flags6&2);this.trainer=!!(this.flags6&4);this.fourScreen=!!(this.flags6&8);this.baseMirror=(this.flags6&1)?'vertical':'horizontal';
   const size2=(lsb,msn,unit)=>msn===0x0f?(1<<(lsb>>2))*(((lsb&3)<<1)+1):(((msn<<8)|lsb)*unit);
   let off=16+(this.trainer?512:0),prgSize=this.nes2?size2(bytes[4],bytes[9]&15,16384):this.prgBanks*16384,chrSize=this.nes2?size2(bytes[5],bytes[9]>>4,8192):this.chrBanks*8192;if(off+prgSize>bytes.length)throw Error('ROM PRG troncata');this.prg=bytes.slice(off,off+prgSize);off+=prgSize;if(off+chrSize>bytes.length)throw Error('ROM CHR troncata');this.chrRam=!chrSize;this.chr=chrSize?bytes.slice(off,off+chrSize):new Uint8Array(8192);this.prgRam=new Uint8Array(8192);this.mapper=createMapper(this);this.title=name.replace(/\.(nes|zip)$/i,'');
  }
  mirror(){return this.mapper.mirroring?.()||this.baseMirror}
  cpuRead(a){if(a>=0x6000&&a<0x8000)return this.prgRam[a-0x6000];return this.mapper.cpuRead(a)}
- cpuWrite(a,v){if(a>=0x6000&&a<0x8000){let i=a-0x6000;if(this.prgRam[i]!==v){this.prgRam[i]=v;this.sramDirty=true}else this.prgRam[i]=v;return}this.mapper.cpuWrite(a,v)}
+ cpuWrite(a,v){if(a>=0x6000&&a<0x8000){this.prgRam[a-0x6000]=v;return}this.mapper.cpuWrite(a,v)}
  ppuRead(a){return this.mapper.ppuRead(a)} ppuWrite(a,v){this.mapper.ppuWrite(a,v)}
  state(){return{prgRam:bytesToB64(this.prgRam),chrRam:this.chrRam?bytesToB64(this.chr):null,mapper:this.mapper.state?.()||{}}}
  loadState(s){if(s?.prgRam)this.prgRam.set(b64ToBytes(s.prgRam).subarray(0,this.prgRam.length));if(this.chrRam&&s?.chrRam)this.chr.set(b64ToBytes(s.chrRam).subarray(0,this.chr.length));this.mapper.loadState?.(s?.mapper||{})}
@@ -212,12 +212,10 @@ class CPU{
 
 class NES{
  constructor(canvas){this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.image=this.ctx.createImageData(256,240);this.cart=null;this.bus=null;this.ppu=null;this.apu=null;this.cpu=null;this.powered=false;this.paused=false;this.region='ntsc';this.lastFrame=0;this.fps=0}
- load(bytes,name){this.cart=new Cartridge(bytes,name);this.bus=new Bus(this);this.ppu=new PPU(this);this.apu=new APU(this);this.cpu=new CPU(this);this.ppu.render();this.powered=false;this.paused=false;this.lastFrame=this.ppu.frame;try{let s=localStorage.getItem(this.sramKey());if(!s)s=localStorage.getItem('nesjsd_sram_'+this.cart.title);if(s){this.cart.prgRam.set(b64ToBytes(s).subarray(0,8192));this.cart.sramDirty=false}}catch(_){}log(`ROM: ${name} · mapper ${this.cart.mapperId} ${MAPPER_NAMES[this.cart.mapperId]||''}`)}
- sramKey(){if(!this.cart)return '';let h=2166136261>>>0,b=this.cart.raw;for(let i=0;i<b.length;i+=Math.max(1,Math.floor(b.length/4096)))h=Math.imul(h^b[i],16777619)>>>0;return 'nesjsd:sram:'+h.toString(16).padStart(8,'0')+':'+b.length}
- persistSRAM(force=false){if(!this.cart||(!force&&!this.cart.sramDirty))return;try{const k=this.sramKey();localStorage.setItem(k,bytesToB64(this.cart.prgRam));localStorage.setItem('jsd-save-meta:'+k,JSON.stringify({system:'nes',name:this.cart.title||'NES game',format:'sav',size:this.cart.prgRam.length,updated:Date.now()}));this.cart.sramDirty=false}catch(_){}}
+ load(bytes,name){this.cart=new Cartridge(bytes,name);this.bus=new Bus(this);this.ppu=new PPU(this);this.apu=new APU(this);this.cpu=new CPU(this);this.ppu.render();this.powered=false;this.paused=false;this.lastFrame=this.ppu.frame;try{let s=localStorage.getItem('nesjsd_sram_'+this.cart.title);if(s)this.cart.prgRam.set(b64ToBytes(s).subarray(0,8192))}catch(_){}log(`ROM: ${name} · mapper ${this.cart.mapperId} ${MAPPER_NAMES[this.cart.mapperId]||''}`)}
  reset(){if(!this.cart)return;this.ppu.reset();this.apu.reg.fill(0);this.cpu.reset();log('RESET')}
  stepInstruction(){if(!this.cart)return;let c=this.cpu.step();this.ppu.tick(c*3);this.apu.step(c)}
- runFrame(){if(!this.cart||!this.powered||this.paused)return;this.region=$('#region').value;let target=this.ppu.frame+1,guard=0;while(this.ppu.frame<target&&guard++<200000){this.stepInstruction()}if(this.cart.sramDirty&&(this.ppu.frame%120===0))this.persistSRAM();if(guard>=200000){this.paused=true;log('Guard frame: possibile loop/timing anomalo')}}
+ runFrame(){if(!this.cart||!this.powered||this.paused)return;this.region=$('#region').value;let target=this.ppu.frame+1,guard=0;while(this.ppu.frame<target&&guard++<200000){this.stepInstruction()}if(guard>=200000){this.paused=true;log('Guard frame: possibile loop/timing anomalo')}}
  saveState(){return{version:1,title:this.cart.title,mapper:this.cart.mapperId,region:this.region,cpu:this.cpu.state(),bus:this.bus.state(),ppu:this.ppu.state(),apu:this.apu.state(),cart:this.cart.state()}}
  loadState(s){if(!this.cart||s.mapper!==this.cart.mapperId)throw Error('Stato non compatibile');this.region=s.region||'ntsc';this.bus.loadState(s.bus);this.ppu.loadState(s.ppu);this.apu.loadState(s.apu);this.cart.loadState(s.cart);this.cpu.loadState(s.cpu)}
 }
@@ -294,7 +292,7 @@ $('#romFile').onchange=e=>e.target.files[0]&&loadFile(e.target.files[0]);
 $('#archiveFilter').oninput=renderArchiveLibrary;$('#archiveLoad').onclick=()=>{let i=+$('#archiveSelect').value;if(Number.isInteger(i)&&archiveVisible[i])loadArchiveItem(archiveVisible[i])};$('#archiveSelect').ondblclick=()=>$('#archiveLoad').click();
 const drop=$('#romDrop');['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop.addEventListener('drop',e=>e.dataTransfer.files[0]&&loadFile(e.dataTransfer.files[0]));
 
-function power(){if(!nes.cart)return osd(lang==='it'?'Carica una ROM':'Load a ROM');nes.powered=!nes.powered;nes.paused=false;if(nes.powered){nes.reset();log('POWER ON')}else{nes.persistSRAM(true);log('POWER OFF')}updateUI()}
+function power(){if(!nes.cart)return osd(lang==='it'?'Carica una ROM':'Load a ROM');nes.powered=!nes.powered;nes.paused=false;if(nes.powered){nes.reset();log('POWER ON')}else{try{localStorage.setItem('nesjsd_sram_'+nes.cart.title,bytesToB64(nes.cart.prgRam))}catch(_){}log('POWER OFF')}updateUI()}
 $('#powerBtn').onclick=power;$('#resetBtn').onclick=()=>{if(nes.cart){nes.reset();updateUI();osd('RESET')}};$('#pauseBtn').onclick=()=>{nes.paused=!nes.paused;updateUI()};$('#stepBtn').onclick=()=>{if(nes.cart){nes.stepInstruction();updateUI()}};
 $('#audioBtn').onclick=async()=>{if(!nes.cart)return;if(nes.apu.enabled)nes.apu.disable();else await nes.apu.enable();updateUI()};$('#fullBtn').onclick=()=>{if(!document.fullscreenElement)$('#screenShell').requestFullscreen();else document.exitFullscreen()};$('#graphics').onchange=()=>{$('#screenWrap').className='screen-wrap fx-'+$('#graphics').value};
 $$('.tabbtn').forEach(b=>b.onclick=()=>{$$('.tabbtn').forEach(x=>x.classList.remove('active'));$$('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.tab).classList.add('active');if(b.dataset.tab==='resources')renderResources();if(b.dataset.tab==='memory')refreshMemory();if(b.dataset.tab==='audio')refreshAudio()});
@@ -319,44 +317,85 @@ function modeLen(m){return['IMP','ACC'].includes(m)?1:['IMM','ZP','ZPX','ZPY','I
 function disassemble(){if(!nes.cart)return;let pc=parseInt($('#disStart').value,16)||0x8000,count=clamp(+$('#disCount').value||300,1,5000),lines=[];for(let i=0;i<count;i++){let op=nes.bus.peek(pc),d=OPS[op]||{mn:'.DB',mode:'IMM'},len=OPS[op]?modeLen(d.mode):1,bs=[];for(let j=0;j<len;j++)bs.push(nes.bus.peek((pc+j)&0xffff).toString(16).padStart(2,'0').toUpperCase());let operand=OPS[op]?fmtOperand(pc,d):hex(op);lines.push(`${pc.toString(16).padStart(4,'0').toUpperCase()}  ${bs.join(' ').padEnd(8)}  ${d.mn} ${operand}`.trimEnd());pc=(pc+len)&0xffff}$('#disOut').textContent=lines.join('\n')}$('#disRun').onclick=disassemble;$('#disFromPc').onclick=()=>{$('#disStart').value=nes.cpu.PC.toString(16).padStart(4,'0').toUpperCase();disassemble()};$('#disExport').onclick=()=>download('nesjsd_disassembly.asm',$('#disOut').textContent,'text/plain');
 
 function refreshAudio(){if(!nes.apu)return;$('#apuStatus').textContent=nes.apu.enabled?'ON':'OFF';$('#sampleRate').textContent=nes.apu.ctx?.sampleRate||nes.apu.sampleRate;let a=nes.apu.reg,lines=[];for(let i=0;i<a.length;i+=8)lines.push(hex(0x4000+i,4).slice(1)+': '+[...a.slice(i,i+8)].map(x=>x.toString(16).padStart(2,'0').toUpperCase()).join(' '));$('#apuRegs').textContent=lines.join('\n')}
-$('#exportState').onclick=()=>{if(!nes.cart)return;download(`${nes.cart.title}.nesstate.json`,JSON.stringify(nes.saveState()),'application/json')};$('#importState').onchange=async e=>{try{let s=JSON.parse(await e.target.files[0].text());nes.loadState(s);updateUI();osd('State loaded')}catch(err){log('STATE ERROR: '+err.message)}};$('#exportSram').onclick=()=>nes.cart&&download(`${nes.cart.title}.sav`,nes.cart.prgRam);$('#importSram').onchange=async e=>{if(!nes.cart)return;let u=new Uint8Array(await e.target.files[0].arrayBuffer());nes.cart.prgRam.set(u.subarray(0,nes.cart.prgRam.length));nes.cart.sramDirty=true;nes.persistSRAM(true);osd('SRAM loaded · salvata nel browser')};
+$('#exportState').onclick=()=>{if(!nes.cart)return;download(`${nes.cart.title}.nesstate.json`,JSON.stringify(nes.saveState()),'application/json')};$('#importState').onchange=async e=>{try{let s=JSON.parse(await e.target.files[0].text());nes.loadState(s);updateUI();osd('State loaded')}catch(err){log('STATE ERROR: '+err.message)}};$('#exportSram').onclick=()=>nes.cart&&download(`${nes.cart.title}.sav`,nes.cart.prgRam);$('#importSram').onchange=async e=>{if(!nes.cart)return;let u=new Uint8Array(await e.target.files[0].arrayBuffer());nes.cart.prgRam.set(u.subarray(0,nes.cart.prgRam.length));osd('SRAM loaded')};
 
-window.addEventListener('beforeunload',()=>nes.persistSRAM(true));
+window.addEventListener('message',async e=>{const p=e.data;if(!p||p.type!=='emulator-autoload'||p.system!=='nes')return;try{let f=(p.rom||[])[0];if(!f)return;if(f.data){let u=f.data instanceof ArrayBuffer?new Uint8Array(f.data):Array.isArray(f.data)?new Uint8Array(f.data):b64ToBytes(f.data);nes.load(u,f.name||'autoload.nes');updateUI();parent.postMessage({type:'emulator-autoload-status',system:'nes',ok:true,loaded:[f.name]},'*')}}catch(err){parent.postMessage({type:'emulator-autoload-status',system:'nes',ok:false,note:err.message},'*')}});try{parent.postMessage({type:'emulator-ready',system:'nes'},'*')}catch(_){}
 setLang('it');updateUI();
 </script>
 
-<!-- JSD Hub optional launch receiver: standalone operation does not depend on it. -->
 <script>
+
 (function(){
   'use strict';
   var JSD_SYS='nes';
   var m=(location.hash||'').match(/(?:^#|&)jsdlaunch=([^&]+)/);
   var JSD_TOKEN=m?decodeURIComponent(m[1]):'';
-  function jsdPost(type,extra){try{if(window.opener)window.opener.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
-  function jsdFile(x){return new File([x.bytes],x.name||'game.bin',{type:'application/octet-stream',lastModified:Date.now()})}
+  var JSD_PARENT=null;
+  function jsdPostTo(target,type,extra){try{if(target)target.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+  function jsdPost(type,extra){jsdPostTo(JSD_PARENT||window.opener,type,extra)}
+  function jsdFile(x){return new File([x.bytes],x.name||'game.nes',{type:'application/octet-stream',lastModified:Date.now()})}
   function jsdRole(p,r){return (p.files||[]).filter(function(x){return x.role===r})}
-  function jsdSet(id,files,fire){var el=document.querySelector(id);if(!el||!files.length)return null;var dt=new DataTransfer();files.forEach(function(f){dt.items.add(f)});el.files=dt.files;if(fire!==false)el.dispatchEvent(new Event('change',{bubbles:true}));return el}
-  function jsdSleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
   async function jsdInject(p){
-    var games=jsdRole(p,'game').map(jsdFile),bios=jsdRole(p,'bios').map(jsdFile),execs=jsdRole(p,'exec').map(jsdFile),groms=jsdRole(p,'grom').map(jsdFile);
-    var game=games[0]||null;
-    if(JSD_SYS==='gameboy'){jsdSet('#romFile',games);await jsdSleep(450);var b=document.querySelector('#powerBtn');if(b)b.click()}
-    else if(JSD_SYS==='sega'){if(bios[0]){var bi=jsdSet('#biosFile',[bios[0]],false);await fileLoad(bi,'bios')}if(game){var ri=jsdSet('#romFile',[game],false);await fileLoad(ri,'rom')}}
-    else if(JSD_SYS==='megadrive'){if(game){await loadFile(game);machine.power(true);refreshUI()}}
-    else if(JSD_SYS==='neogeo'){if(bios.length)await loadPackage(bios,'bios');if(games.length)await loadPackage(games,'game');ngPower();if(typeof ngToggleRun==='function')ngToggleRun()}
-    else if(JSD_SYS==='nes'){if(game){await loadFile(game);if(!nes.powered)power()}}
-    else if(JSD_SYS==='snes'){if(game){jsdSet('#romFile',[game],false);await loadSelected();await jsdSleep(80);if(emu&&emu.cart&&!emu.running)document.querySelector('#runBtn')?.click()}}
-    else if(JSD_SYS==='pce'){if(game)await loadROM(game)}
-    else if(JSD_SYS==='coleco'){if(bios[0]){machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);document.querySelector('#biosInfo').textContent=bios[0].name}if(game){machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);document.querySelector('#romInfo').textContent=game.name}if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
-    else if(JSD_SYS==='spectrum'){if(bios[0])machine.setROM(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game){var u=new Uint8Array(await game.arrayBuffer()),x=(game.name.split('.').pop()||'').toLowerCase();if(x==='sna'||x==='z80')machine.loadSnapshot(x==='sna'?parseSNA(u):parseZ80(u));else if(x==='tap'){machine.tape=new Tape(parseTAP(u));machine.autoLoad()}else if(x==='scr'){machine.reset();machine.paused=true;machine.mem.set(u,0x4000);machine.drawFull()}document.querySelector('#gameName').textContent=game.name;render();refresh()}}
-    else if(JSD_SYS==='msx1'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
-    else if(JSD_SYS==='intellivision'){if(execs[0])await loadFile('exec',execs[0]);if(groms[0])await loadFile('grom',groms[0]);if(game)await loadFile('cart',game);if(!state.power)boot();reset();if(state.paused)togglePause()}
-    else if(JSD_SYS==='vectrex'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.biosLoaded&&machine.cartLoaded){machine.reset();machine.running=true}machine.updateUI();renderMachineText()}
+    var games=jsdRole(p,'game').map(jsdFile),game=games[0]||null;
+    if(game){
+      await loadFile(game);
+      if(!nes||!nes.cart)throw new Error('ROM NES non caricata');
+      if(!nes.powered)power();
+    }
     jsdPost('jsd-launch-accepted',{files:(p.files||[]).length});
   }
-  var jsdReadyTimer=0;window.addEventListener('message',function(ev){if(!JSD_TOKEN||ev.source!==window.opener||!ev.data||ev.data.type!=='jsd-launch'||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;if(jsdReadyTimer)clearInterval(jsdReadyTimer);jsdInject(ev.data).catch(function(err){console.error(err);jsdPost('jsd-launch-error',{error:err&&err.message?err.message:String(err)})})});
-  function ready(){if(JSD_TOKEN)jsdPost('jsd-emulator-ready')}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();jsdReadyTimer=setInterval(ready,500);setTimeout(function(){if(jsdReadyTimer)clearInterval(jsdReadyTimer)},30000);
+  window.addEventListener('message',function(ev){
+    if(!JSD_TOKEN||!ev.data||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;
+    if(ev.data.type==='jsd-probe'){JSD_PARENT=ev.source||JSD_PARENT;jsdPostTo(JSD_PARENT,'jsd-emulator-ready');return}
+    if(ev.data.type!=='jsd-launch')return;
+    JSD_PARENT=ev.source||JSD_PARENT;
+    jsdInject(ev.data).catch(function(err){console.error(err);jsdPost('jsd-launch-error',{error:err&&err.message?err.message:String(err)})});
+  });
+  function ready(){if(JSD_TOKEN&&window.opener)jsdPostTo(window.opener,'jsd-emulator-ready')}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();
 })();
+
+</script>
+<script>
+
+(function(){
+'use strict';
+function persistCurrentNesSram(){
+  try{
+    if(!window.nes||!nes.cart||!nes.cart.prgRam)return;
+    var key='nesjsd_sram_'+nes.cart.title;
+    localStorage.setItem(key,bytesToB64(nes.cart.prgRam));
+    localStorage.setItem('jsd-save-meta:'+key,JSON.stringify({system:'nes',name:nes.cart.title||'NES game',format:'sav',size:nes.cart.prgRam.length,updated:Date.now()}));
+  }catch(_){}
+}
+window.addEventListener('pagehide',persistCurrentNesSram);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')persistCurrentNesSram()});
+})();
+
+</script>
+<script>
+
+(function(){
+'use strict';
+var JSD_SAVE_SYS='nes';
+function metaFor(k){try{return JSON.parse(localStorage.getItem('jsd-save-meta:'+k)||'null')||{}}catch(_){return{}}}
+function allowed(k){
+  if(!k||k.indexOf('jsd-save-meta:')===0||k.indexOf('jsd-save-bank:')===0||/_rtc$/.test(k))return false;
+  return /^nesjsd:sram:/i.test(k)||/^nesjsd_sram_/i.test(k);
+}
+function defaultMeta(k,v){var m=metaFor(k);if(m&&Object.keys(m).length)return m;var n=0;try{n=atob(String(v||'')).length}catch(_){}return{system:'nes',name:k.replace(/^nesjsd_sram_/i,''),format:'sav',size:n,updated:0}}
+function list(){var out=[];try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(!allowed(k))continue;var v=localStorage.getItem(k);if(!v)continue;out.push({key:k,data_base64:v,meta:defaultMeta(k,v),rtc:null})}}catch(_){}return out}
+function reply(ev,type,extra){try{if(ev.source)ev.source.postMessage(Object.assign({type:type,token:ev.data.token,system:JSD_SAVE_SYS},extra||{}),'*')}catch(_){}}
+window.addEventListener('message',function(ev){var d=ev.data;if(!d||!d.token||d.system!==JSD_SAVE_SYS)return;
+  if(d.type==='jsd-save-probe'){reply(ev,'jsd-save-list',{entries:list()});return}
+  if(d.type==='jsd-save-write'){
+    try{if(!allowed(d.key))throw new Error('save key non consentita');localStorage.setItem(d.key,String(d.data_base64||''));if(d.meta)localStorage.setItem('jsd-save-meta:'+d.key,JSON.stringify(d.meta));reply(ev,'jsd-save-write-ok',{key:d.key})}catch(e){reply(ev,'jsd-save-error',{error:e.message||String(e)})}return
+  }
+  if(d.type==='jsd-save-delete'){
+    try{if(!allowed(d.key))throw new Error('save key non consentita');localStorage.removeItem(d.key);localStorage.removeItem('jsd-save-meta:'+d.key);reply(ev,'jsd-save-delete-ok',{key:d.key})}catch(e){reply(ev,'jsd-save-error',{error:e.message||String(e)})}
+  }
+});
+})();
+
 </script>
 </body></html>

@@ -1,0 +1,34 @@
+{
+  "GB/GBC/GBA": {
+    "source": "gbjsd_gba_audio_auto_fixed.html",
+    "sha256": "6149c0592082d9d7dbf7c5bcaae320b996a8bfa95afb7dcc3ea52dd8b9c53451"
+  },
+  "CPS-1": {
+    "source": "cpsjsd_cps1_alpha28_video_sync_priority.html",
+    "sha256": "b4d8cb7b72da1c0516a7c0fff86f8ed89330b70da6fdf40b0023a2dc698f46de"
+  },
+  "SNES": {
+    "source": "snesjsd_alpha22c_STABLE.html",
+    "sha256": "d3393ffd40e31409b1370515d18fded5c634cf381ad78a2d72eb8d11068f87b2"
+  },
+  "C64": {
+    "source": "c64jsd_alpha65_rotational_layout (1).html",
+    "sha256": "b1e189c024bac630d02dcb190629b1b44974ef020e4976cbbd3f08009a7b89ef"
+  },
+  "System 16": {
+    "source": "Sega_Arcade_JSD_unified_alpha17_system16_audio.html",
+    "sha256": "1e4ea0700647ee57a4e004e204207093520ee433ec3aae3643b7cbfbc613dbc6"
+  },
+  "PC Engine": {
+    "source": "pcejsd_cdrom_alpha20.html",
+    "sha256": "2f851e634d9c244a9c5aa598a517f1506a7a2e673017ac94fb1876da33b230c4"
+  },
+  "NES": {
+    "source": "nesjsd_nested_zip(2).html",
+    "sha256": "999106077375c01d25fabff9e7bba44b6ade720c7437e73ee9aec8ba2eff03e4"
+  },
+  "Neo Geo": {
+    "source": "neogeojsd_v1425_dynamic_scb_trace.html",
+    "sha256": "b978ac7ba44fde3d79249b367977ab80cbc90f7953eb59a3b1e24230887bcaec"
+  }
+}

@@ -30,6 +30,10 @@ I formati raw `.bin/.rom` non hanno sempre una firma universale. In quei casi il
 | MSX1 | `.mx1`; firma `AB` a offset 0 o `$4000`; BIOS MSX + cartuccia raw | BIOS `.bin/.rom`; giochi `.bin .rom .mx1` |
 | Intellivision | `.int/.img`; formato Intellicart con firma `$A8`; coppia Executive 8 KiB + GROM 2 KiB + altra cartuccia raw | Executive/GROM/cart `.bin .rom .int .img` |
 | Vectrex | `.vec`; header testuale `g GCE`; BIOS Vectrex/GCE 8 KiB + altra cartuccia raw | cart `.bin .rom .vec .zip`; BIOS `.bin .rom .zip` |
+| Capcom CPS-1 | nome ZIP MAME appartenente alle famiglie CPS-1 gestite dal core (SF2, Final Fight, CPS-1 QSound, ecc.) | `.zip` MAME |
+| Commodore 64 | `.prg/.d64/.t64/.tap/.crt`; ZIP che contiene media C64 | BIOS ZIP C64/1541; `.prg .d64 .t64 .tap .crt .zip` |
+| DOS / IBM PC | ZIP con `.exe/.com/.bat`; `.hdd/.ima`; immagini boot DOS contestuali | floppy `.img .ima .bin .dsk`; gioco `.zip .img .ima .hdd .bin` |
+| SEGA System 16 / Arcade | nome set MAME System 16B oppure layout `.a5/.a7/.b1/.b8`, FD1094 `.key`, PAL `317-*.c2`, firme Altered Beast / Golden Axe | `.zip` MAME |
 
 ## ZIP
 
@@ -53,7 +57,7 @@ Viene scandito un livello di ZIP annidato. Per Neo Geo, il gioco resta classific
 
 ## Cache dell’analisi
 
-Il launcher salva in `localStorage` soltanto il **manifest dell’analisi**: percorsi, dimensioni, timestamp, firme rilevate, struttura ZIP e punteggi. I byte delle ROM non vengono duplicati in localStorage.
+Il launcher salva in `localStorage` soltanto il **manifest dell’analisi** (schema corrente v3): percorsi, dimensioni, timestamp, firme rilevate, struttura ZIP e punteggi. I byte delle ROM non vengono duplicati in localStorage.
 
 Quando l’utente riseleziona una cartella con la stessa firma (percorsi + dimensioni + `lastModified`), il manifest viene riutilizzato. Il pulsante **Refresh analisi** forza la scansione dei file e degli ZIP e sostituisce la cache.
 

@@ -62,3 +62,10 @@ Eventuali URL presenti nei testi/crediti/documentazione non costituiscono una di
 `index.html` usa solo API native del browser (`window.open`, `postMessage`, `ArrayBuffer`, `File`, `DataTransfer`, `localStorage`) per aprire una nuova scheda e consegnare ROM/BIOS al ricevitore opzionale incorporato nei singoli emulatori. Non introduce librerie esterne o dipendenze di rete.
 
 La cache della cartella memorizza solo metadati/manifest dell'analisi in `localStorage`; i byte delle ROM non vengono salvati lì.
+
+
+## v0.2.3
+
+I nuovi file `cps1jsd.html`, `c64jsd.html`, `dosjsd.html` e il nuovo `gbjsd.html` non contengono riferimenti runtime HTTP/HTTPS, CDN, `<script src>` o fogli di stile remoti. Il ricevitore JSD Hub è incorporato nell'HTML e usa solo API browser (`postMessage`, `File`, `DataTransfer`).
+
+- `system16jsd.html` è il Sega Arcade JSD unified alpha 0.17 integrato localmente; nessuna dipendenza runtime remota è necessaria.

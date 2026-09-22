@@ -1,0 +1,1660 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>C64JSD alpha 60 · TRUE 1541 · IEC recovery</title>
+<style>
+  :root{color-scheme:dark;--bg:#11141a;--panel:#1a1f29;--line:#303746;--txt:#e9edf6;--muted:#9ca8bc;--accent:#8fa8ff}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.35 system-ui,Segoe UI,Roboto,sans-serif}
+  header{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line);background:#151922}
+  .brand{font-weight:800;letter-spacing:.08em}.sub{color:var(--muted);font-size:12px}
+  main{display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:14px;padding:14px;height:calc(100vh - 56px)}
+  .stage,.side{background:var(--panel);border:1px solid var(--line);border-radius:12px;min-height:0}
+  .stage{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;overflow:auto}
+  .screen-wrap{background:#05060a;padding:12px;border-radius:8px;box-shadow:0 8px 30px #0008}
+  canvas{display:block;width:min(76vw,768px);height:auto;aspect-ratio:384/272;image-rendering:pixelated;background:#000;outline:1px solid #000}
+  .statusline{width:min(76vw,768px);display:flex;justify-content:space-between;gap:8px;margin-top:10px;color:var(--muted);font-size:12px}
+  .side{padding:12px;overflow:auto}.group{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px}.group h3{margin:0 0 9px;font-size:13px}
+  button,.filebtn,select{width:100%;padding:9px 10px;border-radius:8px;border:1px solid #3b4558;background:#232a37;color:var(--txt);cursor:pointer;margin:4px 0}
+  button:hover,.filebtn:hover{background:#2a3343}.primary{background:#304679;border-color:#516ca8}.danger{background:#552f38}
+  input[type=file]{display:none}.filebtn{display:block;text-align:center}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.led{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5b6370;margin-right:6px}.led.on{background:#74d680;box-shadow:0 0 8px #74d680}
+  #log{white-space:pre-wrap;background:#0d1016;border:1px solid #2a3140;border-radius:8px;padding:8px;min-height:130px;max-height:240px;overflow:auto;font:12px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;color:#b8c6dd}
+  .kbdhint{font-size:12px;color:var(--muted);margin-top:6px}.media-list{max-height:170px;overflow:auto;border:1px solid #2a3140;border-radius:8px;margin-top:7px}.media-row{padding:7px 8px;border-bottom:1px solid #2a3140;cursor:pointer;font:12px/1.25 ui-monospace,SFMono-Regular,Consolas,monospace}.media-row:last-child{border-bottom:0}.media-row:hover,.media-row.sel{background:#2a3343}.pill{display:inline-block;padding:1px 5px;border:1px solid #46516a;border-radius:999px;color:#b8c6dd;font-size:10px;margin-right:5px}
+
+  .mono{font:12px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace}.toolgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.toolgrid button{padding:7px 6px}
+  .debugbox{background:#0d1016;border:1px solid #2a3140;border-radius:8px;padding:7px;white-space:pre;overflow:auto;max-height:260px;color:#c9d5ea}
+  .regs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:6px 0}.reg{background:#111722;border:1px solid #2a3140;border-radius:6px;padding:5px;text-align:center;font:11px ui-monospace,SFMono-Regular,Consolas,monospace}
+  .inline{display:flex;gap:6px;align-items:center}.inline input,.inline select{min-width:0;flex:1;margin:4px 0;padding:7px;border:1px solid #3b4558;border-radius:7px;background:#111722;color:var(--txt)}
+  .smallbtn{width:auto;white-space:nowrap;padding:7px 9px}.tabs{display:flex;gap:4px;margin-bottom:7px}.tabs button{padding:6px;margin:0}.tabs button.on{background:#304679;border-color:#516ca8}
+  #gfxCanvas{width:100%;height:auto;max-height:320px;image-rendering:pixelated;background:#000;border:1px solid #2a3140;border-radius:6px}.hintline{font-size:11px;color:var(--muted);margin:4px 0}
+  #monitorInput{width:100%;padding:8px;border:1px solid #3b4558;border-radius:7px;background:#0d1016;color:#e9edf6;font:12px ui-monospace,SFMono-Regular,Consolas,monospace}
+  .tape-meter{height:9px;border:1px solid #3b4558;background:#0d1016;border-radius:999px;overflow:hidden;margin:7px 0}.tape-meter>div{height:100%;width:0;background:var(--accent);transition:width .12s linear}
+  @media(max-width:900px){main{grid-template-columns:1fr;height:auto}.side{min-height:400px}canvas,.statusline{width:100%}}
+</style>
+</head>
+<body>
+<header><div><div class="brand">C64JSD</div><div class="sub">Commodore 64 emulator core · alpha 65 · TRUE 1541 · rotational layout + JAM trace</div></div><div class="sub">6510 · VIC-II · TAP/T64 Datasette · 1541 · ZIP · Disassembler · Graphics extractor · Monitor</div></header>
+<main>
+<section class="stage">
+  <div class="screen-wrap"><canvas id="screen" width="384" height="272" tabindex="0"></canvas></div>
+  <div class="statusline"><span id="runState"><span class="led" id="runLed"></span>STOP</span><span id="cpuState">PC $0000 · 0 cyc</span></div>
+</section>
+<aside class="side">
+  <div class="group"><h3>Avvio C64</h3>
+    <label class="filebtn primary">BIOS .ZIP · C64 U3/U4/U5 + 1541 ROM<input id="biosZipFile" type="file" accept=".zip"></label>
+    <div class="row"><button id="runBtn">Run/Pausa</button><button class="danger" id="resetBtn">Reset ROM</button></div>
+    <div id="romState" class="kbdhint">BIOS C64 obbligatorio · 1541 DOS ROM consigliata per fastloader</div>
+    <div class="kbdhint">Il C64 parte sempre dal BASIC/KERNAL reale. Con D64, HLE drive disattivato: LOAD/OPEN/IEC passano dal KERNAL e dalla ROM DOS 1541 reali.</div>
+  </div>
+  <div class="group"><h3>Programmi / immagini</h3>
+    <label class="filebtn">Apri .PRG / .D64 / .T64 / .TAP / .CRT / .ZIP<input id="mediaFile" type="file" accept=".prg,.d64,.t64,.tap,.crt,.zip" disabled></label>
+    <div id="diskControls" style="display:none">
+      <div class="inline"><select id="diskSelect" aria-label="disco attivo"></select><button class="smallbtn" id="prevDiskBtn">◀</button><button class="smallbtn" id="nextDiskBtn">▶</button></div>
+      <div id="diskState" class="kbdhint">Drive 8: nessun disco</div><div id="drive1541State" class="kbdhint">1541 core: idle</div>
+    </div>
+    <select id="mediaSelect" disabled><option>Nessun file interno</option></select>
+    <div class="row"><button id="loadSelectedBtn">Carica selezionato</button><button class="primary" id="autoPrgBtn">Autostart</button></div>
+    <div id="mediaList" class="media-list" style="display:none"></div>
+    <div id="prgState" class="kbdhint">Nessun programma caricato</div>
+    <div id="mediaState" class="kbdhint">D64: TRUE 1541 · LOAD"*",8,1 via KERNAL/IEC reale · T64/TAP/PRG · CRT · ZIP</div>
+    <div id="tapeControls" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid #303746">
+      <div class="inline"><select id="tapeMode"><option value="fast" selected>⚡ Fast Load · immediato</option><option value="real">▶ Datasette · velocità originale + audio</option></select><button class="smallbtn" id="tapeFastNowBtn">⚡ Ora</button></div>
+      <div class="row"><button id="tapePlayBtn">▶ PLAY</button><button id="tapeStopBtn">■ STOP</button></div>
+      <button id="tapeRewindBtn">⏪ REWIND</button>
+      <div class="tape-meter"><div id="tapeBar"></div></div>
+      <div id="tapeState" class="kbdhint">Datasette: fermo · 000 / 000</div>
+    </div>
+    <div class="inline"><select id="inputMode" aria-label="modalità input"><option value="auto" selected>🎮 Auto · Tastiera + Joystick 2</option><option value="keyboard">⌨ Tastiera C64</option><option value="joy2">🕹 Joystick porta 2 · frecce + Z / Gamepad</option><option value="joy1">🕹 Joystick porta 1 · WASD + Space / Gamepad</option></select></div>
+    <div class="kbdhint">Auto: tastiera C64 + joystick porta 2 con frecce/Z oppure un Gamepad USB. Tastiera: Esc=RUN/STOP · Alt=C= · Ctrl=CTRL · Backspace=DEL · F1–F8 mappati. Clicca lo schermo per dare il focus.</div>
+  </div>
+  <div class="group"><h3>Video</h3>
+    <select id="scaleSel"><option value="1">1×</option><option value="1.5">1.5×</option><option value="2" selected>2×</option></select>
+    <button id="fullBtn">Schermo intero</button>
+  </div>
+  <div class="group"><h3>Audio · SID 6581</h3>
+    <button class="primary" id="audioBtn">🔊 Attiva audio</button>
+    <div id="audioState" class="kbdhint">SID: 3 voci · triangle/saw/pulse/noise · ADSR · audio disattivato</div>
+  </div>
+  <div class="group"><h3>Debugger 6510</h3>
+    <div class="regs" id="regBox"></div>
+    <div class="toolgrid"><button id="stepBtn">Step</button><button id="step100Btn">×100</button><button id="stepFrameBtn">1 frame</button></div>
+    <div class="inline"><input id="debugAddr" value="0800" spellcheck="false" aria-label="indirizzo"><button class="smallbtn" id="followPcBtn">PC</button><button class="smallbtn" id="gotoBtn">Disasm</button></div>
+    <div class="inline"><input id="breakAddr" placeholder="breakpoint es. 9000" spellcheck="false"><button class="smallbtn" id="breakBtn">+ Break</button><button class="smallbtn" id="clearBreakBtn">Clear</button></div>
+    <div class="hintline" id="breakState">Breakpoint: nessuno</div>
+    <div id="disasm" class="debugbox mono"></div>
+  </div>
+  <div class="group"><h3>Estrattore grafica</h3>
+    <select id="gfxMode"><option value="charset">Charset VIC · 256 caratteri</option><option value="spritesActive">Sprite attivi · 8</option><option value="spritesBank">Sprite bank · 256</option><option value="bitmap">Bitmap VIC · 320×200</option><option value="screen">Schermata emulata</option></select>
+    <div class="inline"><input id="gfxBase" value="0000" spellcheck="false" aria-label="base grafica"><button class="smallbtn" id="gfxAutoBtn">Auto</button><button class="smallbtn" id="gfxDrawBtn">Estrai</button></div>
+    <canvas id="gfxCanvas" width="320" height="200"></canvas>
+    <div class="row"><button id="gfxPngBtn">Scarica PNG</button><button id="gfxRawBtn">Scarica RAW</button></div>
+    <div class="hintline" id="gfxState">La modalità Auto segue banca VIC, $D018 e puntatori sprite.</div>
+  </div>
+  <div class="group"><h3>Monitor / memoria</h3>
+    <input id="monitorInput" placeholder="HELP · D 8000 · M 0400 · G 8100 · POKE D020 06 · DRIVE" spellcheck="false">
+    <div class="toolgrid"><button id="dumpRamBtn">RAM 64K</button><button id="screenPngBtn">Screen PNG</button><button id="refreshToolsBtn">Aggiorna</button></div>
+    <div id="monitorOut" class="debugbox mono" style="max-height:160px"></div>
+  </div>
+  <div class="group"><h3>Log</h3><div id="log"></div></div>
+</aside>
+</main>
+<script>
+'use strict';
+const $=s=>document.querySelector(s), hex=(v,n=4)=>'$'+(v>>>0).toString(16).toUpperCase().padStart(n,'0');
+const logEl=$('#log'); function log(s){const t=new Date().toLocaleTimeString();logEl.textContent+=`[${t}] ${s}\n`;logEl.scrollTop=logEl.scrollHeight}
+
+// ---- C64 memory / devices -------------------------------------------------
+const ram=new Uint8Array(65536), colorRam=new Uint8Array(1024);
+let basicRom=null,kernalRom=null,charRom=null,loadedPrg=null;
+let cartRomL=null,cartRomH=null,cartGame=1,cartExrom=1,cartType=0,cartName='',cartActive=false;
+let mountedMedia=null, mediaEntries=[], selectedMediaIndex=-1;
+// ---- Datasette -------------------------------------------------------------
+const tape={mode:'fast',playing:false,pos:0,duration:0,startStamp:0,startPos:0,timer:0,entry:null,prg:null,pendingAutostart:false,audioCtx:null,osc:null,gain:null,audioTimer:0,pulses:null,pulseIndex:0,pulseRemain:0,totalCycles:0,doneCycles:0,forceMotor:false,rawTap:false};
+;
+let diskSet=[],activeDiskIndex=-1,archiveMediaName='';
+const hle={enabled:true,logical:1,device:8,secondary:1,nameBytes:[],openFiles:new Map(),inputLogical:null,outputLogical:null,status:0};
+const iecCmd={listen:false,talk:false,device:0,secondary:0,bytes:[],read:[]};
+let deferIo=false,deferredIo=[];
+function flushDeferredIo(){if(!deferredIo.length)return;const q=deferredIo;deferredIo=[];for(const [a,v] of q){if((a&0xff3f)===0xd011&&vicCycle===14)lateD011Cycle14=true;writeIO(a,v)}}
+let ddr=0x2f, port=0x37;
+const vic=new Uint8Array(0x40), cia1=new Uint8Array(0x10), cia2=new Uint8Array(0x10);
+// ---- SID 6581 (audio-oriented approximation) -------------------------------
+// Register mapping and three oscillators are compatible with normal SID code.
+// The analogue filter and combined-waveform quirks can be refined later.
+const sidRegs=new Uint8Array(0x20),SID_CLOCK=985248;
+const sidAttack=[.002,.008,.016,.024,.038,.056,.068,.080,.100,.250,.500,.800,1,3,5,8];
+const sidDecay=[.006,.024,.048,.072,.114,.168,.204,.240,.300,.750,1.5,2.4,3,9,15,24];
+const sidVoices=Array.from({length:3},(_,i)=>({phase:0,env:0,stage:'release',gate:false,lfsr:(0x7ffff8^(i*0x14521))&0x7fffff,noise:0}));
+let sidAudioCtx=null,sidAudioNode=null,sidMaster=null,sidAudioEnabled=false;
+function sidReset(){sidRegs.fill(0);for(let i=0;i<3;i++){const v=sidVoices[i];v.phase=0;v.env=0;v.stage='release';v.gate=false;v.lfsr=(0x7ffff8^(i*0x14521))&0x7fffff;v.noise=0}}
+function sidControlChanged(voice,ctl){const v=sidVoices[voice],g=!!(ctl&1);if(g&&!v.gate)v.stage='attack';else if(!g&&v.gate)v.stage='release';v.gate=g;if(ctl&8){v.phase=0;v.lfsr=0x7ffff8}}
+function sidWriteReg(r,val){r&=0x1f;val&=255;sidRegs[r]=val;for(let i=0;i<3;i++)if(r===i*7+4)sidControlChanged(i,val)}
+function sidReadReg(r){r&=0x1f;if(r===0x19||r===0x1a)return 0xff;if(r===0x1b)return (sidVoices[2].phase*255)&255;if(r===0x1c)return Math.max(0,Math.min(255,(sidVoices[2].env*255)|0));return sidRegs[r]||0}
+function sidNoiseStep(v){const bit=((v.lfsr>>22)^(v.lfsr>>17))&1;v.lfsr=((v.lfsr<<1)|bit)&0x7fffff;v.noise=((v.lfsr>>15)&255)/127.5-1}
+function sidSampleVoice(i,sr){const b=i*7,v=sidVoices[i],freqReg=sidRegs[b]|(sidRegs[b+1]<<8),ctl=sidRegs[b+4];
+  const freq=freqReg*SID_CLOCK/16777216,inc=freq/sr,old=v.phase;v.phase+=inc;if(v.phase>=1){v.phase-=Math.floor(v.phase);sidNoiseStep(v)}
+  const a=(sidRegs[b+5]>>4)&15,d=sidRegs[b+5]&15,s=(sidRegs[b+6]>>4)&15,r=sidRegs[b+6]&15,sus=s/15;
+  if(v.stage==='attack'){v.env+=1/Math.max(1,sidAttack[a]*sr);if(v.env>=1){v.env=1;v.stage='decay'}}
+  else if(v.stage==='decay'){v.env-=1/Math.max(1,sidDecay[d]*sr);if(v.env<=sus){v.env=sus;v.stage='sustain'}}
+  else if(v.stage==='sustain'){v.env=sus;if(!v.gate)v.stage='release'}
+  else{v.env-=1/Math.max(1,sidDecay[r]*sr);if(v.env<0)v.env=0}
+  if(ctl&8)return 0;
+  let sum=0,n=0,p=v.phase;
+  if(ctl&0x10){sum+=1-4*Math.abs(p-.5);n++}
+  if(ctl&0x20){sum+=p*2-1;n++}
+  if(ctl&0x40){const pw=Math.max(.01,Math.min(.99,((sidRegs[b+2]|((sidRegs[b+3]&15)<<8))/4096)));sum+=p<pw?1:-1;n++}
+  if(ctl&0x80){if(v.phase<old)sidNoiseStep(v);sum+=v.noise;n++}
+  return n?(sum/n)*v.env:0
+}
+function sidRenderBuffer(out,sr){const vol=(sidRegs[0x18]&15)/15;for(let n=0;n<out.length;n++){let x=0;for(let i=0;i<3;i++)x+=sidSampleVoice(i,sr);out[n]=Math.max(-1,Math.min(1,(x/3)*vol*.85))}}
+async function ensureSidAudio(){
+  try{
+    if(!sidAudioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('WebAudio non disponibile');sidAudioCtx=new AC();sidMaster=sidAudioCtx.createGain();sidMaster.gain.value=.45;sidMaster.connect(sidAudioCtx.destination);sidAudioNode=sidAudioCtx.createScriptProcessor(1024,0,1);sidAudioNode.onaudioprocess=e=>sidRenderBuffer(e.outputBuffer.getChannelData(0),e.outputBuffer.sampleRate);sidAudioNode.connect(sidMaster)}
+    if(sidAudioCtx.state==='suspended')await sidAudioCtx.resume();sidAudioEnabled=true;sidMaster.gain.value=.45;$('#audioBtn').textContent='🔇 Disattiva audio';$('#audioState').textContent='SID attivo · 3 voci · triangle/saw/pulse/noise · ADSR';
+  }catch(err){$('#audioState').textContent='Audio non disponibile: '+err.message;log('SID audio: '+err.message)}
+}
+function toggleSidAudio(){if(!sidAudioEnabled){ensureSidAudio();return}sidAudioEnabled=false;if(sidMaster)sidMaster.gain.value=0;$('#audioBtn').textContent='🔊 Attiva audio';$('#audioState').textContent='SID audio disattivato'}
+let cia1IcrStatus=0,cia1IcrMask=0;let cia1Ta=0xffff,cia1TaLatch=0xffff,cia1Tb=0xffff,cia1TbLatch=0xffff;
+let cia2IcrStatus=0,cia2IcrMask=0;let cia2Ta=0xffff,cia2TaLatch=0xffff,cia2Tb=0xffff,cia2TbLatch=0xffff;let nmiPending=false,cia2NmiLine=false;
+function recomputeC64Irq(){irqPending=!!(((vic[0x19]&vic[0x1a]&1)!==0)||((cia1IcrStatus&cia1IcrMask&0x1f)!==0))}
+function recomputeC64Nmi(){const line=((cia2IcrStatus&cia2IcrMask&0x1f)!==0);if(line&&!cia2NmiLine)nmiPending=true;cia2NmiLine=line}
+// ---- 1541 core -------------------------------------------------------------
+// A real secondary 6502 execution context is connected to two 6522 VIAs and
+// to the C64 CIA2 IEC pins. The Commodore DOS ROM is not copied: a tiny JSD
+// idle firmware plus HLE command channel bootstraps uploaded fastloader code.
+let driveExecution=false,driveIrqPending=false,driveCpu=null,driveDebt=0,driveCycles=0;
+const driveRam=new Uint8Array(0x800),driveRom=new Uint8Array(0x4000);let driveRomReal=false,driveRomSource='JSD idle';
+function makeVia(){return {r:new Uint8Array(16),t1c:0xffff,t1l:0xffff,t2c:0xffff,t2l:0xffff,ca1:1,irq:false}}
+const via0=makeVia(),via1=makeVia(); // VIA0 serial @ $1800, VIA1 mechanics @ $1C00
+let driveTrack=18,driveHalfTrack=36,driveStepperPhase=0,driveMotor=false,driveLed=false;
+let driveTrackStream=new Uint8Array([0x55]),driveTrackPos=0,driveByteCountdown=32,driveDataLatch=0x55,driveSync=false,driveByteReady=false;
+// VIA2 Port-A input latch: with ACR bit0 enabled, BYTE READY freezes the sampled
+// byte until ORA ($1C01) is read. ORA-no-handshake ($1C0F) sees the live YB byte.
+let drivePaLatch=0x55,drivePaLatched=false,drivePaMissed=0;
+let driveByteReadyEdge=false,driveByteReadyLevel=false; // BYTE READY handshake state
+let driveCustomActive=false,driveLastFault='',driveCmdResponse=[];
+let driveByteLine=1,driveSoe=true,driveReadMode=true,driveSyncHits=0,driveByteEvents=0,driveFastStartCycles=0,driveFastLastReport=0;
+let driveDosErrorCode=-1,driveDosErrorCount=0,driveDosLastText='',driveStockSeekLogs=0,driveHeaderCheckLogs=0;
+// Bit-level 1541 data separator.  The old byte-at-a-time model could only guess
+// where /SYNC ended relative to the first GCR character.  Keep a continuous raw
+// bit position and rebuild the parallel latch exactly eight bits after SYNC ends.
+let driveBitClock=0,driveRawBitPos=0,driveShift=0,driveShiftBits=0,driveSyncOnes=0,driveAfterSync=false;
+// Alpha 64: 64H156-style 10-bit read shift register + 4-bit disk bit counter.
+// /BYTE is a real active-low level (not an instantaneous low/high callback).
+let driveShift10=0,driveBitCounter=0,driveBytePulseHeld=false;
+let driveIoTrace=[],driveIoTraceDumped=0;
+let driveSyncFirstHeader=0,driveSyncFirstData=0,driveSyncFirstOther=0;
+let driveDataReads=0,driveSyncCleanupReads=0,driveLastReadPc=0;
+let driveDensityFixes=0,driveLastDensityReason='';
+let driveSeekIdChecks=0,driveSeekIdMismatch=0;
+let driveMemCmdCount=0,driveLastMemCmd='';
+let driveStepEvents=0,driveHdrCmpCount=0,driveHdrMismatchCount=0,driveLastHdrMismatch='',driveHlePrimed=false,driveHleLastTrack=18,driveHleLastSector=0;
+const iec={atnHigh:true,clkHigh:true,dataHigh:true,prevAtnHigh:true};
+
+let raster=0,vicCycle=0,frameCount=0,irqPending=false,masterCycles=0,denLatch=false,badlineActive=false;
+let rasterLines=Array(312),completedRasterLines=null;
+let vicVcbase=0,vicVc=0,vicRc=7,vicDisplay=false,lineVc=0,lineRc=7,badlineStart=99,badlineStallFrom=99,lateD011Cycle14=false;
+let videoMatrix=new Uint8Array(40),videoColors=new Uint8Array(40);
+const sprDMA=new Uint8Array(8),sprDisplay=new Uint8Array(8),sprMCBase=new Uint8Array(8),sprMC=new Uint8Array(8),sprExp=new Uint8Array(8);
+const sprData=Array.from({length:8},()=>new Uint8Array(3)),sprNext=Array.from({length:8},()=>new Uint8Array(3));
+const palette=['#000000','#ffffff','#813338','#75cec8','#8e3c97','#56ac4d','#2e2c9b','#edf171','#8e5029','#553800','#c46c71','#4a4a4a','#7b7b7b','#a9ff9f','#706deb','#b2b2b2'];
+const paletteRGB=palette.map(h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]);
+// Internal debug charset fallback. Normal execution requires the real CHAR ROM from the BIOS ZIP.
+function makeInternalCharRom(){
+  const out=new Uint8Array(4096),g={
+'@':['01110','10001','10111','10101','10111','10000','01110'],
+'A':['01110','10001','10001','11111','10001','10001','10001'],'B':['11110','10001','10001','11110','10001','10001','11110'],'C':['01111','10000','10000','10000','10000','10000','01111'],'D':['11110','10001','10001','10001','10001','10001','11110'],'E':['11111','10000','10000','11110','10000','10000','11111'],'F':['11111','10000','10000','11110','10000','10000','10000'],'G':['01111','10000','10000','10111','10001','10001','01111'],'H':['10001','10001','10001','11111','10001','10001','10001'],'I':['11111','00100','00100','00100','00100','00100','11111'],'J':['00111','00010','00010','00010','10010','10010','01100'],'K':['10001','10010','10100','11000','10100','10010','10001'],'L':['10000','10000','10000','10000','10000','10000','11111'],'M':['10001','11011','10101','10101','10001','10001','10001'],'N':['10001','11001','10101','10011','10001','10001','10001'],'O':['01110','10001','10001','10001','10001','10001','01110'],'P':['11110','10001','10001','11110','10000','10000','10000'],'Q':['01110','10001','10001','10001','10101','10010','01101'],'R':['11110','10001','10001','11110','10100','10010','10001'],'S':['01111','10000','10000','01110','00001','00001','11110'],'T':['11111','00100','00100','00100','00100','00100','00100'],'U':['10001','10001','10001','10001','10001','10001','01110'],'V':['10001','10001','10001','10001','10001','01010','00100'],'W':['10001','10001','10001','10101','10101','10101','01010'],'X':['10001','10001','01010','00100','01010','10001','10001'],'Y':['10001','10001','01010','00100','00100','00100','00100'],'Z':['11111','00001','00010','00100','01000','10000','11111'],
+'0':['01110','10001','10011','10101','11001','10001','01110'],'1':['00100','01100','00100','00100','00100','00100','01110'],'2':['01110','10001','00001','00010','00100','01000','11111'],'3':['11110','00001','00001','01110','00001','00001','11110'],'4':['00010','00110','01010','10010','11111','00010','00010'],'5':['11111','10000','10000','11110','00001','00001','11110'],'6':['01110','10000','10000','11110','10001','10001','01110'],'7':['11111','00001','00010','00100','01000','01000','01000'],'8':['01110','10001','10001','01110','10001','10001','01110'],'9':['01110','10001','10001','01111','00001','00001','01110'],
+'!':['00100','00100','00100','00100','00100','00000','00100'],'"':['01010','01010','01010','00000','00000','00000','00000'],'#':['01010','11111','01010','01010','11111','01010','00000'],'$':['00100','01111','10100','01110','00101','11110','00100'],'%':['11001','11010','00100','01000','10110','00110','00000'],'&':['01100','10010','10100','01000','10101','10010','01101'],"'":['00100','00100','00010','00000','00000','00000','00000'],'(':['00010','00100','01000','01000','01000','00100','00010'],')':['01000','00100','00010','00010','00010','00100','01000'],'*':['00000','10101','01110','11111','01110','10101','00000'],'+':['00000','00100','00100','11111','00100','00100','00000'],',':['00000','00000','00000','00000','00100','00100','01000'],'-':['00000','00000','00000','11111','00000','00000','00000'],'.':['00000','00000','00000','00000','00000','00110','00110'],'/':['00001','00010','00100','01000','10000','00000','00000'],':':['00000','00110','00110','00000','00110','00110','00000'],';':['00000','00110','00110','00000','00110','00100','01000'],'<':['00010','00100','01000','10000','01000','00100','00010'],'=':['00000','11111','00000','11111','00000','00000','00000'],'>':['01000','00100','00010','00001','00010','00100','01000'],'?':['01110','10001','00001','00010','00100','00000','00100'],'[':['01110','01000','01000','01000','01000','01000','01110'],']':['01110','00010','00010','00010','00010','00010','01110']};
+  function rows(ch){const a=g[ch]||Array(7).fill('00000'),r=new Uint8Array(8);for(let y=0;y<7;y++){let b=0;for(let x=0;x<5;x++)if(a[y][x]==='1')b|=1<<(6-x);r[y]=b}return r}
+  function set(code,ch){const r=rows(ch);for(let y=0;y<8;y++)out[code*8+y]=r[y]}
+  set(0,'@');for(let i=1;i<=26;i++)set(i,String.fromCharCode(64+i));set(27,'[');set(29,']');set(32,' ');for(let c=33;c<=63;c++)set(c,String.fromCharCode(c));
+  // Common PETSCII box pieces used by early C64 software (approximate geometry).
+  function raw(code,a){for(let y=0;y<8;y++)out[code*8+y]=a[y]||0}
+  raw(68,[0,0,0,0,0,0,0,0xff]); raw(70,[0xff,0,0,0,0,0,0,0]);
+  raw(84,[0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80]); raw(89,[0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01]);
+  raw(85,[0x80,0x80,0x80,0x80,0x80,0x80,0x80,0xff]); raw(73,[0x01,0x01,0x01,0x01,0x01,0x01,0x01,0xff]);
+  raw(74,[0xff,0x80,0x80,0x80,0x80,0x80,0x80,0x80]); raw(75,[0xff,0x01,0x01,0x01,0x01,0x01,0x01,0x01]);
+  // A few useful block/line fallbacks for the graphics range.
+  for(let c=64;c<128;c++)if(!out.subarray(c*8,c*8+8).some(v=>v)){const mode=c&7;for(let y=0;y<8;y++)out[c*8+y]=mode===0?0x18:mode===1?0x81:mode===2?(y<4?0xff:0):mode===3?(y>=4?0xff:0):mode===4?0xf0:mode===5?0x0f:mode===6?(1<<(7-y)): (1<<y)}
+  // Reverse-video half of the charset.
+  for(let c=0;c<128;c++)for(let y=0;y<8;y++)out[(c+128)*8+y]=out[c*8+y]^0xff;
+  out.set(out.subarray(0,2048),2048); return out
+}
+const internalCharRom=makeInternalCharRom();
+
+function snapshotGfx(v,bankRaw,rc,vc,matrix){
+  const out=new Uint8Array(40); if(!(v[0x11]&0x10))return out;
+  const bank=((~bankRaw)&3)*0x4000, ctl18=v[0x18], bmm=!!(v[0x11]&0x20);
+  if(bmm){const base=(bank+((ctl18&8)?0x2000:0))&0xffff;for(let c=0;c<40;c++)out[c]=vicByte((base+((((vc+c)&0x3ff)<<3))+(rc&7))&0xffff)}
+  else{const base=(bank+((ctl18>>1)&7)*0x800)&0xffff;const ecm=!!(v[0x11]&0x40);for(let c=0;c<40;c++){let code=matrix[c];if(ecm)code&=0x3f;out[c]=vicByte((base+code*8+(rc&7))&0xffff)}}
+  return out
+}
+function snapshotCompatSprites(line,v,bankRaw){
+  // Capture the sprite bytes while the raster line is being produced. Reading
+  // sprite RAM later at render time is wrong for games that rewrite pointers/data.
+  const bank=((~bankRaw)&3)*0x4000,screenBase=(bank+((v[0x18]>>4)&15)*0x400)&0xffff;
+  return Array.from({length:8},(_,n)=>{
+    const bit=1<<n;if(!(v[0x15]&bit))return {on:false,data:new Uint8Array(3)};
+    const sy=v[n*2+1],yexp=!!(v[0x17]&bit),dy=line-sy,rows=yexp?42:21;
+    if(dy<0||dy>=rows)return {on:false,data:new Uint8Array(3)};
+    const sr=(dy/(yexp?2:1))|0,ptr=ram[(screenBase+0x3f8+n)&0xffff],base=(bank+(ptr<<6)+sr*3)&0xffff;
+    return {on:true,row:sr,data:new Uint8Array([vicByte(base),vicByte(base+1),vicByte(base+2)])};
+  });
+}
+function foregroundMaskForLine(v,gfx,matrix,colors,display){
+  const m=new Uint8Array(384);if(!display||!(v[0x11]&0x10)||!gfx)return m;
+  const bmm=!!(v[0x11]&0x20),mcm=!!(v[0x16]&0x10),ecm=!!(v[0x11]&0x40),xbase=32+(v[0x16]&7);
+  for(let c=0;c<40;c++){
+    const bits=gfx[c],cr=colors[c]&15,x0=xbase+c*8;
+    if(bmm){
+      if(mcm){for(let q=0;q<4;q++)if((bits>>(6-q*2))&3)for(let dx=0;dx<2;dx++){const x=x0+q*2+dx;if(x>=0&&x<384)m[x]=1}}
+      else for(let q=0;q<8;q++)if(bits&(0x80>>q)){const x=x0+q;if(x>=0&&x<384)m[x]=1}
+    }else{
+      if(mcm&&(cr&8)){for(let q=0;q<4;q++)if((bits>>(6-q*2))&3)for(let dx=0;dx<2;dx++){const x=x0+q*2+dx;if(x>=0&&x<384)m[x]=1}}
+      else for(let q=0;q<8;q++)if(bits&(0x80>>q)){const x=x0+q;if(x>=0&&x<384)m[x]=1}
+    }
+  }
+  return m;
+}
+function updateCompatCollisions(v,sprites,fgmask){
+  if(!cartActive||!sprites)return;
+  const owners=new Uint8Array(384);let ss=0,sd=0;
+  for(let n=0;n<8;n++){
+    const s=sprites[n],bit=1<<n;if(!s||!s.on)continue;
+    const bits=(s.data[0]<<16)|(s.data[1]<<8)|s.data[2],sx=spriteCanvasX(v,n),multi=!!(v[0x1c]&bit),xexp=!!(v[0x1d]&bit);
+    const mark=x=>{if(x<0||x>=384)return;if(owners[x]){ss|=owners[x]|bit}owners[x]|=bit;if(fgmask[x])sd|=bit};
+    if(multi){for(let q=0;q<12;q++){const z=(bits>>(22-q*2))&3;if(!z)continue;const scale=xexp?4:2;for(let dx=0;dx<scale;dx++)mark(sx+q*scale+dx)}}
+    else{for(let q=0;q<24;q++)if(bits&(1<<(23-q))){const scale=xexp?2:1;for(let dx=0;dx<scale;dx++)mark(sx+q*scale+dx)}}
+  }
+  vic[0x1e]|=ss;vic[0x1f]|=sd;
+}
+function captureRaster(line){
+  const vv=new Uint8Array(vic),bank=cia2[0]&3,matrix=new Uint8Array(videoMatrix),colors=new Uint8Array(videoColors);
+  const gfx=snapshotGfx(vv,bank,lineRc,lineVc,matrix),compatSprites=snapshotCompatSprites(line,vv,bank);
+  updateCompatCollisions(vv,compatSprites,foregroundMaskForLine(vv,gfx,matrix,colors,vicDisplay));
+  rasterLines[line]={v:vv,bank,rc:lineRc,vc:lineVc,display:vicDisplay,matrix,colors,gfx,
+    sprites:Array.from({length:8},(_,n)=>({on:!!sprDisplay[n],data:new Uint8Array(sprData[n])})),compatSprites};
+}
+function resetRasterTrace(){rasterLines=Array(312);completedRasterLines=null;raster=0;vicCycle=0;masterCycles=0;denLatch=false;badlineActive=false;badlineStart=99;badlineStallFrom=99;lateD011Cycle14=false;vicVcbase=0;vicVc=0;vicRc=7;vicDisplay=false;lineVc=0;lineRc=7;videoMatrix.fill(0);videoColors.fill(0);sprDMA.fill(0);sprDisplay.fill(0);sprMCBase.fill(0);sprMC.fill(0);sprExp.fill(1);for(let n=0;n<8;n++){sprData[n].fill(0);sprNext[n].fill(0)}captureRaster(0)}
+
+const keyMatrix=Array.from({length:8},()=>Array(8).fill(false));
+let joy1=0xff,joy2=0xff,gpJoy1=0xff,gpJoy2=0xff,inputMode='auto';
+function joyBit(portNum,bit,on){const mask=1<<bit;if(portNum===1)joy1=on?(joy1&~mask):(joy1|mask);else joy2=on?(joy2&~mask):(joy2|mask)}
+function clearInputState(){for(const r of keyMatrix)r.fill(false);joy1=joy2=gpJoy1=gpJoy2=0xff}
+function setMatrix(row,col,on){keyMatrix[row][col]=!!on}
+function joystickKey(e,on){
+  const c=e.code;let hit=false;
+  if(inputMode==='joy2'||inputMode==='auto'){
+    if(c==='ArrowUp'){joyBit(2,0,on);hit=true}else if(c==='ArrowDown'){joyBit(2,1,on);hit=true}else if(c==='ArrowLeft'){joyBit(2,2,on);hit=true}else if(c==='ArrowRight'){joyBit(2,3,on);hit=true}
+    else if(c==='KeyZ'||c==='ControlLeft'||c==='ControlRight'){joyBit(2,4,on);hit=true}
+  }else if(inputMode==='joy1'){
+    if(c==='KeyW'){joyBit(1,0,on);hit=true}else if(c==='KeyS'){joyBit(1,1,on);hit=true}else if(c==='KeyA'){joyBit(1,2,on);hit=true}else if(c==='KeyD'){joyBit(1,3,on);hit=true}else if(c==='Space'){joyBit(1,4,on);hit=true}
+  }
+  if(hit)e.preventDefault();return hit
+}
+// C64 matrix: rows are CIA1 PB0..PB7, columns are PA0..PA7.
+const matrixByCode={
+  Backspace:[0,0],Delete:[0,0],Enter:[0,1],NumpadEnter:[0,1],F7:[0,3],F1:[0,4],F3:[0,5],F5:[0,6],
+  Digit3:[1,0],KeyW:[1,1],KeyA:[1,2],Digit4:[1,3],KeyZ:[1,4],KeyS:[1,5],KeyE:[1,6],ShiftLeft:[1,7],
+  Digit5:[2,0],KeyR:[2,1],KeyD:[2,2],Digit6:[2,3],KeyC:[2,4],KeyF:[2,5],KeyT:[2,6],KeyX:[2,7],
+  Digit7:[3,0],KeyY:[3,1],KeyG:[3,2],Digit8:[3,3],KeyB:[3,4],KeyH:[3,5],KeyU:[3,6],KeyV:[3,7],
+  Digit9:[4,0],KeyI:[4,1],KeyJ:[4,2],Digit0:[4,3],KeyM:[4,4],KeyK:[4,5],KeyO:[4,6],KeyN:[4,7],
+  KeyP:[5,1],KeyL:[5,2],Period:[5,4],Comma:[5,7],
+  Home:[6,3],ShiftRight:[6,4],Slash:[6,7],
+  Digit1:[7,0],ControlLeft:[7,2],ControlRight:[7,2],Digit2:[7,3],Space:[7,4],AltLeft:[7,5],AltRight:[7,5],KeyQ:[7,6],Escape:[7,7]
+};
+const matrixByChar={'+':[5,0],'-':[5,3],':':[5,5],'@':[5,6],'£':[6,0],'*':[6,1],';':[6,2],'=':[6,5],'^':[6,6]};
+const shiftedSpecial={
+  F2:{base:[0,4]},F4:{base:[0,5]},F6:{base:[0,6]},F8:{base:[0,3]},
+  ArrowLeft:{base:[0,2]},ArrowUp:{base:[0,7]},Insert:{base:[0,0]}
+};
+const directSpecial={ArrowRight:[0,2],ArrowDown:[0,7]};
+function kbSet(e,on){
+  // RESTORE is not part of the keyboard matrix; emulate it as an NMI key.
+  if(e.code==='Pause'||e.code==='End'){if(on)nmiPending=true;e.preventDefault();return true}
+  let p=matrixByCode[e.code]||directSpecial[e.code]||matrixByChar[e.key];
+  const sh=shiftedSpecial[e.code];
+  if(sh){p=sh.base;setMatrix(1,7,on);e.preventDefault()}
+  if(p){setMatrix(p[0],p[1],on);e.preventDefault();return true}
+  return false
+}
+function inputEvent(e,on){
+  if(e.target&&['INPUT','SELECT','TEXTAREA','BUTTON'].includes(e.target.tagName))return;
+  if(joystickKey(e,on))return;kbSet(e,on)
+}
+window.addEventListener('keydown',e=>inputEvent(e,true));
+window.addEventListener('keyup',e=>inputEvent(e,false));
+window.addEventListener('blur',clearInputState);
+$('#screen').addEventListener('mousedown',()=>{$('#screen').focus();clearInputState()});
+
+
+function pollGamepad(){
+  gpJoy1=gpJoy2=0xff;
+  if(inputMode==='keyboard'||!navigator.getGamepads)return;
+  const pads=navigator.getGamepads();let gp=null;
+  for(const p of pads)if(p&&p.connected){gp=p;break}
+  if(!gp)return;
+  let bits=0xff;
+  const ax0=gp.axes?.[0]||0, ay0=gp.axes?.[1]||0;
+  const pressed=i=>!!(gp.buttons?.[i]&&gp.buttons[i].pressed);
+  if(ay0<-.35||pressed(12))bits&=~1;
+  if(ay0>.35||pressed(13))bits&=~2;
+  if(ax0<-.35||pressed(14))bits&=~4;
+  if(ax0>.35||pressed(15))bits&=~8;
+  if(pressed(0)||pressed(1)||pressed(2)||pressed(3))bits&=~16;
+  if(inputMode==='joy1')gpJoy1=bits;else gpJoy2=bits;
+}
+window.addEventListener('gamepadconnected',e=>log(`Gamepad connesso: ${e.gamepad.id}`));
+window.addEventListener('gamepaddisconnected',e=>log(`Gamepad disconnesso: ${e.gamepad.id}`));
+
+function portEff(){return (port&ddr)|((~ddr)&0xff)}
+function ioVisible(){const p=portEff();return !!((p&4)&&((p&3)!==0))}
+function charVisible(){const p=portEff();return !((p&4))&&((p&3)!==0)}
+function basicVisible(){const p=portEff();return basicRom&&!cartActive&&((p&3)===3)}
+function kernalVisible(){const p=portEff();return kernalRom&&!!(p&2)}
+function cart16(){return cartActive&&cartGame===0&&cartExrom===0}
+function cart8(){return cartActive&&cartGame===1&&cartExrom===0}
+function cartLoVisible(){const p=portEff();return (cart16()||cart8())&&((p&3)===3)}
+function cartHiVisible(){const p=portEff();return cart16()&&!!(p&2)}
+
+const GCR=[0x0a,0x0b,0x12,0x13,0x0e,0x0f,0x16,0x17,0x09,0x19,0x1a,0x1b,0x0d,0x1d,0x1e,0x15];
+function gcrEncode(bytes){
+  const out=[];let acc=0,bits=0;
+  for(const b of bytes){for(const n of [b>>4,b&15]){acc=(acc<<5)|GCR[n];bits+=5;while(bits>=8){bits-=8;out.push((acc>>bits)&255)}}}
+  if(bits)out.push((acc<<(8-bits))&255);return new Uint8Array(out)
+}
+function activeD64(){return mountedMedia&&mountedMedia.kind==='D64'?mountedMedia:null}
+function driveDiskId(d){try{const o=d64Offset(18,0),a=d.bytes[o+0xa2],b=d.bytes[o+0xa3];return [a===undefined?0x30:a,b===undefined?0x30:b]}catch{return[0x30,0x30]}}
+function buildGcrTrack(track){
+  const d=activeD64();if(!d||track<1||track>35)return new Uint8Array(6250).fill(0x55);
+  const [id1,id2]=driveDiskId(d),parts=[];let total=0;
+  const add=a=>{parts.push(a);total+=a.length},rep=(v,n)=>{const a=new Uint8Array(Math.max(0,n|0));a.fill(v);return a};
+  const ns=d64SectorsPerTrack(track);
+  // A formatted 1541 track does NOT put all spare bytes after the last sector.
+  // The formatter measures the available bytes per revolution and distributes
+  // them as the inter-sector (tail) gaps.  Keeping one huge wraparound gap made
+  // IRQ loaders lose an entire rotational window, especially on tracks 18-24.
+  const zone=track<=17?0:track<=24?1:track<=30?2:3,target=[7692,7142,6666,6250][zone];
+  const fixedPerSector=5+10+9+5+325; // sync + header + gap1 + sync + data GCR
+  const tailTotal=Math.max(ns*4,target-fixedPerSector*ns);
+  const tailBase=Math.floor(tailTotal/ns),tailExtra=tailTotal%ns;
+  for(let sec=0;sec<ns;sec++){
+    add(rep(0xff,5));
+    const hchk=(sec^track^id1^id2)&255;
+    add(gcrEncode(Uint8Array.from([0x08,hchk,sec,track,id2,id1,0x0f,0x0f])));add(rep(0x55,9));add(rep(0xff,5));
+    const o=d64Offset(track,sec),dat=d.bytes.subarray(o,o+256);let chk=0;for(const b of dat)chk^=b;
+    const block=new Uint8Array(260);block[0]=0x07;block.set(dat,1);block[257]=chk;block[258]=0;block[259]=0;add(gcrEncode(block));
+    // Spread the remainder around the track: e.g. T18 gets 21/22 byte gaps,
+    // rather than 12-byte gaps plus one artificial ~200-byte gap at wrap.
+    add(rep(0x55,tailBase+(sec<tailExtra?1:0)));
+  }
+  // Rounding safety only. Normally total==target exactly.
+  if(total<target)add(rep(0x55,target-total));
+  const out=new Uint8Array(total);let p=0;for(const a of parts){out.set(a,p);p+=a.length}return out
+}
+function gcrDecode(bytes,maxOut=Infinity){
+  const inv=new Int8Array(32);inv.fill(-1);for(let i=0;i<GCR.length;i++)inv[GCR[i]]=i;
+  const out=[];let acc=0,bits=0,half=-1;
+  for(const b of bytes){
+    acc=(acc<<8)|(b&255);bits+=8;
+    while(bits>=5){bits-=5;const code=(acc>>bits)&31,n=inv[code];if(n<0)return null;
+      if(half<0)half=n;else{out.push((half<<4)|n);half=-1;if(out.length>=maxOut)return Uint8Array.from(out)}
+    }
+    acc&=(1<<bits)-1;
+  }
+  return Uint8Array.from(out)
+}
+function gcrTrackSelfTest(track){
+  const st=buildGcrTrack(track),headers=[];let run=0;
+  for(let i=0;i<st.length;i++){
+    if(st[i]===0xff){run++;continue}
+    if(run>=5&&i+10<=st.length){const h=gcrDecode(st.subarray(i,i+10),8);if(h&&h.length>=8&&h[0]===0x08)headers.push({sector:h[2],track:h[3],id2:h[4],id1:h[5],chk:h[1],ok:((h[2]^h[3]^h[4]^h[5])&255)===h[1]})}
+    run=0;
+  }
+  const want=d64SectorsPerTrack(track),secs=new Set(headers.filter(h=>h.track===track&&h.ok).map(h=>h.sector));
+  return {bytes:st.length,headers:headers.length,valid:secs.size,want,ok:secs.size===want,missing:Array.from({length:want},(_,i)=>i).filter(i=>!secs.has(i))}
+}
+function driveResetSeparator(){
+  driveBitClock=0;driveRawBitPos=0;driveShift=0;driveShiftBits=0;driveSyncOnes=0;driveSync=false;driveAfterSync=false;
+  driveShift10=0;driveBitCounter=0;driveBytePulseHeld=false;
+  driveByteReady=false;driveByteReadyEdge=false;driveByteReadyLevel=false;driveByteLine=1;
+  // Keep CA1 electrically idle/high when a new track/phase is acquired.
+  via1.ca1=1;
+}
+function driveStdDensityForTrack(t){return t<=17?3:t<=24?2:t<=30?1:0}
+function driveApplyStdDensity(reason='',logIt=false){
+  if(!activeD64())return false;
+  const want=driveStdDensityForTrack(driveTrack),old=(via1.r[0]>>5)&3;if(old===want)return false;
+  const oldOrb=via1.r[0];via1.r[0]=(oldOrb&~0x60)|((want&3)<<5);driveDensityFixes++;driveLastDensityReason=reason||`T${driveTrack}`;
+  if(logIt)log(`1541 DENSITY · T${driveTrack} D${old}→D${want} · ORB ${hex(oldOrb,2)}→${hex(via1.r[0],2)} · ${driveLastDensityReason}`);
+  return true
+}
+function driveReloadTrack(resetPos=false){
+  const oldLen=Math.max(1,driveTrackStream?.length||1);
+  const oldBit=((driveTrackPos%oldLen)*8+(driveRawBitPos&7));
+  const phase=((oldBit%(oldLen*8))+(oldLen*8))%(oldLen*8)/(oldLen*8);
+  driveTrack=Math.max(1,Math.min(35,Math.round(driveHalfTrack/2)));
+  driveTrackStream=buildGcrTrack(driveTrack);
+  const newLen=Math.max(1,driveTrackStream.length);
+  let newBit=resetPos?0:Math.floor(phase*newLen*8);
+  if(newBit>=newLen*8)newBit=newLen*8-1;
+  driveTrackPos=Math.floor(newBit/8)%newLen;
+  const newRaw=newBit&7;
+  // A head move re-acquires the serial separator, but the platter itself has
+  // not teleported: retain the same angular position within the revolution.
+  driveResetSeparator();driveRawBitPos=newRaw;
+  // Density remains owned by VIA2 PB5/PB6 so custom loaders can change it.
+}
+function viaIrqUpdate(v){v.irq=!!((v.r[0x0d]&v.r[0x0e]&0x7f));if(v===via0||v===via1)driveIrqPending=via0.irq||via1.irq}
+function viaSetIFR(v,mask){v.r[0x0d]|=mask;viaIrqUpdate(v)}
+function viaClearIFR(v,mask){v.r[0x0d]&=~mask;viaIrqUpdate(v)}
+function viaCa1(v,state){state=state?1:0;const old=v.ca1;v.ca1=state;if(old===state)return;const positive=!!(v.r[0x0c]&1);if((positive&&old===0&&state===1)||(!positive&&old===1&&state===0))viaSetIFR(v,0x02)}
+function c64IecLow(bit){return !!(cia2[2]&(1<<bit))&&!!(cia2[0]&(1<<bit))}
+function driveOrbBit(bit){return !!(via0.r[2]&(1<<bit))&&!!(via0.r[0]&(1<<bit))}
+function updateIecBus(){
+  const oldAtn=iec.atnHigh;
+  const atnLow=c64IecLow(3),clkLow=c64IecLow(4)||driveOrbBit(3);
+  // 1541 ATNA: PB4 is combined with ATN; whenever they disagree the drive
+  // pulls DATA low.  The previous implementation only covered half of this
+  // handshake and NOSDOS could remain waiting forever.
+  const atna=!!(via0.r[0]&0x10),atnAckMismatch=(atnLow!==atna);
+  const dataLow=c64IecLow(5)||driveOrbBit(1)||atnAckMismatch;
+  iec.atnHigh=!atnLow;iec.clkHigh=!clkLow;iec.dataHigh=!dataLow;
+  if(oldAtn!==iec.atnHigh)viaCa1(via0,iec.atnHigh?0:1);iec.prevAtnHigh=iec.atnHigh
+}
+function cia2PortARead(){updateIecBus();let pins=0xff;if(!iec.clkHigh)pins&=~0x40;if(!iec.dataHigh)pins&=~0x80;const d=cia2[2];return (cia2[0]&d)|(pins&~d)}
+function driveVia0Pins(){
+  // 1541 VIA #1 PB input wiring.  Inputs are active-high after the inverter:
+  // PB0=DATA IN, PB2=CLK IN, PB5/PB6=device address, PB7=ATN IN.
+  // Device 8 presents 00 on PB5/PB6.  Suppress the drive's own ATNA-created
+  // DATA acknowledge on PB0, as the real gate array does.
+  updateIecBus();
+  const atnLow=!iec.atnHigh,atna=!!(via0.r[0]&0x10),ownAck=(atnLow!==atna);
+  let p=0;
+  if(!iec.dataHigh&&!ownAck)p|=0x01;
+  if(!iec.clkHigh)p|=0x04;
+  if(atnLow)p|=0x80;
+  return p
+}
+function driveVia1Pins(){
+  // VIA2 PB7 receives /SYNC: it is HIGH normally and goes LOW while a sync
+  // mark (>=10 consecutive 1 bits) is under the head.  F556 waits with
+  // BIT $1C00 / BMI, therefore the polarity is critical for fastloaders.
+  let p=0x90;if(driveSync)p&=~0x80;return p
+}
+function driveViaRead(v,r){r&=15;
+  if(r===0){const pins=v===via0?driveVia0Pins():driveVia1Pins();return (v.r[0]&v.r[2])|(pins&~v.r[2])}
+  // ORA ($x801) performs CA1/data-taken handshake; ORA-no-handshake ($x80F)
+  // exposes the live gate-array output and does not release the PA latch.
+  if(r===1||r===15){
+    let val=v.r[1];
+    if(v===via1){
+      const latchedMode=!!(v.r[0x0b]&0x01);
+      const input=(r===15||!latchedMode)?driveDataLatch:(drivePaLatched?drivePaLatch:driveDataLatch);
+      const ddra=v.r[3]&255;val=((input&(~ddra&255))|(v.r[1]&ddra))&255;
+    }
+    if(v===via1&&r===1){
+      driveDataReads++;driveLastReadPc=driveCpu?driveCpu.PC&0xffff:0;
+      driveIoTracePush('R',val);
+      // F567 deliberately reads the stale pre-SYNC byte. That read is also the
+      // DATA-TAKEN acknowledgement that rearms PA for the first post-SYNC byte.
+      if(driveLastReadPc===0xf56a)driveSyncCleanupReads++;
+      if(driveCustomActive&&(driveDataReads<=16||(driveDataReads&0x7fff)===0))
+        log(`1541 DATA READ · PCnext ${hex(driveLastReadPc)} = ${hex(val,2)} · PAL${drivePaLatched?1:0} sync${driveSync?1:0} bit${driveRawBitPos} pos ${driveTrackPos}`);
+    }
+    if(r===1){
+      viaClearIFR(v,0x02);
+      if(v===via1){driveByteReady=false;driveByteReadyLevel=false;drivePaLatched=false}
+    }
+    return val
+  }
+  if(r===4){viaClearIFR(v,0x40);return v.t1c&255}if(r===5)return(v.t1c>>8)&255;if(r===6)return v.t1l&255;if(r===7)return(v.t1l>>8)&255;
+  if(r===8){viaClearIFR(v,0x20);return v.t2c&255}if(r===9)return(v.t2c>>8)&255;
+  if(r===13)return (v.r[13]&0x7f)|(v.irq?0x80:0);if(r===14)return(v.r[14]&0x7f)|0x80;return v.r[r]
+}
+function driveMechanicsWrite(oldv,newv){
+  const oldMotor=!!(oldv&0x04),newMotor=!!(newv&0x04),stp=newv&3;
+  const oldOut=driveStepperPhase;
+  driveMotor=newMotor;driveLed=!!(newv&0x08);driveStepperPhase=stp;
+
+  // 64H156 stepper behaviour: movement is determined from the *physical*
+  // rotor/head phase, not from the previously written PB0/PB1 value.  This is
+  // important when DOS skips a phase during a head-bump/recovery sequence:
+  // remembering the last electrical command can make the next legal command
+  // move in the wrong direction and send the virtual head toward track 35.
+  // MAME's 64H156 uses exactly this position-vs-STP table.
+  if(newMotor){
+    const oldHalf=driveHalfTrack,phys=((driveHalfTrack%4)+4)%4;
+    let step=0;
+    if(phys===0){if(stp===1)step=1;else if(stp===3)step=-1}
+    else if(phys===1){if(stp===2)step=1;else if(stp===0)step=-1}
+    else if(phys===2){if(stp===3)step=1;else if(stp===1)step=-1}
+    else {if(stp===0)step=1;else if(stp===2)step=-1}
+
+    if(step){
+      // Keep a small mechanical track-0 region for the stock DOS head bump.
+      // D64 data still clamps to logical track 1 in driveReloadTrack().
+      driveHalfTrack=Math.max(0,Math.min(70,driveHalfTrack+step));
+      if(driveHalfTrack!==oldHalf){
+        driveReloadTrack(false);driveStepEvents++;
+        if(driveStepEvents<=40||(driveStepEvents&31)===0)
+          log(`1541 STEP · out ${oldOut}->${stp} phys${phys} dir${step>0?'+':'-'} · HT ${oldHalf/2}->${driveHalfTrack/2} · T${driveTrack} · MTR1`);
+      }else if(driveCustomActive&&(driveStepEvents<=24||(driveStepEvents&31)===0)){
+        log(`1541 STEP STOP · out ${oldOut}->${stp} phys${phys} dir${step>0?'+':'-'} · mechanical limit HT ${driveHalfTrack/2}`);
+      }
+    }else if(driveCustomActive&&oldOut!==stp&&(driveStepEvents<=24||(driveStepEvents&31)===0)){
+      log(`1541 STEP HOLD · out ${oldOut}->${stp} phys${phys} · head HT ${driveHalfTrack/2} T${driveTrack}`);
+    }
+    if(!oldMotor&&newMotor&&driveCustomActive)
+      log(`1541 STEPPER ENABLE · STP${stp} phys${((driveHalfTrack%4)+4)%4} · head T${driveTrack}`);
+  }
+}
+function via1UpdateControlOutputs(){
+  // VIA2 CA2 is SOE (high enables BYTE READY -> 6502 SO/V flag), while CB2
+  // controls head mode (high=read). MAME wires CA2 directly to SOE; VICE also
+  // preserves a pending BYTE READY edge across SOE changes.
+  const p=via1.r[0x0c],ca2=(p>>1)&7,cb2=(p>>5)&7,oldSoe=driveSoe;
+  if(ca2===6)driveSoe=false;else if(ca2===7)driveSoe=true;
+  if(!oldSoe&&driveSoe&&driveByteReadyEdge&&driveCpu){driveCpu.P|=0x40;driveByteReadyEdge=false}
+  if(cb2===6)driveReadMode=false;else if(cb2===7)driveReadMode=true;
+}
+function driveViaWrite(v,r,val){r&=15;val&=255;
+  if(r===0){const old=v.r[0];v.r[0]=val;if(v===via0)updateIecBus();else driveMechanicsWrite(old,val);return}
+  if(r===1||r===15){v.r[1]=val;if(v===via0)viaClearIFR(v,0x02);return}
+  if(r===2||r===3){v.r[r]=val;if(v===via0)updateIecBus();return}
+  if(r===4){v.t1l=(v.t1l&0xff00)|val;return}if(r===5){v.t1l=(val<<8)|(v.t1l&255);v.t1c=v.t1l;viaClearIFR(v,0x40);return}
+  if(r===6){v.t1l=(v.t1l&0xff00)|val;return}if(r===7){v.t1l=(val<<8)|(v.t1l&255);return}
+  if(r===8){v.t2l=(v.t2l&0xff00)|val;return}if(r===9){v.t2c=(val<<8)|(v.t2l&255);viaClearIFR(v,0x20);return}
+  if(r===12){v.r[r]=val;if(v===via1)via1UpdateControlOutputs();return}
+  if(r===13){viaClearIFR(v,val&0x7f);return}
+  if(r===14){if(val&0x80)v.r[14]|=val&0x7f;else v.r[14]&=~(val&0x7f);viaIrqUpdate(v);return}
+  v.r[r]=val
+}
+function driveRd(a){
+  // Real 1541 decode: RAM mirror $6000, VIA mirrors $63F0, ROM mirror $4000.
+  // Uploaded drive-side fastloaders frequently use those aliases.
+  a&=0xffff;const sel=a&0x9c00;
+  if(sel===0x1800)return driveViaRead(via0,a&15);
+  if(sel===0x1c00)return driveViaRead(via1,a&15);
+  if((a&0x9fff)<0x0800)return driveRam[a&0x7ff];
+  if(a>=0x8000)return driveRom[(a-0x8000)&0x3fff];
+  return 0xff
+}
+function driveWr(a,v){
+  a&=0xffff;v&=255;const sel=a&0x9c00;
+  if(sel===0x1800){driveViaWrite(via0,a&15,v);return}
+  if(sel===0x1c00){driveViaWrite(via1,a&15,v);return}
+  if((a&0x9fff)<0x0800){driveRam[a&0x7ff]=v;return}
+}
+function viaTick(v,c){
+  if(v.t1c>=0){v.t1c-=c;if(v.t1c<0){viaSetIFR(v,0x40);if(v.r[0x0b]&0x40)v.t1c+=(v.t1l+1);else v.t1c=-1}}
+  if(v.t2c>=0){v.t2c-=c;if(v.t2c<0){viaSetIFR(v,0x20);v.t2c=-1}}
+}
+function driveIoTracePush(kind,val){
+  const e={k:kind,c:driveCycles,v:val&255,t:driveTrack,p:driveTrackPos,b:driveRawBitPos,bc:driveBitCounter&15,pc:driveCpu?driveCpu.PC&0xffff:0,V:driveCpu?!!(driveCpu.P&0x40):false,ca:via1.ca1,ifr:via1.r[13]&255};
+  driveIoTrace.push(e);if(driveIoTrace.length>40)driveIoTrace.shift();
+}
+function driveIoTraceText(n=16){
+  return driveIoTrace.slice(-n).map(e=>`${e.k}${hex(e.v,2)}@${e.c}/PC${hex(e.pc)} T${e.t} P${e.p}.${e.b} BC${e.bc} V${e.V?1:0} C${e.ca} I${hex(e.ifr,2)}`).join(' | ')
+}
+function driveReleaseByteLine(){
+  if(!driveBytePulseHeld)return;
+  driveBytePulseHeld=false;driveByteLine=1;driveByteReadyLevel=false;viaCa1(via1,1);
+}
+function driveDiskTick(c){
+  // The real 64H156 exposes /BYTE as a level.  Release the previous low pulse
+  // at the next CPU-time slice instead of collapsing low+high into one call.
+  driveReleaseByteLine();
+  if(!driveMotor||!activeD64())return;
+
+  // PB5/PB6 select the bit-cell rate. byteInterval is the time for 8 recovered
+  // bits, therefore the accumulator below advances one raw disk bit at a time.
+  const dens=(via1.r[0]>>5)&3,byteInterval=[32,30,28,26][dens];
+
+  const byteReady=val=>{
+    val&=255;driveDataLatch=val;driveByteEvents++;
+    if(driveAfterSync){
+      if(val===0x52)driveSyncFirstHeader++;
+      else if(val===0x55)driveSyncFirstData++;
+      else{driveSyncFirstOther++;if(driveCustomActive&&driveSyncFirstOther<=16)log(`1541 SYNC→BYTE unexpected ${hex(val,2)} · T${driveTrack} pos ${driveTrackPos} bit ${driveRawBitPos}`)}
+      driveAfterSync=false;
+    }
+
+    // MAME's 64H156 gates the BYTE output with SOE.  When SOE is disabled
+    // neither the CPU SO pin nor VIA2 CA1 sees a byte-ready transition.
+    if(!driveSoe)return;
+
+    const latchMode=!!(via1.r[0x0b]&0x01);
+    if(latchMode){if(drivePaLatched)drivePaMissed++;drivePaLatch=val;drivePaLatched=true}
+    else drivePaLatch=val;
+
+    driveByteReady=true;driveByteReadyLevel=true;driveByteReadyEdge=true;
+    driveByteLine=0;driveBytePulseHeld=true;
+    // YB is stable before the active CA1 edge, just like RUNNING_SYNCPOINT in
+    // MAME (write YB, then write /BYTE).  CA1 is negative-edge active in DOS.
+    viaCa1(via1,0);
+    if(driveCpu){driveCpu.P|=0x40;driveByteReadyEdge=false}
+    driveIoTracePush('E',val);
+  };
+
+  driveBitClock+=c*8;
+  let guard=0;
+  while(driveBitClock>=byteInterval&&guard++<512){
+    driveBitClock-=byteInterval;
+    const src=driveTrackStream[driveTrackPos%driveTrackStream.length];
+    const bit=(src>>(7-driveRawBitPos))&1;
+    driveRawBitPos++;
+    if(driveRawBitPos>=8){driveRawBitPos=0;driveTrackPos=(driveTrackPos+1)%driveTrackStream.length}
+
+    const wasSync=driveSync; // true means electrical /SYNC is active/LOW
+    driveShift10=((driveShift10<<1)|bit)&0x3ff;
+    driveShift=driveShift10&0xff;
+    // Live YB follows the read shift register even when no BYTE edge occurs.
+    driveDataLatch=driveShift;
+
+    // MAME: sync = !((shift_reg == 0x3ff) && OE).  Our boolean is inverted:
+    // driveSync=true means SYNC active.  While SYNC is active bit_counter=8.
+    const nowSync=!!(driveReadMode&&driveShift10===0x3ff);
+    if(nowSync){
+      driveBitCounter=8;
+      if(!wasSync){
+        driveSyncHits++;driveByteReady=false;driveByteReadyEdge=false;
+        // If a prior /BYTE pulse is still represented, terminate it before the
+        // SYNC region.  A new byte cannot be signalled until 8 post-SYNC bits.
+        driveReleaseByteLine();
+      }
+    }else if(!wasSync){
+      // Exactly the MAME rule: increment only if /SYNC was already inactive on
+      // the preceding recovered-bit edge.  Therefore the first zero after a
+      // sync mark becomes bit 1 of the new byte without incrementing counter.
+      driveBitCounter=(driveBitCounter+1)&0x0f;
+    }
+
+    driveSync=nowSync;
+    if(wasSync&&!nowSync)driveAfterSync=true;
+    driveShiftBits=driveBitCounter&7;
+    driveSyncOnes=nowSync?10:0; // retained only for legacy diagnostics
+
+    // BYTE is asserted after a complete 8-bit character.  At bit granularity
+    // the sub-cell phase condition in 64H156 collapses to this one transition.
+    if(!nowSync&&!wasSync&&((driveBitCounter&7)===7))byteReady(driveShift10&0xff);
+  }
+}
+function driveTick(c){driveCycles+=c;viaTick(via0,c);viaTick(via1,c);driveDiskTick(c);updateIecBus()}
+function driveFault(op,pc){driveLastFault=`opcode ${hex(op,2)} @ ${hex(pc)}`;if(driveCpu)driveCpu.running=false;log(`1541 STOP · ${driveLastFault}`)}
+function driveHleCall(c){return false}
+function initDriveRom(){if(driveRomReal)return;driveRom.fill(0xea);const o=0;driveRom[o]=0x4c;driveRom[o+1]=0x00;driveRom[o+2]=0xc0;for(const v of [0x3ffa,0x3ffc,0x3ffe]){driveRom[v]=0x00;driveRom[v+1]=0xc0}driveRomSource='JSD idle'}
+function resetVia(v){v.r.fill(0);if(!driveRomReal){v.r[2]=v===via0?0x1a:0x6f;v.r[3]=0xff}v.t1c=v.t1l=v.t2c=v.t2l=0xffff;v.ca1=(v===via0?0:1);v.irq=false}
+function driveReset1541(logIt=false){driveRam.fill(0);resetVia(via0);resetVia(via1);driveHalfTrack=36;driveTrack=18;driveStepperPhase=0;driveMotor=false;driveLed=false;driveTrackPos=0;driveByteCountdown=32;driveCustomActive=false;driveLastFault='';driveCmdResponse=[];driveMemCmdCount=0;driveLastMemCmd='';driveByteLine=1;driveSoe=true;driveReadMode=true;driveDataLatch=0x55;drivePaLatch=0x55;drivePaLatched=false;drivePaMissed=0;driveByteReadyEdge=false;driveByteReadyLevel=false;driveSyncHits=0;driveByteEvents=0;driveFastStartCycles=0;driveFastLastReport=0;driveBitClock=0;driveRawBitPos=0;driveShift=0;driveShiftBits=0;driveSyncOnes=0;driveAfterSync=false;driveShift10=0;driveBitCounter=0;driveBytePulseHeld=false;driveIoTrace=[];driveIoTraceDumped=0;driveSyncFirstHeader=0;driveSyncFirstData=0;driveSyncFirstOther=0;driveDataReads=0;driveSyncCleanupReads=0;driveLastReadPc=0;driveDensityFixes=0;driveLastDensityReason='';driveSeekIdChecks=0;driveSeekIdMismatch=0;driveStepEvents=0;driveHdrCmpCount=0;driveHdrMismatchCount=0;driveLastHdrMismatch='';driveDosErrorCode=-1;driveDosErrorCount=0;driveDosLastText='';driveStockSeekLogs=0;driveHeaderCheckLogs=0;driveHlePrimed=false;driveHleLastTrack=18;driveHleLastSector=0;driveDebt=0;driveCycles=0;driveReloadTrack(true);updateIecBus();if(driveCpu){driveExecution=true;driveCpu.reset(driveRomReal?null:0xc000);driveCpu.running=true;driveExecution=false}if(logIt)log(`1541 reset · ${driveRomReal?'ROM DOS reale':'JSD idle/HLE'} · PC ${driveCpu?hex(driveCpu.PC):'$----'} · 6502 + 2×6522 + IEC + GCR D64`)}
+function driveMountMedia(){driveReloadTrack(true);driveTrackPos=0;driveByteCountdown=32;driveResetSeparator()}
+function d64ChainEnd(img,t,s){
+  let lastT=t,lastS=s,n=0;const seen=new Set();
+  try{while(t&&n++<800){const k=t+':'+s;if(seen.has(k))break;seen.add(k);lastT=t;lastS=s;const o=d64Offset(t,s);if(o+256>img.length)break;const nt=img[o],ns=img[o+1];if(!nt)break;t=nt;s=ns}}catch(_e){}
+  return {track:lastT||18,sector:lastS||0}
+}
+function drivePrimeAfterHleLoad(entry){
+  const d=activeD64();if(!d)return;
+  const [id1,id2]=driveDiskId(d),end=d64ChainEnd(d.bytes,entry?.track||18,entry?.sector||0);
+  // The HLE LOAD copies file bytes directly to C64 RAM, so the real 1541 ROM
+  // never performs the physical read that would leave the spindle running.
+  // Preserve only that hardware-visible consequence.  Do NOT touch DOS zero
+  // page, track, sector, stepper phase or density (alpha 46 showed that doing so
+  // corrupts the live DOS state and causes DRIVE ERROR during the N0SD0S scan).
+  driveHlePrimed=true;driveHleLastTrack=end.track;driveHleLastSector=end.sector;
+  if(!driveMotor){
+    const old=via1.r[0];via1.r[0]=old|0x04;driveMechanicsWrite(old,via1.r[0]);
+    driveBitClock=0;
+    log(`1541 HLE→spindle · MOTOR ON only · ORB ${hex(old,2)}→${hex(via1.r[0],2)} · DOS RAM/head untouched`)
+  }
+  log(`1541 HLE LOAD observed · disk ID ${hex(id1,2)}${hex(id2,2)} · chain end T${end.track}/S${end.sector} · bridge=spindle only`)
+}
+function driveTraceSeekHeaderId(){
+  // Standard DOS routine SEAK ($F3B1): at $F3C4 A must contain the first GCR
+  // byte after SYNC ($52, encoded header ID $08). Trace stock LOAD too.
+  if(!driveCpu||driveCpu.PC!==0xf3c4)return;
+  const got=driveCpu.A&255,want=driveRam[0x24]&255;driveSeekIdChecks++;
+  if(got!==want){driveSeekIdMismatch++;if(driveStockSeekLogs<24||(driveSeekIdMismatch&255)===0){driveStockSeekLogs++;log(`1541 SEEKID FAIL · T${driveTrack} got ${hex(got,2)} want ${hex(want,2)} · latch ${hex(driveDataLatch,2)} · SYNC ${driveSync?1:0} · pos ${driveTrackPos}/${driveTrackStream.length}`)}}
+  else if(driveStockSeekLogs<12){driveStockSeekLogs++;log(`1541 SEEKID OK · T${driveTrack} ${hex(got,2)} · header GCR aligned`)}
+}
+function driveTraceHeaderCompare(){
+  if(!driveCpu)return;
+  if(driveCpu.PC===0xf3e4&&driveHeaderCheckLogs<16){
+    driveHeaderCheckLogs++;
+    log(`1541 HEADER DECODE · T${driveTrack} XOR=${hex(driveCpu.A,2)} · RAM16-1A ${[0x16,0x17,0x18,0x19,0x1a].map(a=>hex(driveRam[a],2)).join(' ')} · expect ${hex(driveRam[0x12],2)} ${hex(driveRam[0x13],2)} ${hex(driveRam[0x0a],2)} ${hex(driveRam[0x0b],2)}`)
+  }
+  if(driveCpu.PC!==0xf543)return;
+  const y=driveCpu.Y&255,got=driveCpu.A&255,want=driveRam[(0x24+y)&0x7ff];driveHdrCmpCount++;
+  if(got!==want){driveHdrMismatchCount++;driveLastHdrMismatch=`Y${hex(y,2)} ${hex(got,2)}!=${hex(want,2)}`;
+    if(driveHdrMismatchCount<=16||(driveHdrMismatchCount&255)===0)log(`1541 HDRCMP FAIL · T${driveTrack} Y${hex(y,2)} got ${hex(got,2)} want ${hex(want,2)} · ID ${hex(driveRam[0x12],2)}${hex(driveRam[0x13],2)} · H ${hex(driveRam[0x18],2)}/${hex(driveRam[0x19],2)}`)
+    if(driveIoTraceDumped<3){driveIoTraceDumped++;log(`1541 BYTE TRACE · ${driveIoTraceText(18)}`)}
+  }else if(driveHdrCmpCount<=8)log(`1541 HDRCMP OK · T${driveTrack} Y${hex(y,2)} = ${hex(got,2)}`)
+}
+function driveDosErrorName(c){return ({1:'OK',2:'HEADER NOT FOUND',3:'NO SYNC',4:'DATA BLOCK ID',5:'DATA CHECKSUM',6:'BAD GCR',9:'HEADER CHECKSUM',11:'DISK ID MISMATCH',15:'DRIVE NOT READY'})[c]||`DOS CODE ${c}`}
+function driveTraceDosError(){
+  if(!driveCpu||driveCpu.PC!==0xf969)return;
+  const c=driveCpu.A&255;if(c===1)return;
+  driveDosErrorCode=c;driveDosErrorCount++;driveDosLastText=driveDosErrorName(c);
+  if(driveDosErrorCount<=16||(driveDosErrorCount&255)===0)log(`1541 DOS ERROR ${hex(c,2)} · ${driveDosLastText} · T${driveTrack} · PC ${hex(driveCpu.PC)} · SYNC hits ${driveSyncHits} · BYTE ${driveByteEvents} · SEEK ${driveSeekIdChecks}/${driveSeekIdMismatch}`)
+}
+function driveMasterClock(c){
+  driveDebt+=c;if(!driveCpu){driveTick(c);return}let guard=0;
+  while(driveDebt>0&&driveCpu.running&&guard++<8){const before=driveCpu.cycles;driveTraceSeekHeaderId();driveTraceHeaderCompare();driveTraceDosError();driveExecution=true;driveCpu.step();driveExecution=false;let used=driveCpu.cycles-before;if(used<=0)used=1;driveDebt-=used}
+  if(!driveCpu.running){driveTick(c);driveDebt=0}
+  if(driveCustomActive&&driveCpu.running){const age=driveCycles-driveFastStartCycles;if(age>=driveFastLastReport+100000){driveFastLastReport=age;log(`1541 FAST · +${age} cyc PC ${hex(driveCpu.PC)} A${hex(driveCpu.A,2)} X${hex(driveCpu.X,2)} Y${hex(driveCpu.Y,2)} P${hex(driveCpu.P,2)} T${driveTrack} ${driveMotor?'MOTOR':'motor-off'} SYNC${driveSync?1:0}/PB7${driveSync?0:1} SOE${driveSoe?1:0} DENS${(via1.r[0]>>5)&3} SH${driveSyncHits} BR${driveByteEvents} V1IFR${hex(via1.r[13],2)} V1PCR${hex(via1.r[12],2)} ORB${hex(via1.r[0],2)} DDR${hex(via1.r[2],2)} STEP${driveStepEvents} DF${driveDensityFixes} SF${driveSyncFirstHeader}/${driveSyncFirstData}/${driveSyncFirstOther} RD${driveDataReads}/C${driveSyncCleanupReads} BRL${driveByteReadyLevel?1:0}/E${driveByteReadyEdge?1:0} PAL${drivePaLatched?1:0}/M${drivePaMissed} BIT${driveRawBitPos}.${driveShiftBits}/BC${driveBitCounter&15}/BL${driveByteLine} LH${driveRam[0x18]}/${driveRam[0x19]} CUR${driveRam[0x0a]}/${driveRam[0x0b]} J43${driveRam[0x43]} DEC${driveRam[0x53]}/${driveRam[0x54]} SI${driveSeekIdChecks}/${driveSeekIdMismatch} HC${driveHdrCmpCount}/${driveHdrMismatchCount}`)}}
+}
+function processDriveCommand(bytes){
+  const b=Array.from(bytes||[]);if(b.length<3)return false;
+  const a=String.fromCharCode(...b.slice(0,3)).toUpperCase();
+  if(a!=='M-R'&&a!=='M-W'&&a!=='M-E')return false;
+  // Commodore DOS accepts both M-R<lo><hi> and M-R:<lo><hi> forms.
+  // The byte-count on M-R is OPTIONAL: when omitted the real 1541 returns
+  // exactly one byte.  NOSDOS uses this while scanning/identifying the drive.
+  let p=3;if(b[p]===0x3a)p++; // optional ':'
+  if(a==='M-R'){
+    if(b.length<p+2)return false;
+    const addr=b[p]|(b[p+1]<<8),len=(b.length>=p+3)?(b[p+2]||256):1;
+    driveCmdResponse=[];for(let i=0;i<len;i++)driveCmdResponse.push(driveRd((addr+i)&0xffff));
+    driveMemCmdCount++;driveLastMemCmd=`M-R ${hex(addr)} × ${len}`;
+    if(driveMemCmdCount<=12||(driveMemCmdCount&255)===0)log(`1541 ${driveLastMemCmd}${b[3]===0x3a?' (colon)':''}`);
+    return true
+  }
+  if(a==='M-W'){
+    if(b.length<p+3)return false;const addr=b[p]|(b[p+1]<<8),len=b[p+2]||256;
+    if(b.length<p+3+len)return false;for(let i=0;i<len;i++)driveWr((addr+i)&0xffff,b[p+3+i]);
+    driveMemCmdCount++;driveLastMemCmd=`M-W ${hex(addr)} × ${len}`;log(`1541 ${driveLastMemCmd}`);return true
+  }
+  if(a==='M-E'){
+    if(b.length<p+2)return false;const addr=b[p]|(b[p+1]<<8);if(!driveCpu)return false;
+    // Real DOS MEMEX ($CB1D) is JMP ($006F), reached from the command parser.
+    // Therefore the uploaded routine inherits a valid return frame and the
+    // register state left by CMP #'E': A=$45, Y=$00, Z=1, C=1.  Simply
+    // replacing PC (old behaviour) made RTS and register-sensitive loaders fail.
+    driveExecution=true;
+    const ret=0xc193; // RTS -> $C194 ENDCMD, matching the DOS command path.
+    driveWr(0x100|driveCpu.S,(ret>>8)&255);driveCpu.S=(driveCpu.S-1)&255;
+    driveWr(0x100|driveCpu.S,ret&255);driveCpu.S=(driveCpu.S-1)&255;
+    driveCpu.A=0x45;driveCpu.Y=0;driveCpu.P=(driveCpu.P|0x23)&~0x80; // C,Z,+constant bit; N clear
+    // If the preceding program LOAD was HLE, no physical 1541 read occurred.
+    // A real drive would normally still have the spindle running when the
+    // resident fastloader takes over.  Restore only PB2/MTR as a compatibility
+    // bridge; leave all DOS RAM, head position and density under ROM control.
+    if(driveHlePrimed&&activeD64()&&!driveMotor){const oldOrb=via1.r[0];via1.r[0]=oldOrb|0x04;driveMechanicsWrite(oldOrb,via1.r[0]);driveBitClock=0;log(`1541 M-E spindle wake · ORB ${hex(oldOrb,2)}→${hex(via1.r[0],2)} · T${driveTrack}`)}
+    // Our initial LOAD is HLE, so the real DOS never physically read its last
+    // sector. Mature true-drive emulators do not need this bridge because their
+    // ROM performs the whole LOAD. N0SD0S immediately consumes $18/$19 (image
+    // of the most recently seen header), so restore ONLY those two bytes here.
+    if(driveHlePrimed&&activeD64()){
+      const oldT=driveRam[0x18],oldS=driveRam[0x19];
+      driveRam[0x18]=driveHleLastTrack&255;driveRam[0x19]=driveHleLastSector&255;
+      log(`1541 HLE→NOSDOS last-header · $18/$19 ${oldT}/${oldS}→${driveRam[0x18]}/${driveRam[0x19]} · no DSKID/head/density forcing`);
+    }
+    driveCpu.PC=addr;driveCpu.running=true;
+    driveExecution=false;driveCustomActive=true;driveLastFault='';driveFastStartCycles=driveCycles;driveFastLastReport=0;
+    driveMemCmdCount++;driveLastMemCmd=`M-E ${hex(addr)}`;
+    const code=[];for(let i=0;i<16;i++)code.push(driveRd((addr+i)&0xffff).toString(16).toUpperCase().padStart(2,'0'));
+    log(`1541 ${driveLastMemCmd} · MEMEX compat · code ${code.join(' ')}`);
+    try{log('1541 FASTCODE $0500-$05DF\n'+driveDisassemble(0x0500,0x05e0,96))}catch(e){log('1541 FASTCODE trace non disponibile: '+e.message)}
+    return true
+  }
+  return false
+}
+function updateDriveStateUI(){const e=$('#drive1541State');if(!e)return;const pc=driveCpu?hex(driveCpu.PC):'$----';e.textContent=`1541 ${driveRomReal?'ROM':'HLE'}${driveCustomActive?'/FAST':''} · PC ${pc} · T${driveTrack} · ${driveMotor?'MOTOR':'motor off'} · ${driveLed?'LED':'led off'} · IEC A${iec.atnHigh?1:0} C${iec.clkHigh?1:0} D${iec.dataHigh?1:0}${driveDosErrorCode>=0?' · DOS '+hex(driveDosErrorCode,2)+' '+driveDosLastText:''}${driveLastFault?' · '+driveLastFault:''}`}
+
+function readIO(a){
+  if(a>=0xd000&&a<=0xd3ff){const r=a&0x3f;if(r===0x12)return raster&0xff;if(r===0x11)return (vic[r]&0x7f)|((raster&0x100)?0x80:0);if(r===0x19)return vic[r]|(irqPending?0x80:0);if(r===0x1e||r===0x1f){const z=vic[r];vic[r]=0;return z}return vic[r]}
+  if(a>=0xd400&&a<=0xd7ff)return sidReadReg((a-0xd400)&0x1f);
+  if(a>=0xd800&&a<=0xdbff)return colorRam[a-0xd800]&0x0f;
+  if(a>=0xdc00&&a<=0xdcff){const r=a&0x0f;
+    if(r===0){
+      let pins=joy2&gpJoy2; const ddrA=cia1[2],ddrB=cia1[3],pb=cia1[1];
+      // keyMatrix is indexed [PA column][PB row], matching the physical C64 matrix.
+      // Reverse scan: a low PB output row pulls the corresponding PA column low.
+      for(let pbRow=0;pbRow<8;pbRow++)if((ddrB&(1<<pbRow))&&!(pb&(1<<pbRow)))
+        for(let paCol=0;paCol<8;paCol++)if(keyMatrix[paCol][pbRow])pins&=~(1<<paCol);
+      // CIA outputs are real pins: an external joystick switch can still pull an output-high line low.
+      return (((cia1[0]|(~ddrA&255))&pins))&255;
+    }
+    if(r===1){
+      let pins=joy1&gpJoy1; const ddrA=cia1[2],pa=cia1[0],ddrB=cia1[3];
+      // Normal KERNAL scan: PA selects a column; PB returns the pressed row bit.
+      for(let paCol=0;paCol<8;paCol++)if((ddrA&(1<<paCol))&&!(pa&(1<<paCol)))
+        for(let pbRow=0;pbRow<8;pbRow++)if(keyMatrix[paCol][pbRow])pins&=~(1<<pbRow);
+      return (((cia1[1]|(~ddrB&255))&pins))&255;
+    }
+    if(r===4)return cia1Ta&255;if(r===5)return (cia1Ta>>8)&255;if(r===6)return cia1Tb&255;if(r===7)return (cia1Tb>>8)&255;if(r===0x0d){const z=cia1IcrStatus|((cia1IcrStatus&cia1IcrMask&0x1f)?0x80:0);cia1IcrStatus=0;recomputeC64Irq();return z}return cia1[r]}
+  if(a>=0xdd00&&a<=0xddff){const r=a&0x0f;if(r===0)return cia2PortARead();if(r===4)return cia2Ta&255;if(r===5)return (cia2Ta>>8)&255;if(r===6)return cia2Tb&255;if(r===7)return (cia2Tb>>8)&255;if(r===0x0d){const z=cia2IcrStatus|((cia2IcrStatus&cia2IcrMask&0x1f)?0x80:0);cia2IcrStatus=0;recomputeC64Nmi();return z}return cia2[r];}
+  return 0xff;
+}
+function writeIO(a,v){v&=255;
+  if(a>=0xd000&&a<=0xd3ff){const r=a&0x3f;if(r===0x19){if(v&1){vic[0x19]&=~1;recomputeC64Irq()}} else if(r!==0x1e&&r!==0x1f){vic[r]=v;if(r===0x17)for(let n=0;n<8;n++)if(!(v&(1<<n)))sprExp[n]=1}return}
+  if(a>=0xd400&&a<=0xd7ff){sidWriteReg((a-0xd400)&0x1f,v);return}
+  if(a>=0xd800&&a<=0xdbff){colorRam[a-0xd800]=v&15;return}
+  if(a>=0xdc00&&a<=0xdcff){const r=a&0x0f;if(r===4){cia1TaLatch=(cia1TaLatch&0xff00)|v;cia1[r]=v}else if(r===5){cia1TaLatch=(v<<8)|(cia1TaLatch&255);cia1[r]=v;if(!(cia1[14]&1))cia1Ta=cia1TaLatch}else if(r===6){cia1TbLatch=(cia1TbLatch&0xff00)|v;cia1[r]=v}else if(r===7){cia1TbLatch=(v<<8)|(cia1TbLatch&255);cia1[r]=v;if(!(cia1[15]&1))cia1Tb=cia1TbLatch}else if(r===14){cia1[r]=v&0xef;if(v&0x10)cia1Ta=cia1TaLatch}else if(r===15){cia1[r]=v&0xef;if(v&0x10)cia1Tb=cia1TbLatch}else if(r===0x0d){if(v&0x80)cia1IcrMask|=v&0x1f;else cia1IcrMask&=~(v&0x1f);recomputeC64Irq()}else cia1[r]=v;return}
+  if(a>=0xdd00&&a<=0xddff){const r=a&0x0f;if(r===4){cia2TaLatch=(cia2TaLatch&0xff00)|v;cia2[r]=v}else if(r===5){cia2TaLatch=(v<<8)|(cia2TaLatch&255);cia2[r]=v;if(!(cia2[14]&1))cia2Ta=cia2TaLatch}else if(r===6){cia2TbLatch=(cia2TbLatch&0xff00)|v;cia2[r]=v}else if(r===7){cia2TbLatch=(v<<8)|(cia2TbLatch&255);cia2[r]=v;if(!(cia2[15]&1))cia2Tb=cia2TbLatch}else if(r===14){cia2[r]=v&0xef;if(v&0x10)cia2Ta=cia2TaLatch}else if(r===15){cia2[r]=v&0xef;if(v&0x10)cia2Tb=cia2TbLatch}else if(r===0x0d){if(v&0x80)cia2IcrMask|=v&0x1f;else cia2IcrMask&=~(v&0x1f);recomputeC64Nmi()}else cia2[r]=v;if(r===0||r===2)updateIecBus();return}
+}
+function rd(a){if(driveExecution)return driveRd(a);a&=0xffff;if(a===0)return ddr;if(a===1){let ext=0xff;if(tape.playing&&mountedMedia?.kind==='TAP')ext&=~0x10;return ((port&ddr)|(ext&(~ddr&0xff)))&0xff;}
+  if(a>=0x8000&&a<=0x9fff&&cartRomL&&cartLoVisible())return cartRomL[a-0x8000];
+  if(a>=0xa000&&a<=0xbfff&&cartRomH&&cartHiVisible())return cartRomH[a-0xa000];
+  if(a>=0xa000&&a<=0xbfff&&basicVisible())return basicRom[a-0xa000];
+  if(a>=0xd000&&a<=0xdfff){if(ioVisible())return readIO(a);if(charVisible()&&charRom)return charRom[a-0xd000]}
+  if(a>=0xe000&&kernalVisible())return kernalRom[a-0xe000];return ram[a]
+}
+function wr(a,v){if(driveExecution){driveWr(a,v);return}a&=0xffff;v&=255;if(a===0){ddr=v;ram[0]=v;return}if(a===1){port=v;ram[1]=v;return}
+  if(a>=0xd000&&a<=0xdfff&&ioVisible()){if(deferIo)deferredIo.push([a,v]);else writeIO(a,v);return} ram[a]=v
+}
+function rd16(a){const l=rd(a),h=rd((a+1)&65535);return l|(h<<8)}
+function rd16bug(a){const l=rd(a),h=rd((a&0xff00)|((a+1)&0xff));return l|(h<<8)}
+function z16(a){a&=255;if(driveExecution)return driveRd(a)|(driveRd((a+1)&255)<<8);return ram[a]|(ram[(a+1)&255]<<8)}
+
+// ---- 6510 CPU -------------------------------------------------------------
+const mainCpuTrace=[];
+function mainCpuTracePush(pc,op,c){
+  mainCpuTrace.push({pc:pc&0xffff,op:op&255,a:c.A&255,x:c.X&255,y:c.Y&255,s:c.S&255,p:c.P&255,port:portEff()&255});
+  if(mainCpuTrace.length>64)mainCpuTrace.shift();
+}
+function mainCpuStopDump(pc,op,c){
+  const bytes=[];for(let i=-16;i<32;i++)bytes.push(ram[(pc+i)&0xffff]);
+  const mem=[];for(let r=0;r<3;r++){const base=(pc-16+r*16)&0xffff;mem.push(`${hex(base)}: `+bytes.slice(r*16,r*16+16).map(v=>hex(v,2)).join(' '))}
+  const tr=mainCpuTrace.slice(-24).map(e=>`${hex(e.pc)}:${hex(e.op,2)} A${hex(e.a,2)} X${hex(e.x,2)} Y${hex(e.y,2)} S${hex(e.s,2)} P${hex(e.p,2)}`).join(' | ');
+  log(`CPU STOP CONTEXT · PC ${hex(pc)} OP ${hex(op,2)} · A${hex(c.A,2)} X${hex(c.X,2)} Y${hex(c.Y,2)} S${hex(c.S,2)} P${hex(c.P,2)} · $00=${hex(ddr,2)} $01=${hex(port,2)} eff=${hex(portEff(),2)}`);
+  log(`CPU RAM AROUND PC\n${mem.join('\n')}`);log(`CPU TRACE LAST 24 · ${tr}`);
+}
+class CPU6510{
+  constructor(){this.A=0;this.X=0;this.Y=0;this.S=0xfd;this.P=0x24;this.PC=0;this.cycles=0;this.running=false}
+  get C(){return this.P&1} set C(v){this.P=v?this.P|1:this.P&~1} get Z(){return (this.P>>1)&1} get I(){return (this.P>>2)&1} set I(v){this.P=v?this.P|4:this.P&~4} get D(){return (this.P>>3)&1} get V(){return (this.P>>6)&1} get N(){return (this.P>>7)&1}
+  f(mask,v){this.P=v?this.P|mask:this.P&~mask} nz(v){v&=255;this.f(2,v===0);this.f(128,v&128);return v}
+  push(v){wr(0x100|this.S,v);this.S=(this.S-1)&255} pop(){this.S=(this.S+1)&255;return rd(0x100|this.S)}
+  fetch(){const v=rd(this.PC);this.PC=(this.PC+1)&65535;return v} word(){const l=this.fetch(),h=this.fetch();return l|(h<<8)}
+  reset(pc=null){this.A=this.X=this.Y=0;this.S=0xfd;this.P=0x24;this.PC=pc==null?rd16(0xfffc):pc;this.cycles=0;if(driveExecution)driveIrqPending=false;else{irqPending=false;nmiPending=false}}
+  nmi(){if(driveExecution)return false;nmiPending=false;this.push(this.PC>>8);this.push(this.PC);this.push((this.P&~0x10)|0x20);this.I=1;this.PC=rd16(0xfffa);tick(7);this.cycles+=7;return true}
+  irq(){if(this.I)return false;this.push(this.PC>>8);this.push(this.PC);this.push((this.P&~0x10)|0x20);this.I=1;if(driveExecution){this.PC=rd16(0xfffe)}else if(!kernalRom&&(portEff()&2)){/* fallback IRQ path, normally unreachable because BIOS ROMs are mandatory */this.push(this.A);this.push(this.X);this.push(this.Y);this.PC=ram[0x0314]|(ram[0x0315]<<8)}else this.PC=rd16(0xfffe);tick(7);this.cycles+=7;return true}
+  adc(v){const a=this.A,c=this.C;if(this.D){let lo=(a&15)+(v&15)+c, hi=(a>>4)+(v>>4);if(lo>9){lo+=6;hi++}this.f(64,(~(a^v)&(a-((v+c)&255))&128)!==0);this.C=hi>9;if(hi>9)hi+=6;this.A=this.nz(((hi<<4)|(lo&15))&255)}else{const s=a+v+c,r=s&255;this.C=s>255;this.f(64,(~(a^v)&(a^r)&128)!==0);this.A=this.nz(r)}}
+  sbc(v){this.adc(v^255)} cmp(r,v){const t=(r-v)&0x1ff;this.C=r>=v;this.nz(t&255)}
+  branch(cond){const o=(this.fetch()<<24)>>24;if(cond){const old=this.PC;this.PC=(this.PC+o)&65535;this.extraCycles++;if((old&0xff00)!==(this.PC&0xff00))this.extraCycles++}}
+  step(){if(!driveExecution&&nmiPending){this.nmi();return}const pending=driveExecution?driveIrqPending:irqPending;if(pending&&!this.I){this.irq();return}if(hleKernelCall(this))return;if(!driveExecution){deferredIo=[];deferIo=true}const opPc=this.PC,op=this.fetch();if(!driveExecution)mainCpuTracePush(opPc,op,this);this.extraCycles=0;let a,v,t;
+    switch(op){
+      // ORA
+      case 0x01:a=(z16((this.fetch()+this.X)&255));this.A=this.nz(this.A|rd(a));break;case 0x05:this.A=this.nz(this.A|rd(this.fetch()));break;case 0x09:this.A=this.nz(this.A|this.fetch());break;case 0x0d:this.A=this.nz(this.A|rd(this.word()));break;case 0x11:a=(z16(this.fetch())+this.Y)&65535;this.A=this.nz(this.A|rd(a));break;case 0x15:this.A=this.nz(this.A|rd((this.fetch()+this.X)&255));break;case 0x19:this.A=this.nz(this.A|rd((this.word()+this.Y)&65535));break;case 0x1d:this.A=this.nz(this.A|rd((this.word()+this.X)&65535));break;
+      // AND
+      case 0x21:a=z16((this.fetch()+this.X)&255);this.A=this.nz(this.A&rd(a));break;case 0x25:this.A=this.nz(this.A&rd(this.fetch()));break;case 0x29:this.A=this.nz(this.A&this.fetch());break;case 0x2d:this.A=this.nz(this.A&rd(this.word()));break;case 0x31:a=(z16(this.fetch())+this.Y)&65535;this.A=this.nz(this.A&rd(a));break;case 0x35:this.A=this.nz(this.A&rd((this.fetch()+this.X)&255));break;case 0x39:this.A=this.nz(this.A&rd((this.word()+this.Y)&65535));break;case 0x3d:this.A=this.nz(this.A&rd((this.word()+this.X)&65535));break;
+      // EOR
+      case 0x41:a=z16((this.fetch()+this.X)&255);this.A=this.nz(this.A^rd(a));break;case 0x45:this.A=this.nz(this.A^rd(this.fetch()));break;case 0x49:this.A=this.nz(this.A^this.fetch());break;case 0x4d:this.A=this.nz(this.A^rd(this.word()));break;case 0x51:a=(z16(this.fetch())+this.Y)&65535;this.A=this.nz(this.A^rd(a));break;case 0x55:this.A=this.nz(this.A^rd((this.fetch()+this.X)&255));break;case 0x59:this.A=this.nz(this.A^rd((this.word()+this.Y)&65535));break;case 0x5d:this.A=this.nz(this.A^rd((this.word()+this.X)&65535));break;
+      // ADC
+      case 0x61:a=z16((this.fetch()+this.X)&255);this.adc(rd(a));break;case 0x65:this.adc(rd(this.fetch()));break;case 0x69:this.adc(this.fetch());break;case 0x6d:this.adc(rd(this.word()));break;case 0x71:a=(z16(this.fetch())+this.Y)&65535;this.adc(rd(a));break;case 0x75:this.adc(rd((this.fetch()+this.X)&255));break;case 0x79:this.adc(rd((this.word()+this.Y)&65535));break;case 0x7d:this.adc(rd((this.word()+this.X)&65535));break;
+      // STA
+      case 0x81:a=z16((this.fetch()+this.X)&255);wr(a,this.A);break;case 0x85:wr(this.fetch(),this.A);break;case 0x8d:wr(this.word(),this.A);break;case 0x91:a=(z16(this.fetch())+this.Y)&65535;wr(a,this.A);break;case 0x95:wr((this.fetch()+this.X)&255,this.A);break;case 0x99:wr((this.word()+this.Y)&65535,this.A);break;case 0x9d:wr((this.word()+this.X)&65535,this.A);break;
+      // LDA
+      case 0xa1:a=z16((this.fetch()+this.X)&255);this.A=this.nz(rd(a));break;case 0xa5:this.A=this.nz(rd(this.fetch()));break;case 0xa9:this.A=this.nz(this.fetch());break;case 0xad:this.A=this.nz(rd(this.word()));break;case 0xb1:a=(z16(this.fetch())+this.Y)&65535;this.A=this.nz(rd(a));break;case 0xb5:this.A=this.nz(rd((this.fetch()+this.X)&255));break;case 0xb9:this.A=this.nz(rd((this.word()+this.Y)&65535));break;case 0xbd:this.A=this.nz(rd((this.word()+this.X)&65535));break;
+      // CMP
+      case 0xc1:a=z16((this.fetch()+this.X)&255);this.cmp(this.A,rd(a));break;case 0xc5:this.cmp(this.A,rd(this.fetch()));break;case 0xc9:this.cmp(this.A,this.fetch());break;case 0xcd:this.cmp(this.A,rd(this.word()));break;case 0xd1:a=(z16(this.fetch())+this.Y)&65535;this.cmp(this.A,rd(a));break;case 0xd5:this.cmp(this.A,rd((this.fetch()+this.X)&255));break;case 0xd9:this.cmp(this.A,rd((this.word()+this.Y)&65535));break;case 0xdd:this.cmp(this.A,rd((this.word()+this.X)&65535));break;
+      // SBC
+      case 0xe1:a=z16((this.fetch()+this.X)&255);this.sbc(rd(a));break;case 0xe5:this.sbc(rd(this.fetch()));break;case 0xe9:case 0xeb:this.sbc(this.fetch());break;case 0xed:this.sbc(rd(this.word()));break;case 0xf1:a=(z16(this.fetch())+this.Y)&65535;this.sbc(rd(a));break;case 0xf5:this.sbc(rd((this.fetch()+this.X)&255));break;case 0xf9:this.sbc(rd((this.word()+this.Y)&65535));break;case 0xfd:this.sbc(rd((this.word()+this.X)&65535));break;
+      // ASL/ROL/LSR/ROR
+      case 0x0a:this.C=this.A&128;this.A=this.nz((this.A<<1)&255);break;case 0x06:a=this.fetch();v=rd(a);this.C=v&128;wr(a,v);wr(a,this.nz(v<<1));break;case 0x0e:a=this.word();v=rd(a);this.C=v&128;wr(a,v);wr(a,this.nz(v<<1));break;case 0x16:a=(this.fetch()+this.X)&255;v=rd(a);this.C=v&128;wr(a,v);wr(a,this.nz(v<<1));break;case 0x1e:a=(this.word()+this.X)&65535;v=rd(a);this.C=v&128;wr(a,v);wr(a,this.nz(v<<1));break;
+      case 0x2a:t=this.C;this.C=this.A&128;this.A=this.nz((this.A<<1|t)&255);break;case 0x26:a=this.fetch();v=rd(a);t=this.C;this.C=v&128;wr(a,v);wr(a,this.nz((v<<1|t)&255));break;case 0x2e:a=this.word();v=rd(a);t=this.C;this.C=v&128;wr(a,v);wr(a,this.nz((v<<1|t)&255));break;case 0x36:a=(this.fetch()+this.X)&255;v=rd(a);t=this.C;this.C=v&128;wr(a,v);wr(a,this.nz((v<<1|t)&255));break;case 0x3e:a=(this.word()+this.X)&65535;v=rd(a);t=this.C;this.C=v&128;wr(a,v);wr(a,this.nz((v<<1|t)&255));break;
+      case 0x4a:this.C=this.A&1;this.A=this.nz(this.A>>1);break;case 0x46:a=this.fetch();v=rd(a);this.C=v&1;wr(a,v);wr(a,this.nz(v>>1));break;case 0x4e:a=this.word();v=rd(a);this.C=v&1;wr(a,v);wr(a,this.nz(v>>1));break;case 0x56:a=(this.fetch()+this.X)&255;v=rd(a);this.C=v&1;wr(a,v);wr(a,this.nz(v>>1));break;case 0x5e:a=(this.word()+this.X)&65535;v=rd(a);this.C=v&1;wr(a,v);wr(a,this.nz(v>>1));break;
+      case 0x6a:t=this.C;this.C=this.A&1;this.A=this.nz((this.A>>1)|(t<<7));break;case 0x66:a=this.fetch();v=rd(a);t=this.C;this.C=v&1;wr(a,v);wr(a,this.nz((v>>1)|(t<<7)));break;case 0x6e:a=this.word();v=rd(a);t=this.C;this.C=v&1;wr(a,v);wr(a,this.nz((v>>1)|(t<<7)));break;case 0x76:a=(this.fetch()+this.X)&255;v=rd(a);t=this.C;this.C=v&1;wr(a,v);wr(a,this.nz((v>>1)|(t<<7)));break;case 0x7e:a=(this.word()+this.X)&65535;v=rd(a);t=this.C;this.C=v&1;wr(a,v);wr(a,this.nz((v>>1)|(t<<7)));break;
+      // stores/loads index
+      case 0x84:wr(this.fetch(),this.Y);break;case 0x8c:wr(this.word(),this.Y);break;case 0x94:wr((this.fetch()+this.X)&255,this.Y);break;case 0x86:wr(this.fetch(),this.X);break;case 0x8e:wr(this.word(),this.X);break;case 0x96:wr((this.fetch()+this.Y)&255,this.X);break;
+      case 0xa0:this.Y=this.nz(this.fetch());break;case 0xa4:this.Y=this.nz(rd(this.fetch()));break;case 0xac:this.Y=this.nz(rd(this.word()));break;case 0xb4:this.Y=this.nz(rd((this.fetch()+this.X)&255));break;case 0xbc:this.Y=this.nz(rd((this.word()+this.X)&65535));break;
+      case 0xa2:this.X=this.nz(this.fetch());break;case 0xa6:this.X=this.nz(rd(this.fetch()));break;case 0xae:this.X=this.nz(rd(this.word()));break;case 0xb6:this.X=this.nz(rd((this.fetch()+this.Y)&255));break;case 0xbe:this.X=this.nz(rd((this.word()+this.Y)&65535));break;
+      // DEC/INC memory
+      case 0xc6:a=this.fetch();v=rd(a);wr(a,v);wr(a,this.nz(v-1));break;case 0xce:a=this.word();v=rd(a);wr(a,v);wr(a,this.nz(v-1));break;case 0xd6:a=(this.fetch()+this.X)&255;v=rd(a);wr(a,v);wr(a,this.nz(v-1));break;case 0xde:a=(this.word()+this.X)&65535;v=rd(a);wr(a,v);wr(a,this.nz(v-1));break;
+      case 0xe6:a=this.fetch();v=rd(a);wr(a,v);wr(a,this.nz(v+1));break;case 0xee:a=this.word();v=rd(a);wr(a,v);wr(a,this.nz(v+1));break;case 0xf6:a=(this.fetch()+this.X)&255;v=rd(a);wr(a,v);wr(a,this.nz(v+1));break;case 0xfe:a=(this.word()+this.X)&65535;v=rd(a);wr(a,v);wr(a,this.nz(v+1));break;
+      // BIT / compares
+      case 0x24:v=rd(this.fetch());this.f(2,(this.A&v)===0);this.f(64,v&64);this.f(128,v&128);break;case 0x2c:v=rd(this.word());this.f(2,(this.A&v)===0);this.f(64,v&64);this.f(128,v&128);break;
+      case 0xc0:this.cmp(this.Y,this.fetch());break;case 0xc4:this.cmp(this.Y,rd(this.fetch()));break;case 0xcc:this.cmp(this.Y,rd(this.word()));break;case 0xe0:this.cmp(this.X,this.fetch());break;case 0xe4:this.cmp(this.X,rd(this.fetch()));break;case 0xec:this.cmp(this.X,rd(this.word()));break;
+      // branches
+      case 0x10:this.branch(!this.N);break;case 0x30:this.branch(this.N);break;case 0x50:this.branch(!this.V);break;case 0x70:this.branch(this.V);break;case 0x90:this.branch(!this.C);break;case 0xb0:this.branch(this.C);break;case 0xd0:this.branch(!this.Z);break;case 0xf0:this.branch(this.Z);break;
+      // jumps/subroutines/interrupt
+      case 0x4c:this.PC=this.word();break;case 0x6c:this.PC=rd16bug(this.word());break;case 0x20:a=this.word();t=(this.PC-1)&65535;this.push(t>>8);this.push(t);this.PC=a;break;case 0x60:t=this.pop();this.PC=((this.pop()<<8)|t)+1&65535;break;
+      case 0x00:this.PC=(this.PC+1)&65535;this.push(this.PC>>8);this.push(this.PC);this.push(this.P|0x30);this.I=1;this.PC=rd16(0xfffe);break;case 0x40:this.P=(this.pop()&~0x10)|0x20;t=this.pop();this.PC=t|(this.pop()<<8);break;
+      // stack / transfers / increments
+      case 0x08:this.push(this.P|0x30);break;case 0x28:this.P=(this.pop()&~0x10)|0x20;break;case 0x48:this.push(this.A);break;case 0x68:this.A=this.nz(this.pop());break;
+      case 0x88:this.Y=this.nz(this.Y-1);break;case 0xc8:this.Y=this.nz(this.Y+1);break;case 0xca:this.X=this.nz(this.X-1);break;case 0xe8:this.X=this.nz(this.X+1);break;
+      case 0xaa:this.X=this.nz(this.A);break;case 0x8a:this.A=this.nz(this.X);break;case 0xa8:this.Y=this.nz(this.A);break;case 0x98:this.A=this.nz(this.Y);break;case 0xba:this.X=this.nz(this.S);break;case 0x9a:this.S=this.X;break;
+      // flags
+      case 0x18:this.C=0;break;case 0x38:this.C=1;break;case 0x58:this.I=0;break;case 0x78:this.I=1;break;case 0xb8:if(driveExecution)driveByteReadyEdge=false;this.f(64,0);break;case 0xd8:this.f(8,0);break;case 0xf8:this.f(8,1);break;
+      // Common NMOS 6510 undocumented opcodes used by many loaders/cracks.
+      // SLO = ASL memory then ORA
+      case 0x03:a=z16((this.fetch()+this.X)&255);v=rd(a);this.C=v&128;wr(a,v);v=this.nz((v<<1)&255);wr(a,v);this.A=this.nz(this.A|v);break;
+      case 0x07:a=this.fetch();v=rd(a);this.C=v&128;wr(a,v);v=this.nz((v<<1)&255);wr(a,v);this.A=this.nz(this.A|v);break;
+      case 0x0f:a=this.word();v=rd(a);this.C=v&128;wr(a,v);v=this.nz((v<<1)&255);wr(a,v);this.A=this.nz(this.A|v);break;
+      case 0x13:a=(z16(this.fetch())+this.Y)&65535;v=rd(a);this.C=v&128;wr(a,v);v=this.nz((v<<1)&255);wr(a,v);this.A=this.nz(this.A|v);break;
+      case 0x17:a=(this.fetch()+this.X)&255;v=rd(a);this.C=v&128;wr(a,v);v=this.nz((v<<1)&255);wr(a,v);this.A=this.nz(this.A|v);break;
+      case 0x1b:a=(this.word()+this.Y)&65535;v=rd(a);this.C=v&128;wr(a,v);v=this.nz((v<<1)&255);wr(a,v);this.A=this.nz(this.A|v);break;
+      case 0x1f:a=(this.word()+this.X)&65535;v=rd(a);this.C=v&128;wr(a,v);v=this.nz((v<<1)&255);wr(a,v);this.A=this.nz(this.A|v);break;
+      // RLA = ROL memory then AND
+      case 0x23:a=z16((this.fetch()+this.X)&255);v=rd(a);t=this.C;this.C=v&128;wr(a,v);v=this.nz((v<<1|t)&255);wr(a,v);this.A=this.nz(this.A&v);break;
+      case 0x27:a=this.fetch();v=rd(a);t=this.C;this.C=v&128;wr(a,v);v=this.nz((v<<1|t)&255);wr(a,v);this.A=this.nz(this.A&v);break;
+      case 0x2f:a=this.word();v=rd(a);t=this.C;this.C=v&128;wr(a,v);v=this.nz((v<<1|t)&255);wr(a,v);this.A=this.nz(this.A&v);break;
+      case 0x33:a=(z16(this.fetch())+this.Y)&65535;v=rd(a);t=this.C;this.C=v&128;wr(a,v);v=this.nz((v<<1|t)&255);wr(a,v);this.A=this.nz(this.A&v);break;
+      case 0x37:a=(this.fetch()+this.X)&255;v=rd(a);t=this.C;this.C=v&128;wr(a,v);v=this.nz((v<<1|t)&255);wr(a,v);this.A=this.nz(this.A&v);break;
+      case 0x3b:a=(this.word()+this.Y)&65535;v=rd(a);t=this.C;this.C=v&128;wr(a,v);v=this.nz((v<<1|t)&255);wr(a,v);this.A=this.nz(this.A&v);break;
+      case 0x3f:a=(this.word()+this.X)&65535;v=rd(a);t=this.C;this.C=v&128;wr(a,v);v=this.nz((v<<1|t)&255);wr(a,v);this.A=this.nz(this.A&v);break;
+      // SRE = LSR memory then EOR
+      case 0x43:a=z16((this.fetch()+this.X)&255);v=rd(a);this.C=v&1;wr(a,v);v=this.nz(v>>1);wr(a,v);this.A=this.nz(this.A^v);break;
+      case 0x47:a=this.fetch();v=rd(a);this.C=v&1;wr(a,v);v=this.nz(v>>1);wr(a,v);this.A=this.nz(this.A^v);break;
+      case 0x4f:a=this.word();v=rd(a);this.C=v&1;wr(a,v);v=this.nz(v>>1);wr(a,v);this.A=this.nz(this.A^v);break;
+      case 0x53:a=(z16(this.fetch())+this.Y)&65535;v=rd(a);this.C=v&1;wr(a,v);v=this.nz(v>>1);wr(a,v);this.A=this.nz(this.A^v);break;
+      case 0x57:a=(this.fetch()+this.X)&255;v=rd(a);this.C=v&1;wr(a,v);v=this.nz(v>>1);wr(a,v);this.A=this.nz(this.A^v);break;
+      case 0x5b:a=(this.word()+this.Y)&65535;v=rd(a);this.C=v&1;wr(a,v);v=this.nz(v>>1);wr(a,v);this.A=this.nz(this.A^v);break;
+      case 0x5f:a=(this.word()+this.X)&65535;v=rd(a);this.C=v&1;wr(a,v);v=this.nz(v>>1);wr(a,v);this.A=this.nz(this.A^v);break;
+      // RRA = ROR memory then ADC
+      case 0x63:a=z16((this.fetch()+this.X)&255);v=rd(a);t=this.C;this.C=v&1;wr(a,v);v=((v>>1)|(t<<7))&255;wr(a,v);this.adc(v);break;
+      case 0x67:a=this.fetch();v=rd(a);t=this.C;this.C=v&1;wr(a,v);v=((v>>1)|(t<<7))&255;wr(a,v);this.adc(v);break;
+      case 0x6f:a=this.word();v=rd(a);t=this.C;this.C=v&1;wr(a,v);v=((v>>1)|(t<<7))&255;wr(a,v);this.adc(v);break;
+      case 0x73:a=(z16(this.fetch())+this.Y)&65535;v=rd(a);t=this.C;this.C=v&1;wr(a,v);v=((v>>1)|(t<<7))&255;wr(a,v);this.adc(v);break;
+      case 0x77:a=(this.fetch()+this.X)&255;v=rd(a);t=this.C;this.C=v&1;wr(a,v);v=((v>>1)|(t<<7))&255;wr(a,v);this.adc(v);break;
+      case 0x7b:a=(this.word()+this.Y)&65535;v=rd(a);t=this.C;this.C=v&1;wr(a,v);v=((v>>1)|(t<<7))&255;wr(a,v);this.adc(v);break;
+      case 0x7f:a=(this.word()+this.X)&65535;v=rd(a);t=this.C;this.C=v&1;wr(a,v);v=((v>>1)|(t<<7))&255;wr(a,v);this.adc(v);break;
+      // SAX = A & X store
+      case 0x83:a=z16((this.fetch()+this.X)&255);wr(a,this.A&this.X);break;case 0x87:wr(this.fetch(),this.A&this.X);break;case 0x8f:wr(this.word(),this.A&this.X);break;case 0x97:wr((this.fetch()+this.Y)&255,this.A&this.X);break;
+      // LAX = load A and X together
+      case 0xa3:a=z16((this.fetch()+this.X)&255);this.A=this.X=this.nz(rd(a));break;case 0xa7:this.A=this.X=this.nz(rd(this.fetch()));break;case 0xaf:this.A=this.X=this.nz(rd(this.word()));break;case 0xb3:a=(z16(this.fetch())+this.Y)&65535;this.A=this.X=this.nz(rd(a));break;case 0xb7:this.A=this.X=this.nz(rd((this.fetch()+this.Y)&255));break;case 0xbf:this.A=this.X=this.nz(rd((this.word()+this.Y)&65535));break;
+      // DCP = DEC memory then CMP
+      case 0xc3:a=z16((this.fetch()+this.X)&255);v=rd(a);wr(a,v);v=(v-1)&255;wr(a,v);this.cmp(this.A,v);break;case 0xc7:a=this.fetch();v=rd(a);wr(a,v);v=(v-1)&255;wr(a,v);this.cmp(this.A,v);break;case 0xcf:a=this.word();v=rd(a);wr(a,v);v=(v-1)&255;wr(a,v);this.cmp(this.A,v);break;case 0xd3:a=(z16(this.fetch())+this.Y)&65535;v=rd(a);wr(a,v);v=(v-1)&255;wr(a,v);this.cmp(this.A,v);break;case 0xd7:a=(this.fetch()+this.X)&255;v=rd(a);wr(a,v);v=(v-1)&255;wr(a,v);this.cmp(this.A,v);break;case 0xdb:a=(this.word()+this.Y)&65535;v=rd(a);wr(a,v);v=(v-1)&255;wr(a,v);this.cmp(this.A,v);break;case 0xdf:a=(this.word()+this.X)&65535;v=rd(a);wr(a,v);v=(v-1)&255;wr(a,v);this.cmp(this.A,v);break;
+      // ISC/ISB = INC memory then SBC
+      case 0xe3:a=z16((this.fetch()+this.X)&255);v=rd(a);wr(a,v);v=(v+1)&255;wr(a,v);this.sbc(v);break;case 0xe7:a=this.fetch();v=rd(a);wr(a,v);v=(v+1)&255;wr(a,v);this.sbc(v);break;case 0xef:a=this.word();v=rd(a);wr(a,v);v=(v+1)&255;wr(a,v);this.sbc(v);break;case 0xf3:a=(z16(this.fetch())+this.Y)&65535;v=rd(a);wr(a,v);v=(v+1)&255;wr(a,v);this.sbc(v);break;case 0xf7:a=(this.fetch()+this.X)&255;v=rd(a);wr(a,v);v=(v+1)&255;wr(a,v);this.sbc(v);break;case 0xfb:a=(this.word()+this.Y)&65535;v=rd(a);wr(a,v);v=(v+1)&255;wr(a,v);this.sbc(v);break;case 0xff:a=(this.word()+this.X)&65535;v=rd(a);wr(a,v);v=(v+1)&255;wr(a,v);this.sbc(v);break;
+      // Immediate undocumented helpers
+      case 0x0b:case 0x2b:this.A=this.nz(this.A&this.fetch());this.C=this.A&0x80;break;
+      case 0x4b:this.A=this.nz(this.A&this.fetch());this.C=this.A&1;this.A=this.nz(this.A>>1);break;
+      case 0xcb:v=this.fetch();t=(this.A&this.X)-v;this.C=t>=0;this.X=this.nz(t&255);break;
+      // NOP and common illegal NOPs used by software
+      case 0xea:break;case 0x1a:case 0x3a:case 0x5a:case 0x7a:case 0xda:case 0xfa:break;
+      case 0x04:case 0x44:case 0x64:this.fetch();break;case 0x0c:this.word();break;case 0x14:case 0x34:case 0x54:case 0x74:case 0xd4:case 0xf4:this.fetch();break;case 0x80:case 0x82:case 0x89:case 0xc2:case 0xe2:this.fetch();break;case 0x1c:case 0x3c:case 0x5c:case 0x7c:case 0xdc:case 0xfc:this.word();break;
+      // NMOS 6502 KIL/JAM opcodes. These are real one-byte CPU lockups, not
+      // missing instructions. A running game reaching one almost always means
+      // a loader/checksum error or an unintended jump into data.
+      case 0x02:case 0x12:case 0x22:case 0x32:case 0x42:case 0x52:case 0x62:case 0x72:case 0x92:case 0xb2:case 0xd2:case 0xf2:
+        if(driveExecution){driveFault(op,opPc);return}
+        deferIo=false;deferredIo=[];log(`STOP · CPU JAM/KIL ${hex(op,2)} @ ${hex(opPc)} · probabile salto nei dati/corruzione loader`);mainCpuStopDump(opPc,op,this);this.running=false;updateRunState();return;
+      default: if(driveExecution){driveFault(op,opPc);return}deferIo=false;deferredIo=[];log(`STOP · opcode ${hex(op,2)} non implementato @ ${hex(opPc)}`);mainCpuStopDump(opPc,op,this);this.running=false;updateRunState();return;
+    }
+    const cyc=(OPCYC[op]||2)+this.extraCycles;this.cycles+=cyc;if(cyc>1)tick(cyc-1);if(!driveExecution){deferIo=false;flushDeferredIo()}tick(1);
+  }
+}
+const cpu=new CPU6510();initDriveRom();driveCpu=new CPU6510();driveReset1541(false);
+
+// Base timing NMOS 6502/6510. Page-cross penalties for indexed reads are approximated;
+// branch penalties are handled explicitly above. This is already far closer than the old fixed 2-cycle core.
+const OPCYC=new Uint8Array(256);OPCYC.fill(2);
+function cy(n,...ops){for(const o of ops)OPCYC[o]=n}
+cy(6,0x01,0x21,0x41,0x61,0x81,0xa1,0xc1,0xe1);cy(3,0x05,0x25,0x45,0x65,0xa5,0xc5,0xe5,0x24,0x84,0x86,0xa4,0xa6,0xc4,0xe4);
+cy(2,0x09,0x29,0x49,0x69,0xa9,0xc9,0xe9,0xeb,0xa0,0xa2,0xc0,0xe0,0x0a,0x2a,0x4a,0x6a,0xea,0x18,0x38,0x58,0x78,0xb8,0xd8,0xf8,0x88,0xc8,0xca,0xe8,0xaa,0x8a,0xa8,0x98,0xba,0x9a);
+cy(4,0x0d,0x2d,0x4d,0x6d,0x8d,0xad,0xcd,0xed,0x0e,0x2e,0x4e,0x6e,0x8c,0x8e,0xac,0xae,0xcc,0xec,0xce,0xee,0x2c);
+cy(5,0x11,0x31,0x51,0x71,0xb1,0xd1,0xf1,0x19,0x39,0x59,0x79,0xb9,0xd9,0xf9,0x1d,0x3d,0x5d,0x7d,0xbd,0xdd,0xfd,0x99,0x9d);
+cy(4,0x15,0x35,0x55,0x75,0x95,0xb5,0xd5,0xf5,0x94,0x96,0xb4,0xb6,0xc6,0xe6);
+cy(6,0x16,0x36,0x56,0x76,0xd6,0xf6);cy(7,0x1e,0x3e,0x5e,0x7e,0xde,0xfe);cy(5,0x06,0x26,0x46,0x66);
+cy(6,0x20,0x60,0x40);cy(3,0x4c);cy(5,0x6c);cy(7,0x00);cy(3,0x08,0x28,0x48,0x68);
+cy(2,0x10,0x30,0x50,0x70,0x90,0xb0,0xd0,0xf0);
+cy(4,0x91);cy(5,0x96);cy(4,0xbc,0xbe); // practical approximations for indexed addressing
+// Corrections for the instructions most relevant to raster loaders.
+cy(5,0x06,0x26,0x46,0x66,0xc6,0xe6);cy(6,0x0e,0x2e,0x4e,0x6e,0x16,0x36,0x56,0x76,0x91,0xd6,0xf6);cy(7,0x1e,0x3e,0x5e,0x7e,0xde,0xfe);
+cy(4,0x19,0x39,0x59,0x79,0xb9,0xd9,0xf9,0x1d,0x3d,0x5d,0x7d,0xbd,0xdd,0xfd,0xbc,0xbe);cy(5,0x99,0x9d);cy(4,0x96);
+
+
+// Undocumented NMOS timing.
+cy(8,0x03,0x23,0x43,0x63,0xc3,0xe3,0x13,0x33,0x53,0x73,0xd3,0xf3);
+cy(5,0x07,0x27,0x47,0x67,0xc7,0xe7);cy(6,0x0f,0x2f,0x4f,0x6f,0xcf,0xef,0x17,0x37,0x57,0x77,0xd7,0xf7);
+cy(7,0x1b,0x3b,0x5b,0x7b,0xdb,0xfb,0x1f,0x3f,0x5f,0x7f,0xdf,0xff);
+cy(6,0x83,0xa3);cy(3,0x87,0xa7);cy(4,0x8f,0x97,0xaf,0xb7,0xbf);cy(5,0xb3);cy(2,0x0b,0x2b,0x4b,0xcb);
+function badlineCondition(){return denLatch&&raster>=0x30&&raster<=0xf7&&((raster&7)===(vic[0x11]&7))}
+function spriteStealsCpu(){const slots=[[57,58],[59,60],[61,62],[0,1],[2,3],[4,5],[6,7],[8,9]];for(let n=0;n<8;n++)if(sprDMA[n]&&vicCycle>=slots[n][0]&&vicCycle<=slots[n][1])return true;return false}
+function vicStealsCpu(){return (badlineActive&&vicCycle>=badlineStallFrom&&vicCycle<=54)||spriteStealsCpu()}
+function latchVideoMatrix(){const bank=((~cia2[0])&3)*0x4000,screenBase=(bank+((vic[0x18]>>4)&15)*0x400)&0xffff;for(let c=0;c<40;c++){const k=(lineVc+c)&0x3ff;videoMatrix[c]=ram[(screenBase+k)&0xffff];videoColors[c]=colorRam[k]&15}}
+function fetchSpriteNext(n){if(!sprDMA[n]){sprNext[n].fill(0);return}const bank=((~cia2[0])&3)*0x4000,screenBase=(bank+((vic[0x18]>>4)&15)*0x400)&0xffff,ptr=ram[(screenBase+0x3f8+n)&0xffff],base=(bank+(ptr<<6)+sprMCBase[n])&0xffff;for(let j=0;j<3;j++)sprNext[n][j]=vicByte((base+j)&0xffff);sprMC[n]=(sprMCBase[n]+3)&0x3f}
+function spriteCycle55_56(){for(let n=0;n<8;n++){const bit=1<<n;if((vic[0x15]&bit)&&vic[n*2+1]===(raster&255)&&!sprDMA[n]){sprDMA[n]=1;sprMCBase[n]=0;if(vic[0x17]&bit)sprExp[n]=0}}}
+function advanceVicOne(){
+  if(raster===0x30&&(vic[0x11]&0x10))denLatch=true;
+  // A badline can be created dynamically during cycles 12-54. Once c-access has started it continues.
+  if(vicCycle>=12&&vicCycle<=54&&badlineCondition()&&!badlineActive){badlineActive=true;badlineStart=vicCycle;badlineStallFrom=Math.max(15,vicCycle+3);vicDisplay=true;latchVideoMatrix()}
+  if(vicCycle===14){vicVc=vicVcbase;lineVc=vicVcbase;if(badlineCondition()&&!lateD011Cycle14)vicRc=0;lineRc=vicRc;lateD011Cycle14=false}
+  // Sprite vertical sequencer. D017 tricks depend specifically on these cycles.
+  if(vicCycle===15){for(let n=0;n<8;n++)if(sprExp[n])sprMCBase[n]=(sprMCBase[n]+2)&0x3f}
+  if(vicCycle===16){for(let n=0;n<8;n++)if(sprExp[n]){sprMCBase[n]=(sprMCBase[n]+1)&0x3f;if(sprMCBase[n]===63){sprDMA[n]=0;sprDisplay[n]=0}}}
+  if(vicCycle===30)captureRaster(raster);
+  if(vicCycle===55){for(let n=0;n<8;n++)if(vic[0x17]&(1<<n))sprExp[n]^=1;spriteCycle55_56()}
+  if(vicCycle===56)spriteCycle55_56();
+  if(vicCycle===58){for(let n=0;n<8;n++){sprMC[n]=sprMCBase[n];if(sprDMA[n]&&vic[n*2+1]===(raster&255))sprDisplay[n]=1;fetchSpriteNext(n)}if(vicDisplay)vicVc=(lineVc+40)&0x3ff;if(vicRc===7){vicDisplay=false;vicVcbase=vicVc}if(badlineActive)vicDisplay=true;if(vicDisplay)vicRc=(vicRc+1)&7}
+  masterCycles++;driveMasterClock(1);cia1Clock();cia2Clock();tapeAdvanceCycles(1);vicCycle++;
+  if(vicCycle>=63){vicCycle=0;raster++;badlineActive=false;badlineStart=99;badlineStallFrom=99;for(let n=0;n<8;n++)sprData[n].set(sprNext[n]);if(raster>=312){completedRasterLines=rasterLines;rasterLines=Array(312);raster=0;frameCount++;denLatch=false;vicVcbase=0}captureRaster(raster)}
+  const target=vic[0x12]|((vic[0x11]&0x80)?0x100:0);/* Raster compare is edge-like: latch once as the new raster line begins, not on every cycle of the line. */if(vicCycle===0&&raster===target&&(vic[0x1a]&1)){vic[0x19]|=1;recomputeC64Irq()}
+}
+function tick(c){if(driveExecution){driveTick(c);return}let left=c,guard=0;while(left>0&&guard++<100000){if(vicStealsCpu()){advanceVicOne();continue}advanceVicOne();left--}}
+
+// ---- Video ----------------------------------------------------------------
+const canvas=$('#screen'),ctx=canvas.getContext('2d',{alpha:false});ctx.imageSmoothingEnabled=false;
+const frameImage=ctx.createImageData(384,272),pix=frameImage.data;
+function screenCodeToChar(c){if(c===0)return '@';if(c>=1&&c<=26)return String.fromCharCode(64+c);if(c>=32&&c<=63)return String.fromCharCode(c);if(c>=48&&c<=57)return String.fromCharCode(c);if(c===27)return '[';if(c===29)return ']';return ' '}
+function setPx(x,y,ci){if(x<0||x>=384||y<0||y>=272)return;const q=(y*384+x)*4,r=paletteRGB[ci&15];pix[q]=r[0];pix[q+1]=r[1];pix[q+2]=r[2];pix[q+3]=255}
+function fillLine(y,ci){const r=paletteRGB[ci&15];let q=y*384*4;for(let x=0;x<384;x++,q+=4){pix[q]=r[0];pix[q+1]=r[1];pix[q+2]=r[2];pix[q+3]=255}}
+function vicByte(addr){addr&=0xffff;if((addr&0x7000)===0x1000){const cg=charRom||internalCharRom;return cg[addr&0x0fff]}return ram[addr]}
+function drawGraphicsLine(y,ras,st,fgmask){const v=st.v,bank=((~st.bank)&3)*0x4000,ctl11=v[0x11],ctl16=v[0x16],ctl18=v[0x18];if(!st.display||!(ctl11&0x10))return;
+  const xscroll=ctl16&7,xbase=32+xscroll,charBase=(bank+((ctl18>>1)&7)*0x800)&0xffff,bitmapBase=(bank+((ctl18&8)?0x2000:0))&0xffff;
+  const bmm=!!(ctl11&0x20),ecm=!!(ctl11&0x40),mcm=!!(ctl16&0x10),bg0=v[0x21]&15,bg1=v[0x22]&15,bg2=v[0x23]&15,bg3=v[0x24]&15,rc=st.rc&7,vc=st.vc&0x3ff;
+  for(let c=0;c<40;c++){const sc=st.matrix[c],cr=st.colors[c]&15,x0=xbase+c*8;
+    if(bmm){const bits=vicByte((bitmapBase+(((vc+c)&0x3ff)<<3)+rc)&0xffff);if(mcm){const cols=[bg0,(sc>>4)&15,sc&15,cr];for(let q=0;q<4;q++){const k=(bits>>(6-q*2))&3;for(let dx=0;dx<2;dx++){const x=x0+q*2+dx;setPx(x,y,cols[k]);if(k)fgmask[x]=1}}}else{const c0=sc&15,c1=(sc>>4)&15;for(let px0=0;px0<8;px0++){const on=!!(bits&(0x80>>px0)),x=x0+px0;setPx(x,y,on?c1:c0);if(on)fgmask[x]=1}}}
+    else{let code=sc,charBg=bg0;if(ecm){charBg=[bg0,bg1,bg2,bg3][(code>>6)&3];code&=0x3f}const bits=vicByte((charBase+code*8+rc)&65535);if(mcm&&(cr&8)){const cols=[charBg,bg1,bg2,cr&7];for(let q=0;q<4;q++){const k=(bits>>(6-q*2))&3;for(let dx=0;dx<2;dx++){const x=x0+q*2+dx;setPx(x,y,cols[k]);if(k)fgmask[x]=1}}}else{for(let px0=0;px0<8;px0++){const on=!!(bits&(0x80>>px0)),x=x0+px0;setPx(x,y,on?cr:charBg);if(on)fgmask[x]=1}}}
+  }}
+function drawGraphicsLineFetched(y,ras,st,fgmask){const v=st.v,ctl11=v[0x11],ctl16=v[0x16];if(!st.display||!(ctl11&0x10)||!st.gfx)return;
+  const bmm=!!(ctl11&0x20),ecm=!!(ctl11&0x40),mcm=!!(ctl16&0x10),bg0=v[0x21]&15,bg1=v[0x22]&15,bg2=v[0x23]&15,bg3=v[0x24]&15;
+  const xscroll=ctl16&7,xbase=32+xscroll;
+  for(let c=0;c<40;c++){const sc=st.matrix[c],cr=st.colors[c]&15,bits=st.gfx[c],x0=xbase+c*8;
+    if(bmm){if(mcm){const cols=[bg0,(sc>>4)&15,sc&15,cr];for(let q=0;q<4;q++){const k=(bits>>(6-q*2))&3;for(let dx=0;dx<2;dx++){const x=x0+q*2+dx;setPx(x,y,cols[k]);if(k)fgmask[x]=1}}}else{const c0=sc&15,c1=(sc>>4)&15;for(let q=0;q<8;q++){const on=!!(bits&(0x80>>q)),x=x0+q;setPx(x,y,on?c1:c0);if(on)fgmask[x]=1}}}
+    else{let charBg=bg0,code=sc;if(ecm){charBg=[bg0,bg1,bg2,bg3][(code>>6)&3]}if(mcm&&(cr&8)){const cols=[charBg,bg1,bg2,cr&7];for(let q=0;q<4;q++){const k=(bits>>(6-q*2))&3;for(let dx=0;dx<2;dx++){const x=x0+q*2+dx;setPx(x,y,cols[k]);if(k)fgmask[x]=1}}}else{for(let q=0;q<8;q++){const on=!!(bits&(0x80>>q)),x=x0+q;setPx(x,y,on?cr:charBg);if(on)fgmask[x]=1}}}
+  }
+  // 38-column mode: VIC border masks the outer 7/9 pixels of the display window.
+  if(!(ctl16&8)){const bc=v[0x20]&15;for(let x=32;x<39;x++)setPx(x,y,bc);for(let x=337;x<344;x++)setPx(x,y,bc)}
+}
+function drawSpritesLine(y,ras,st,fgmask){const v=st.v;if(!st.sprites)return;for(let n=0;n<8;n++){const ss=st.sprites[n];if(!ss.on)continue;let sx=v[n*2]|((v[0x10]&(1<<n))?256:0);sx+=8;const bits=(ss.data[0]<<16)|(ss.data[1]<<8)|ss.data[2],multi=!!(v[0x1c]&(1<<n)),xexp=!!(v[0x1d]&(1<<n)),behind=!!(v[0x1b]&(1<<n)),col=v[0x27+n]&15;
+    if(multi){const cols=[-1,v[0x25]&15,col,v[0x26]&15];for(let q=0;q<12;q++){const k=(bits>>(22-q*2))&3;if(!k)continue;const scale=xexp?4:2;for(let dx=0;dx<scale;dx++){const x=sx+q*scale+dx;if(!(behind&&fgmask[x]))setPx(x,y,cols[k])}}}
+    else{for(let q=0;q<24;q++)if(bits&(1<<(23-q))){const scale=xexp?2:1;for(let dx=0;dx<scale;dx++){const x=sx+q*scale+dx;if(!(behind&&fgmask[x]))setPx(x,y,col)}}}
+  }}
+
+function drawGraphicsLineCompat(y,ras,st,fgmask){
+  const v=st.v,ctl11=v[0x11],ctl16=v[0x16],ctl18=v[0x18];
+  if(!(ctl11&0x10)||ras<51||ras>=251)return;
+  const bank=((~st.bank)&3)*0x4000,row=((ras-51)>>3),rc=(ras-51)&7;
+  if(row<0||row>=25)return;
+  const screenBase=(bank+((ctl18>>4)&15)*0x400)&0xffff;
+  const charBase=(bank+((ctl18>>1)&7)*0x800)&0xffff;
+  const bitmapBase=(bank+((ctl18&8)?0x2000:0))&0xffff;
+  const bmm=!!(ctl11&0x20),ecm=!!(ctl11&0x40),mcm=!!(ctl16&0x10);
+  const bg0=v[0x21]&15,bg1=v[0x22]&15,bg2=v[0x23]&15,bg3=v[0x24]&15;
+  const xbase=32+(ctl16&7),vc=row*40;
+  for(let c=0;c<40;c++){
+    const k=vc+c,sc=ram[(screenBase+k)&0xffff],cr=colorRam[k&0x3ff]&15,x0=xbase+c*8;
+    if(bmm){
+      const bits=vicByte((bitmapBase+(k<<3)+rc)&0xffff);
+      if(mcm){const cols=[bg0,(sc>>4)&15,sc&15,cr];for(let q=0;q<4;q++){const z=(bits>>(6-q*2))&3;for(let dx=0;dx<2;dx++){const x=x0+q*2+dx;setPx(x,y,cols[z]);if(z)fgmask[x]=1}}}
+      else{const c0=sc&15,c1=(sc>>4)&15;for(let q=0;q<8;q++){const on=bits&(0x80>>q),x=x0+q;setPx(x,y,on?c1:c0);if(on)fgmask[x]=1}}
+    }else{
+      let code=sc,charBg=bg0;if(ecm){charBg=[bg0,bg1,bg2,bg3][(code>>6)&3];code&=0x3f}
+      const bits=vicByte((charBase+code*8+rc)&0xffff);
+      if(mcm&&(cr&8)){const cols=[charBg,bg1,bg2,cr&7];for(let q=0;q<4;q++){const z=(bits>>(6-q*2))&3;for(let dx=0;dx<2;dx++){const x=x0+q*2+dx;setPx(x,y,cols[z]);if(z)fgmask[x]=1}}}
+      else{for(let q=0;q<8;q++){const on=bits&(0x80>>q),x=x0+q;setPx(x,y,on?cr:charBg);if(on)fgmask[x]=1}}
+    }
+  }
+}
+function spriteCanvasX(v,n){
+  // In the 384-pixel cropped C64 view, VIC sprite coordinate 24 is the first
+  // visible pixel. Therefore screen X is hardware X - 24 (not +8).
+  return (v[n*2]|((v[0x10]&(1<<n))?256:0))-24;
+}
+function drawSpritesLineCompat(y,ras,st,fgmask){
+  const v=st.v,ss=st.compatSprites;if(!ss)return;
+  // VIC-II sprite-to-sprite priority: sprite 0 is in front of 1, ... 7.
+  // Drawing back-to-front gives the same visible result.
+  for(let n=7;n>=0;n--){
+    const bit=1<<n,s=ss[n];if(!s||!s.on)continue;
+    const bits=(s.data[0]<<16)|(s.data[1]<<8)|s.data[2],sx=spriteCanvasX(v,n);
+    const multi=!!(v[0x1c]&bit),xexp=!!(v[0x1d]&bit),behind=!!(v[0x1b]&bit),col=v[0x27+n]&15;
+    if(multi){
+      const cols=[-1,v[0x25]&15,col,v[0x26]&15];
+      for(let q=0;q<12;q++){const z=(bits>>(22-q*2))&3;if(!z)continue;const scale=xexp?4:2;
+        for(let dx=0;dx<scale;dx++){const x=sx+q*scale+dx;if(!(behind&&fgmask[x]))setPx(x,y,cols[z])}}
+    }else{
+      for(let q=0;q<24;q++)if(bits&(1<<(23-q))){const scale=xexp?2:1;
+        for(let dx=0;dx<scale;dx++){const x=sx+q*scale+dx;if(!(behind&&fgmask[x]))setPx(x,y,col)}}
+    }
+  }
+}
+function applyCompatBorder(y,ras,v){
+  // Normal C64 border is the last video layer and hides both graphics and
+  // sprites. This intentionally applies only to the simple CRT compatibility
+  // path; the raster/FLD path used by disk demos remains unrestricted.
+  const bc=v[0x20]&15,rsel=!!(v[0x11]&8),csel=!!(v[0x16]&8);
+  const top=rsel?51:55,bottom=rsel?251:247;
+  if(ras<top||ras>=bottom){fillLine(y,bc);return}
+  const left=csel?32:40,right=csel?352:344;
+  for(let x=0;x<left;x++)setPx(x,y,bc);for(let x=right;x<384;x++)setPx(x,y,bc);
+}
+
+function currentLineState(){const vv=new Uint8Array(vic),bank=cia2[0]&3,matrix=new Uint8Array(videoMatrix),colors=new Uint8Array(videoColors);return {v:vv,bank,rc:lineRc,vc:lineVc,display:vicDisplay,matrix,colors,gfx:snapshotGfx(vv,bank,lineRc,lineVc,matrix),sprites:Array.from({length:8},(_,n)=>({on:!!sprDisplay[n],data:new Uint8Array(sprData[n])})),compatSprites:snapshotCompatSprites(raster,vv,bank)}}
+function render(){const lines=completedRasterLines||rasterLines;const fallback=currentLineState();for(let y=0;y<272;y++){const ras=y+15,st=lines[ras]||fallback;fillLine(y,st.v[0x20]&15);const fgmask=new Uint8Array(384);drawGraphicsLineFetched(y,ras,st,fgmask);if(cartActive){drawSpritesLineCompat(y,ras,st,fgmask);applyCompatBorder(y,ras,st.v)}else drawSpritesLine(y,ras,st,fgmask)}ctx.putImageData(frameImage,0,0);
+  $('#cpuState').textContent=`PC ${hex(cpu.PC)} · ${cpu.cycles.toLocaleString()} CPU cyc · raster ${raster}:${vicCycle}`;
+}
+
+let raf=0,last=0;function loop(ts){pollGamepad();if(cpu.running){const startFrame=frameCount,startMaster=masterCycles;let guard=0;while(cpu.running&&frameCount===startFrame&&(masterCycles-startMaster)<((mountedMedia?.kind==='TAP'&&tape.playing&&tape.mode==='fast')?250000:40000)&&guard++<50000){if(typeof hitBreakpoint==='function'&&hitBreakpoint())break;cpu.step()}render()}if(ts-last>500){last=ts;$('#cpuState').textContent=`PC ${hex(cpu.PC)} · ${cpu.cycles.toLocaleString()} CPU cyc · raster ${raster}:${vicCycle}`;if(typeof updateDebugUI==='function')updateDebugUI(false);updateDriveStateUI()}raf=requestAnimationFrame(loop)}requestAnimationFrame(loop);
+function updateRunState(){const on=cpu.running;$('#runLed').classList.toggle('on',on);$('#runState').lastChild.textContent=on?'RUN':'STOP';$('#runBtn').textContent=on?'Pausa':'Run'}
+
+// ---- BASIC helper ----------------------------------------------------------
+function findBasicSys(data){
+  // Riconosci SOLO un vero stub BASIC nella prima riga, tipicamente: 10 SYS 2061.
+  // Non cercare SYS dentro programmi BASIC completi: ad esempio un gioco può eseguire
+  // decine di istruzioni BASIC prima di un SYS e saltarci direttamente lo corromperebbe.
+  if(!data||data.length<8)return null;
+  const next=data[0]|(data[1]<<8);
+  // La prima riga BASIC caricata a $0801 deve puntare alla riga successiva.
+  if(next<0x0807||next>0xffff)return null;
+  let i=4; // salta link alla riga successiva + numero di riga
+  // Sono ammessi solo spazi prima del token SYS.
+  while(i<data.length&&(data[i]===0x20||data[i]===0xa0))i++;
+  if(i>=data.length||data[i]!==0x9e)return null;
+  i++;while(i<data.length&&(data[i]===0x20||data[i]===0xa0))i++;
+  let t='';while(i<data.length&&data[i]>=0x30&&data[i]<=0x39){t+=String.fromCharCode(data[i]);i++}
+  if(!t)return null;
+  // Dopo l'indirizzo accettiamo spazi e fine riga; niente altre istruzioni BASIC.
+  while(i<data.length&&(data[i]===0x20||data[i]===0xa0))i++;
+  if(i>=data.length||data[i]!==0x00)return null;
+  const a=Number(t);return a>=0&&a<=65535?a:null;
+}
+
+// ---- Files / D64 / T64 ----------------------------------------------------
+function biosReady(){return !!(basicRom&&kernalRom&&charRom)}
+function romState(){$('#romState').textContent=biosReady()?'BASIC ✓ · KERNAL ✓ · CHAR ✓ · ROM boot attivo':'BIOS C64 obbligatorio · 1541 DOS ROM consigliata per fastloader'}
+
+async function loadBiosZip(file){
+  const img=new Uint8Array(await file.arrayBuffer());
+  let eocd=-1;
+  for(let i=img.length-22;i>=Math.max(0,img.length-65557);i--){if(le32(img,i)===0x06054b50){eocd=i;break}}
+  if(eocd<0)throw new Error('BIOS ZIP: directory centrale non trovata');
+  const count=le16(img,eocd+10),cdOff=le32(img,eocd+16);let p=cdOff;
+  const found={basic:null,kernal:null,char:null,drive16:null,driveLo:null,driveHi:null};
+  const names={basic:'',kernal:'',char:'',drive16:'',driveLo:'',driveHi:''};
+  for(let n=0;n<count&&p+46<=img.length;n++){
+    if(le32(img,p)!==0x02014b50)break;
+    const method=le16(img,p+10),csize=le32(img,p+20),usize=le32(img,p+24),fnl=le16(img,p+28),exl=le16(img,p+30),cml=le16(img,p+32),lho=le32(img,p+42);
+    const fn=new TextDecoder().decode(img.subarray(p+46,p+46+fnl));
+    p+=46+fnl+exl+cml;
+    if(le32(img,lho)!==0x04034b50)continue;
+    const lfn=le16(img,lho+26),lex=le16(img,lho+28),start=lho+30+lfn+lex,comp=img.subarray(start,start+csize);
+    let data;
+    if(method===0)data=new Uint8Array(comp);
+    else if(method===8)data=await inflateRaw(comp);
+    else continue;
+    const low=fn.toLowerCase();
+    let kind=null;
+    if(data.length===4096 && (low.endsWith('.u5')||low.includes('chargen')||low.includes('char rom')||low.includes('character')))kind='char';
+    else if(data.length===8192 && (low.endsWith('.u3')||low.includes('basic')))kind='basic';
+    else if(data.length===8192 && (low.endsWith('.u4')||low.includes('kernal')||low.includes('kernel')))kind='kernal';
+    if(kind && !found[kind]){found[kind]=new Uint8Array(data);names[kind]=fn;continue}
+    // 1541 DOS ROM: combined 16K, or the classic two 8K chips.
+    if(data.length===16384 && (low.includes('1541')||low.includes('dos1541')||low.includes('d1541')) && !found.drive16){found.drive16=new Uint8Array(data);names.drive16=fn;continue}
+    if(data.length===8192 && (low.includes('325302')||low.includes('1541')&&(/low|c000|ub3/.test(low))) && !found.driveLo){found.driveLo=new Uint8Array(data);names.driveLo=fn;continue}
+    if(data.length===8192 && (low.includes('901229')||low.includes('1541')&&(/high|e000|ub4/.test(low))) && !found.driveHi){found.driveHi=new Uint8Array(data);names.driveHi=fn;continue}
+  }
+  const missing=[];if(!found.basic)missing.push('BASIC/U3');if(!found.kernal)missing.push('KERNAL/U4');if(!found.char)missing.push('CHAR/U5');
+  if(missing.length)throw new Error(`BIOS ZIP incompleto: manca ${missing.join(', ')}`);
+  basicRom=found.basic;kernalRom=found.kernal;charRom=found.char;
+  driveRomReal=false;driveRomSource='JSD idle';
+  if(found.drive16){driveRom.set(found.drive16);driveRomReal=true;driveRomSource=names.drive16}
+  else if(found.driveLo&&found.driveHi){driveRom.set(found.driveLo,0);driveRom.set(found.driveHi,0x2000);driveRomReal=true;driveRomSource=`${names.driveLo} + ${names.driveHi}`}
+  else initDriveRom();
+  romState();
+  log(`BIOS ZIP caricato: ${file.name}`);
+  log(`  BASIC 8K ← ${names.basic}`);log(`  KERNAL 8K ← ${names.kernal}`);log(`  CHAR 4K ← ${names.char}`);
+  if(driveRomReal)log(`  1541 DOS 16K ← ${driveRomSource}`);else log('  1541 DOS ROM non presente · i fastloader NOSDOS richiedono true drive emulation');
+  romState();
+  $('#mediaFile').disabled=false;
+  coldBoot();
+}
+$('#biosZipFile').onchange=async()=>{const f=$('#biosZipFile').files[0];if(!f)return;try{await loadBiosZip(f)}catch(e){log(`ERRORE BIOS ZIP: ${e.message}`)}};
+
+function cbmName(bytes){return [...bytes].map(v=>v===0xa0||v===0?' ':String.fromCharCode(v)).join('').trim()}
+function normCbmName(s){return String(s||'').replace(/^\d+:/,'').replace(/,.*$/,'').replace(/\*/g,'').trim().toUpperCase()}
+function d64SectorsPerTrack(t){if(t<=17)return 21;if(t<=24)return 19;if(t<=30)return 18;return 17}
+function d64Offset(t,s){if(t<1||t>42)throw new Error(`D64 track ${t} non valido`);let n=0;for(let i=1;i<t;i++)n+=d64SectorsPerTrack(i);if(s<0||s>=d64SectorsPerTrack(t))throw new Error(`D64 sector ${t}/${s} non valido`);return (n+s)*256}
+function d64ExtractChain(img,t,s){const out=[],seen=new Set();while(t){const key=t+':'+s;if(seen.has(key))throw new Error('Catena D64 ciclica');seen.add(key);const o=d64Offset(t,s);if(o+256>img.length)throw new Error(`Settore D64 fuori immagine ${t}/${s}`);const nt=img[o],ns=img[o+1];if(nt===0){const count=Math.max(0,Math.min(254,ns-1));for(let i=0;i<count;i++)out.push(img[o+2+i]);break}else{for(let i=2;i<256;i++)out.push(img[o+i]);t=nt;s=ns}}return new Uint8Array(out)}
+function parseD64(img,name){const entries=[],seen=new Set();let t=18,s=1;while(t){const key=t+':'+s;if(seen.has(key))break;seen.add(key);const o=d64Offset(t,s);if(o+256>img.length)break;const nt=img[o],ns=img[o+1];for(let i=0;i<8;i++){const e=o+2+i*32,rawType=img[e];if(!rawType)continue;const kind=rawType&7,ft=['DEL','SEQ','PRG','USR','REL'][kind]||`T${kind}`;const fn=cbmName(img.subarray(e+3,e+19));const blocks=img[e+28]|(img[e+29]<<8),st=img[e+1],ss=img[e+2];entries.push({name:fn||'(senza nome)',type:ft,rawType,kind,blocks,track:st,sector:ss,getData(){return d64ExtractChain(img,st,ss)},getPrg(){if(kind!==2)return null;return d64ExtractChain(img,st,ss)}})}t=nt;s=ns}return {kind:'D64',name,bytes:img,entries}}
+function parseT64(img,name){if(img.length<0x40)throw new Error('T64 troppo corto');const sig=new TextDecoder('latin1').decode(img.subarray(0,32));if(!/C64.*tape/i.test(sig))throw new Error('Header T64 non riconosciuto');const max=img[0x22]|(img[0x23]<<8),used=img[0x24]|(img[0x25]<<8),entries=[];for(let i=0;i<max;i++){const o=0x40+i*32;if(o+32>img.length)break;if(img[o]===0)continue;const start=img[o+2]|(img[o+3]<<8),end=img[o+4]|(img[o+5]<<8),pos=(img[o+8]|(img[o+9]<<8)|(img[o+10]<<16)|(img[o+11]<<24))>>>0;let len=(end-start)&0xffff;if(!len||pos+len>img.length)len=Math.max(0,img.length-pos);const fn=cbmName(img.subarray(o+16,o+32));entries.push({name:fn||`ENTRY ${i+1}`,type:'PRG',blocks:Math.ceil((len+2)/254),start,end,pos,getPrg(){const data=img.subarray(pos,Math.min(img.length,pos+len));const prg=new Uint8Array(data.length+2);prg[0]=start&255;prg[1]=start>>8;prg.set(data,2);return prg}})}return {kind:'T64',name,bytes:img,entries,used}}
+
+
+function parseTapPulses(img){if(img.length<20||new TextDecoder('latin1').decode(img.subarray(0,12))!=='C64-TAPE-RAW')throw new Error('Header TAP non riconosciuto');const ver=img[12];if(ver>1)throw new Error(`TAP v${ver} non ancora supportato`);const pulses=[];let total=0;for(let i=20;i<img.length;){const b=img[i++];let c;if(b)c=b*8;else if(ver===1&&i+2<img.length){c=img[i]|(img[i+1]<<8)|(img[i+2]<<16);i+=3}else c=2048;if(c<=0)c=8;pulses.push(c);total+=c}return {ver,pulses:new Uint32Array(pulses),totalCycles:total}}
+function tapPulseClass(c){const v=c/8;if(v>=24&&v<=55)return 0;if(v>=56&&v<=75)return 1;if(v>=76&&v<=108)return 2;return -1}
+function decodeTapRomBlocks(pulses){const out=[];for(let i=0;i+20<=pulses.length;){if(tapPulseClass(pulses[i])===2&&tapPulseClass(pulses[i+1])===1){let j=i+2,val=0,ok=true;for(let k=0;k<9;k++){const a=tapPulseClass(pulses[j++]),b=tapPulseClass(pulses[j++]);let bit;if(a===0&&b===1)bit=0;else if(a===1&&b===0)bit=1;else{ok=false;break}if(k<8)val|=bit<<k}if(ok){out.push({pulse:i,value:val,end:j});i=j;continue}}i++}const groups=[];let g=[];for(const x of out){if(!g.length||x.pulse===g[g.length-1].pulse+20)g.push(x);else{if(g.length>=20)groups.push(g);g=[x]}}if(g.length>=20)groups.push(g);return groups}
+function parseTAP(img,name){
+  const tp=parseTapPulses(img),groups=decodeTapRomBlocks(tp.pulses),entries=[];
+  for(let gi=0;gi<groups.length;gi++){
+    const h=groups[gi].map(x=>x.value);
+    if(h.length<202||h[0]!==137||h[8]!==129)continue;
+    const type=h[9],start=h[10]|(h[11]<<8),end=h[12]|(h[13]<<8);
+    if(type<1||type>5||end<=start)continue;
+    const fn=String.fromCharCode(...h.slice(14,30)).replace(/[\x00\xa0]/g,' ').trim()||'TAPE';
+    // Il KERNAL C64 conserva TUTTI i 192 byte dell'header nel cassette buffer
+    // $033C-$03FB. I fastloader commerciali usano spesso $0351-$03FB come codice.
+    const tapHeader=Uint8Array.from(h.slice(9,9+192));
+    let dg=null,dgIndex=-1;
+    for(let k=gi+1;k<groups.length;k++){
+      const v=groups[k].map(x=>x.value);
+      if(v[0]===137&&v[8]===129){dg=groups[k];dgIndex=k;break}
+    }
+    if(!dg)continue;
+    const vals=dg.map(x=>x.value).slice(9),need=end-start,have=Math.min(need,vals.length);
+    if(have>0){
+      const prg=new Uint8Array(have+2);prg[0]=start&255;prg[1]=start>>8;prg.set(vals.slice(0,have),2);
+      // Ogni blocco ROM tape viene scritto due volte. Il KERNAL torna al programma
+      // solo DOPO aver letto/verificato anche la repeat-copy (sync 09..01).
+      let resume=dg[Math.min(dg.length-1,9+have)]?.end||dg[dg.length-1].end;
+      const repeat=groups[dgIndex+1];
+      if(repeat&&repeat.length>=20){
+        const rv=repeat.map(x=>x.value);
+        if(rv[0]===9&&rv[8]===1)resume=repeat[repeat.length-1].end;
+      }
+      entries.push({name:fn,type:'TAP',blocks:Math.ceil(prg.length/254),tapPulse:resume,tapHeader,tapStart:start,tapEnd:end,tapExpected:need,tapDecoded:have,getPrg(){return prg}});
+      break
+    }
+  }
+  if(!entries.length)entries.push({name:'RAW TAPE',type:'TAP',getPrg(){return null},tapPulse:0,tapHeader:null});
+  return {kind:'TAP',name,bytes:img,entries,tapVersion:tp.ver,pulses:tp.pulses,totalCycles:tp.totalCycles}
+}
+function be16(a,o){return (a[o]<<8)|a[o+1]}
+function be32(a,o){return ((a[o]*0x1000000)+(a[o+1]<<16)+(a[o+2]<<8)+a[o+3])>>>0}
+function le16(a,o){return a[o]|(a[o+1]<<8)}
+function le32(a,o){return (a[o]|(a[o+1]<<8)|(a[o+2]<<16)|(a[o+3]<<24))>>>0}
+function parseCRT(img,name){
+  const sig=new TextDecoder('latin1').decode(img.subarray(0,16));
+  if(sig!=='C64 CARTRIDGE   ')throw new Error('Header CRT non riconosciuto');
+  const hlen=be32(img,16),type=be16(img,22),exrom=img[24],game=img[25];
+  if(type!==0)throw new Error(`CRT hardware type ${type} non ancora supportato`);
+  let lo=new Uint8Array(0x2000),hi=new Uint8Array(0x2000),hasLo=false,hasHi=false,off=hlen,chips=0;
+  while(off+16<=img.length){
+    if(String.fromCharCode(...img.subarray(off,off+4))!=='CHIP')break;
+    const plen=be32(img,off+4),bank=be16(img,off+10),addr=be16(img,off+12),size=be16(img,off+14);
+    if(off+16+size>img.length)throw new Error('Pacchetto CHIP troncato');
+    const data=img.subarray(off+16,off+16+size);
+    if(bank===0&&addr===0x8000){lo.set(data.subarray(0,Math.min(0x2000,data.length)));hasLo=true;if(data.length>0x2000){hi.set(data.subarray(0x2000,0x4000));hasHi=true}}
+    else if(bank===0&&addr===0xa000){hi.set(data.subarray(0,Math.min(0x2000,data.length)));hasHi=true}
+    chips++;off+=plen;
+  }
+  if(!hasLo)throw new Error('CRT senza ROML $8000');
+  const title=new TextDecoder('latin1').decode(img.subarray(32,64)).replace(/\0.*$/,'').trim()||name;
+  const cart={name:title,type,game,exrom,lo,hi:hasHi?hi:null,chips};
+  return {kind:'CRT',name,bytes:img,cart,entries:[{name:title,type:'CRT',blocks:Math.ceil(img.length/254),getCart(){return cart}}]}
+}
+async function inflateRaw(data){
+  if(typeof DecompressionStream==='undefined')throw new Error('Il browser non supporta DecompressionStream per ZIP');
+  const ds=new DecompressionStream('deflate-raw');
+  return new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(ds)).arrayBuffer());
+}
+async function unzipAllSupported(img,zipName){
+  let eocd=-1;for(let i=img.length-22;i>=Math.max(0,img.length-65557);i--)if(le32(img,i)===0x06054b50){eocd=i;break}
+  if(eocd<0)throw new Error('ZIP: directory centrale non trovata');
+  const count=le16(img,eocd+10),cdOff=le32(img,eocd+16);let p=cdOff,cands=[];
+  for(let n=0;n<count&&p+46<=img.length;n++){
+    if(le32(img,p)!==0x02014b50)break;
+    const method=le16(img,p+10),csize=le32(img,p+20),usize=le32(img,p+24),fnl=le16(img,p+28),exl=le16(img,p+30),cml=le16(img,p+32),lho=le32(img,p+42);
+    const fn=new TextDecoder().decode(img.subarray(p+46,p+46+fnl));
+    const ext=(fn.split('.').pop()||'').toLowerCase();
+    if(['crt','prg','d64','t64','tap'].includes(ext))cands.push({fn,ext,method,csize,usize,lho});
+    p+=46+fnl+exl+cml;
+  }
+  if(!cands.length)throw new Error('ZIP: nessun .CRT/.PRG/.D64/.T64/.TAP trovato');
+  const out=[];
+  for(const e of cands){
+    if(le32(img,e.lho)!==0x04034b50)continue;
+    const fnl=le16(img,e.lho+26),exl=le16(img,e.lho+28),start=e.lho+30+fnl+exl,comp=img.subarray(start,start+e.csize);
+    let data;if(e.method===0)data=new Uint8Array(comp);else if(e.method===8)data=await inflateRaw(comp);else{log(`ZIP: salto ${e.fn}, metodo ${e.method}`);continue}
+    if(e.usize&&data.length!==e.usize)log(`ZIP: ${e.fn} dimensione ${data.length}, attesa ${e.usize}`);
+    out.push({name:e.fn,ext:e.ext,data});
+  }
+  log(`ZIP aperto: ${zipName} · ${out.length} media supportati`);
+  return out;
+}
+
+function asPrg(img,name){if(img.length<3)throw new Error('PRG troppo corto');return {kind:'PRG',name,bytes:img,entries:[{name,type:'PRG',blocks:Math.ceil(img.length/254),getPrg(){return img}}]}}
+function resetHleChannels(){hle.openFiles.clear();hle.inputLogical=null;hle.outputLogical=null;hle.status=0}
+function renderDiskControls(){
+  const box=$('#diskControls'),sel=$('#diskSelect');
+  if(!diskSet.length){box.style.display='none';sel.innerHTML='';return}
+  box.style.display='block';sel.innerHTML='';
+  diskSet.forEach((d,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`Disk ${i+1}: ${d.name}`;sel.appendChild(o)});
+  sel.value=String(Math.max(0,activeDiskIndex));
+  $('#diskState').textContent=`Drive 8 · disco ${activeDiskIndex+1}/${diskSet.length} · ${diskSet[activeDiskIndex]?.name||''} · auto-swap ON`;
+}
+function mountDisk(i,quiet=false){
+  // alpha53: D64 always uses the physical IEC path; no C64-side drive HLE.
+
+  i=Number(i);if(!Number.isInteger(i)||i<0||i>=diskSet.length)return false;
+  activeDiskIndex=i;mountedMedia=diskSet[i];mediaEntries=mountedMedia.entries;selectedMediaIndex=mediaEntries.findIndex(e=>e.type==='PRG');if(selectedMediaIndex<0)selectedMediaIndex=mediaEntries.length?0:-1;
+  resetHleChannels();driveMountMedia();renderDiskControls();renderMedia();if(selectedMediaIndex>=0)loadSelectedEntry(true);
+  if(mountedMedia?.kind==='D64'){
+    const st=gcrTrackSelfTest(18),id=driveDiskId(mountedMedia),bam=d64Offset(18,0),dirT=mountedMedia.bytes[bam],dirS=mountedMedia.bytes[bam+1];
+    log(`D64 PHYSICAL CHECK · ${mountedMedia.name} · ${mountedMedia.bytes.length} byte · ID ${hex(id[0],2)} ${hex(id[1],2)} · BAM→DIR T${dirT}/S${dirS} · parser ${mediaEntries.length} entry`);
+    log(`GCR SELFTEST T18 · ${st.valid}/${st.want} header validi · ${st.bytes} byte${st.ok?' · OK':` · MISSING ${st.missing.join(',')}`}`);
+  }
+  if(!quiet)log(`DISK SWAP · drive 8 ← ${mountedMedia.name} · ${mediaEntries.length} entry`);
+  return true;
+}
+function diskDirectoryText(){if(!mountedMedia||mountedMedia.kind!=='D64')return 'Nessun D64 montato';return mountedMedia.entries.map((e,i)=>`${String(i+1).padStart(2,'0')} ${String(e.blocks??0).padStart(3,' ')} "${e.name}" ${e.type}`).join('\n')}
+function renderMedia(){const sel=$('#mediaSelect'),list=$('#mediaList');sel.innerHTML='';list.innerHTML='';updateTapeControls();if(!mountedMedia||!mediaEntries.length){sel.disabled=true;sel.innerHTML='<option>Nessun file interno</option>';list.style.display='none';return}sel.disabled=false;mediaEntries.forEach((e,i)=>{const op=document.createElement('option');op.value=i;op.textContent=`${i+1}. ${e.name} [${e.type}]${e.blocks!=null?' · '+e.blocks+' blk':''}`;sel.appendChild(op);const row=document.createElement('div');row.className='media-row'+(i===selectedMediaIndex?' sel':'');row.dataset.i=i;row.innerHTML=`<span class="pill">${e.type}</span>${e.name}${e.blocks!=null?` · ${e.blocks} blocks`:''}`;row.onclick=()=>selectMediaEntry(i);list.appendChild(row)});list.style.display=mediaEntries.length>1?'block':'none';sel.value=String(Math.max(0,selectedMediaIndex));$('#mediaState').textContent=`${mountedMedia.kind} · ${mountedMedia.name} · ${mediaEntries.length} file${mediaEntries.length===1?'':'s'}`}
+function selectMediaEntry(i){i=Number(i);if(!Number.isInteger(i)||i<0||i>=mediaEntries.length)return;selectedMediaIndex=i;$('#mediaSelect').value=String(i);[...$('#mediaList').children].forEach((r,n)=>r.classList.toggle('sel',n===i));const e=mediaEntries[i];$('#prgState').textContent=`Selezionato: ${e.name} [${e.type}]${e.blocks!=null?' · '+e.blocks+' blocchi':''}`;if(mountedMedia?.kind==='T64'||mountedMedia?.kind==='TAP'){tapeStop(false);tape.entry=e;tape.prg=e.getPrg?.()||null;tape.pos=0;tape.duration=tapeEstimateDuration(tape.prg);updateTapeUI()}}
+function loadSelectedEntry(quiet=false){if(selectedMediaIndex<0||!mediaEntries[selectedMediaIndex]){if(!quiet)log('Nessun file selezionato');return false}const e=mediaEntries[selectedMediaIndex];
+  if(e.getCart){const c=e.getCart();cartRomL=c.lo;cartRomH=c.hi;cartGame=c.game;cartExrom=c.exrom;cartType=c.type;cartName=c.name;cartActive=true;loadedPrg=null;$('#prgState').textContent=`CRT ${c.name} · GAME=${c.game} EXROM=${c.exrom}`;if(!quiet)log(`Cartuccia selezionata: ${c.name} · ${c.hi?'16K':'8K'} · GAME=${c.game} EXROM=${c.exrom}`);return true}
+  const p=e.getPrg?.();if(!p){if(!quiet)log(`${e.name}: tipo ${e.type} non caricabile`);return false}cartActive=false;loadedPrg=p;if(p.length<3){if(!quiet)log(`${e.name}: PRG troppo corto`);return false}const la=p[0]|(p[1]<<8);$('#prgState').textContent=`${e.name} · load ${hex(la)} · ${p.length-2} byte`;if(!quiet)log(`PRG selezionato: ${e.name}, load ${hex(la)}, ${p.length-2} byte`);return true}
+async function openMediaFile(file){if(!biosReady()){log('Carica prima il BIOS C64 ZIP');return}let img=new Uint8Array(await file.arrayBuffer()),ext=(file.name.split('.').pop()||'').toLowerCase(),disp=file.name;try{
+  diskSet=[];activeDiskIndex=-1;archiveMediaName=file.name;resetHleChannels();tapeStop(false);tape.entry=null;tape.prg=null;tape.pos=0;tape.duration=0;
+  if(ext==='zip'){
+    const all=await unzipAllSupported(img,file.name),d64s=all.filter(x=>x.ext==='d64');
+    if(d64s.length){
+      diskSet=d64s.map(x=>parseD64(x.data,x.name));activeDiskIndex=0;mountDisk(0,true);
+      log(`Drive 8: ${diskSet.length} D64 nello ZIP${diskSet.length>1?' · cambio disco abilitato':''}`);
+      scheduleAutoDiskLoad('ZIP/D64');
+      return;
+    }
+    const z=all[0];img=z.data;ext=z.ext;disp=`${file.name} → ${z.name}`;
+  }
+  if(ext==='d64'){const d=parseD64(img,disp);diskSet=[d];activeDiskIndex=0;mountDisk(0,true);log('Drive 8 montato · TRUE 1541: HLE D64 disattivato · KERNAL/IEC/1541 ROM reali.');scheduleAutoDiskLoad('D64');return}
+  if(ext==='t64')mountedMedia=parseT64(img,disp);else if(ext==='tap')mountedMedia=parseTAP(img,disp);else if(ext==='crt')mountedMedia=parseCRT(img,disp);else mountedMedia=asPrg(img,disp);
+  renderDiskControls();mediaEntries=mountedMedia.entries;selectedMediaIndex=mediaEntries.findIndex(e=>e.type==='PRG'||e.type==='CRT');if(selectedMediaIndex<0)selectedMediaIndex=mediaEntries.length?0:-1;renderMedia();if(selectedMediaIndex>=0)loadSelectedEntry(true);log(`${mountedMedia.kind} aperto: ${disp} · ${mediaEntries.length} entry`);if(mountedMedia.kind==='CRT')log(`CRT standard type 0 · mapping ${mountedMedia.cart.hi?'16K':'8K'} attivo.`)
+}catch(e){mountedMedia=null;mediaEntries=[];diskSet=[];activeDiskIndex=-1;selectedMediaIndex=-1;renderDiskControls();renderMedia();log(`ERRORE ${ext.toUpperCase()}: ${e.message}`)}}
+$('#mediaFile').onchange=async()=>{const f=$('#mediaFile').files[0];if(f)await openMediaFile(f)};
+$('#mediaSelect').onchange=e=>selectMediaEntry(Number(e.target.value));
+$('#diskSelect').onchange=e=>mountDisk(Number(e.target.value));
+$('#prevDiskBtn').onclick=()=>{if(diskSet.length)mountDisk((activeDiskIndex-1+diskSet.length)%diskSet.length)};
+$('#nextDiskBtn').onclick=()=>{if(diskSet.length)mountDisk((activeDiskIndex+1)%diskSet.length)};
+$('#loadSelectedBtn').onclick=()=>loadSelectedEntry();
+
+// ---- Datasette fast / real-time -------------------------------------------
+const PAL_HZ=985248;
+function tapeFmt(sec){sec=Math.max(0,Math.round(sec||0));const m=Math.floor(sec/60),q=sec%60;return String(m).padStart(2,'0')+':'+String(q).padStart(2,'0')}
+function tapeEstimateDuration(prg){if(!prg||prg.length<3)return 0;return 8+(prg.length-2)/80}
+function tapeLoadTapState(){if(mountedMedia?.kind!=='TAP')return;tape.pulses=mountedMedia.pulses;tape.totalCycles=mountedMedia.totalCycles;tape.duration=tape.totalCycles/PAL_HZ;tape.rawTap=true;if(!tape.pulseRemain)tape.pulseRemain=tape.pulses[tape.pulseIndex]||1}
+function updateTapeControls(){const box=$('#tapeControls');if(!box)return;const on=mountedMedia?.kind==='T64'||mountedMedia?.kind==='TAP';box.style.display=on?'block':'none';if(on){tape.mode=$('#tapeMode')?.value||tape.mode;tape.entry=mediaEntries[selectedMediaIndex]||tape.entry;tape.prg=tape.entry?.getPrg?.()||null;if(mountedMedia.kind==='TAP')tapeLoadTapState();else if(!tape.duration)tape.duration=tapeEstimateDuration(tape.prg);updateTapeUI()}}
+function updateTapeUI(){const st=$('#tapeState'),bar=$('#tapeBar');if(!st||!bar)return;const dur=Math.max(.001,tape.duration||0),pct=Math.max(0,Math.min(1,(tape.pos||0)/dur));bar.style.width=(pct*100).toFixed(1)+'%';st.textContent=`${mountedMedia?.kind||'TAPE'} ${tape.mode==='real'?'REAL':'FAST'}: ${tape.playing?'PLAY':'STOP'} · ${tapeFmt(tape.pos)} / ${tapeFmt(tape.duration)} · ${(pct*100).toFixed(0)}%`}
+function cia1Clock(){let taUnder=false;if(cia1[14]&1){if(cia1Ta===0){cia1IcrStatus|=1;taUnder=true;cia1Ta=cia1TaLatch;if(cia1[14]&8)cia1[14]&=~1}else cia1Ta=(cia1Ta-1)&0xffff}if(cia1[15]&1){const mode=(cia1[15]>>5)&3;const tick=(mode===0)||(mode>=2&&taUnder);if(tick){if(cia1Tb===0){cia1IcrStatus|=2;cia1Tb=cia1TbLatch;if(cia1[15]&8)cia1[15]&=~1}else cia1Tb=(cia1Tb-1)&0xffff}}if((cia1IcrStatus&cia1IcrMask&0x1f)!==0)recomputeC64Irq()}
+function cia2Clock(){let taUnder=false;if(cia2[14]&1){if(cia2Ta===0){cia2IcrStatus|=1;taUnder=true;cia2Ta=cia2TaLatch;if(cia2[14]&8)cia2[14]&=~1}else cia2Ta=(cia2Ta-1)&0xffff}if(cia2[15]&1){const mode=(cia2[15]>>5)&3;const go=(mode===0)||(mode>=2&&taUnder);if(go){if(cia2Tb===0){cia2IcrStatus|=2;cia2Tb=cia2TbLatch;if(cia2[15]&8)cia2[15]&=~1}else cia2Tb=(cia2Tb-1)&0xffff}}recomputeC64Nmi()}
+function tapeFlagPulse(){cia1IcrStatus|=0x10;recomputeC64Irq()}
+function tapeAdvanceCycles(c){if(!tape.playing||mountedMedia?.kind!=='TAP'||!tape.pulses?.length)return;const motor=tape.forceMotor||((ddr&0x20)!==0&&(port&0x20)===0);if(!motor)return;let left=c;while(left>0&&tape.playing){if(tape.pulseRemain<=0)tape.pulseRemain=tape.pulses[tape.pulseIndex]||1;if(left<tape.pulseRemain){tape.pulseRemain-=left;tape.doneCycles+=left;left=0}else{left-=tape.pulseRemain;tape.doneCycles+=tape.pulseRemain;tapeFlagPulse();if(++tape.pulseIndex>=tape.pulses.length){tape.playing=false;tape.doneCycles=tape.totalCycles;tape.pulseRemain=0;break}tape.pulseRemain=tape.pulses[tape.pulseIndex]||1}}tape.pos=tape.doneCycles/PAL_HZ}
+function tapeAudioStart(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;if(!tape.audioCtx)tape.audioCtx=new AC();if(tape.audioCtx.state==='suspended')tape.audioCtx.resume();tapeAudioStop(false);const o=tape.audioCtx.createOscillator(),g=tape.audioCtx.createGain();o.type='square';g.gain.value=.03;o.connect(g);g.connect(tape.audioCtx.destination);o.start();tape.osc=o;tape.gain=g;tape.audioTimer=setInterval(()=>{if(!tape.playing||!tape.osc)return;const c=mountedMedia?.kind==='TAP'?(tape.pulses?.[Math.min(tape.pulseIndex,(tape.pulses?.length||1)-1)]||400):450;tape.osc.frequency.setValueAtTime(Math.max(200,Math.min(4500,PAL_HZ/c)),tape.audioCtx.currentTime)},20)}catch(e){log('Audio Datasette non disponibile: '+e.message)}}
+function tapeAudioStop(close=false){if(tape.audioTimer){clearInterval(tape.audioTimer);tape.audioTimer=0}try{if(tape.osc){tape.osc.stop();tape.osc.disconnect()}if(tape.gain)tape.gain.disconnect()}catch(e){}tape.osc=null;tape.gain=null;if(close&&tape.audioCtx){try{tape.audioCtx.close()}catch(e){}tape.audioCtx=null}}
+function tapeTick(){if(!tape.playing)return;updateTapeUI();tape.timer=requestAnimationFrame(tapeTick)}
+function tapePlay(){if(!(mountedMedia?.kind==='T64'||mountedMedia?.kind==='TAP')){log('Datasette: monta T64/TAP');return}tape.mode='real';if($('#tapeMode'))$('#tapeMode').value='real';if(mountedMedia.kind==='TAP'){tapeLoadTapState();tape.forceMotor=true;tape.playing=true;cpu.running=true;updateRunState();tapeAudioStart();cancelAnimationFrame(tape.timer);tape.timer=requestAnimationFrame(tapeTick);log(`TAP PLAY reale · v${mountedMedia.tapVersion} · ${tape.pulses.length.toLocaleString()} impulsi`);return}const e=mediaEntries[selectedMediaIndex];if(!e?.getPrg)return;tape.entry=e;tape.prg=e.getPrg();tape.duration=tapeEstimateDuration(tape.prg);tape.playing=true;tape.startPos=tape.pos;tape.startStamp=performance.now();cpu.running=false;tapeAudioStart();const f=()=>{if(!tape.playing)return;tape.pos=Math.min(tape.duration,tape.startPos+(performance.now()-tape.startStamp)/1000);updateTapeUI();if(tape.pos>=tape.duration){tapeStop(false);loadSelectedEntry(true);autostartPrg(true)}else tape.timer=requestAnimationFrame(f)};tape.timer=requestAnimationFrame(f)}
+function tapeStop(user=true){tape.playing=false;tape.forceMotor=false;if(tape.timer){cancelAnimationFrame(tape.timer);tape.timer=0}tapeAudioStop(false);updateTapeUI();if(user)log(`Datasette STOP · ${tapeFmt(tape.pos)}`)}
+function tapeRewind(){tapeStop(false);tape.pos=0;tape.doneCycles=0;tape.pulseIndex=0;tape.pulseRemain=tape.pulses?.[0]||0;updateTapeUI();log('Datasette REWIND')}
+function tapCodeScore(a,end){
+  if(a<0||a>=end)return -999;const o=ram[a],n1=ram[(a+1)&0xffff],n2=ram[(a+2)&0xffff],n3=ram[(a+3)&0xffff];let s=0;
+  if([0x78,0x58,0xa9,0xa2,0xa0,0xad,0x20,0x4c,0x48,0x08].includes(o))s+=2;
+  if(o===0x78)s+=3; // molti bootstrap iniziano SEI
+  if(o===0x78&&n1===0x20&&(n3===0xe5||n3===0xff))s+=8; // SEI + JSR KERNAL
+  if(o===0x20||o===0x4c)s+=1;
+  return s;
+}
+function tapGuessEntry(la,data){
+  const end=Math.min(0x10000,la+data.length);
+  // Gli autostart classici piegano spesso uno dei vettori $0314-$0333 verso
+  // il codice appena caricato. Galvan, ad esempio, porta BRK/NMI a $0363.
+  const vectors=[0x0314,0x0316,0x0318,0x031a,0x031c,0x031e,0x0320,0x0322,0x0324,0x0326,0x0328,0x032a,0x032c,0x0330,0x0332];
+  for(const v of vectors){const q=ram[v]|(ram[v+1]<<8);if(q>=la&&q<end&&tapCodeScore(q,end)>=2)return {pc:q,why:`vettore $${phex(v)}→$${phex(q)}`}}
+  if(la<=0x02a8&&end>0x02ac&&tapCodeScore(0x02a8,end)>=6)return {pc:0x02a8,why:'bootstrap area $02A8'};
+  if(la<=0x0334&&end>0x0334&&tapCodeScore(0x0334,end)>=3)return {pc:0x0334,why:'bootstrap area $0334'};
+  if(la>=0x0801){const sys=findBasicSys(data);if(sys!==null)return {pc:sys,why:`BASIC SYS ${sys}`}}
+  let best=la,score=tapCodeScore(la,end);for(let a=Math.max(la,0x0200);a<Math.min(end,0x0800);a++){const z=tapCodeScore(a,end);if(z>score){score=z;best=a}}
+  return {pc:best,why:`euristica codice (score ${score})`};
+}
+function tapInstallBootstrap(e,p){
+  if(!biosReady())throw new Error('BIOS C64 richiesto');
+  // Riproduce l'ordine reale del KERNAL: prima header -> cassette buffer, poi data block.
+  // Se il data block si sovrappone a $033C-$03FB (alcuni loader lo fanno), vince il data block.
+  if(e?.tapHeader?.length===192)ram.set(e.tapHeader,0x033c);
+  const la=p[0]|(p[1]<<8),data=p.subarray(2);ram.set(data,la);loadedPrg=p;
+  // Il blocco può aver sovrascritto intenzionalmente i vettori: non ripristinarli qui.
+  const ent=tapGuessEntry(la,data);cpu.reset(ent.pc);cpu.S=0xfd;cpu.I=1;cpu.running=true;
+  return {la,data,ent};
+}
+function tapeFastNow(){if(mountedMedia?.kind==='T64'){const e=mediaEntries[selectedMediaIndex];if(!e?.getPrg)return;loadedPrg=e.getPrg();autostartPrg(true);return}if(mountedMedia?.kind!=='TAP')return;tapeLoadTapState();const e=mediaEntries[selectedMediaIndex],p=e?.getPrg?.();if(p){const z=tapInstallBootstrap(e,p);tape.pulseIndex=Math.min(e.tapPulse||0,tape.pulses.length-1);tape.doneCycles=0;for(let i=0;i<tape.pulseIndex;i++)tape.doneCycles+=tape.pulses[i];tape.pulseRemain=tape.pulses[tape.pulseIndex]||1;log(`FAST TAP bootstrap · ${e.name} · header 192B->$033C · ${hex(z.la)} · ${z.data.length}/${e.tapExpected||z.data.length} byte · resume pulse ${tape.pulseIndex} · entry ${hex(z.ent.pc)} (${z.ent.why}) · turbo in warp`)}else{log('FAST TAP raw: bootstrap non decodificabile; usa Datasette REAL con ROM C64');return}tape.mode='fast';if($('#tapeMode'))$('#tapeMode').value='fast';tape.forceMotor=true;tape.playing=true;cpu.running=true;updateRunState();render();updateTapeUI()}
+// ---- KERNAL / drive HLE bridge ---------------------------------------------
+function hleRts(c){const lo=c.pop(),hi=c.pop();c.PC=(((hi<<8)|lo)+1)&0xffff;c.cycles+=6;tick(6)}
+function hleSetCarry(c,on){c.C=on?1:0}
+function hleIrqExit(c){/* equivalente pratico del KERNAL $EA81: PLA/TAY, PLA/TAX, PLA, RTI */c.Y=c.pop();c.X=c.pop();c.A=c.pop();c.P=(c.pop()&~0x10)|0x20;const lo=c.pop(),hi=c.pop();c.PC=lo|(hi<<8);c.cycles+=12;tick(12)}
+function findMediaFileIn(entries,name,allTypes=false){if(!entries?.length)return null;let raw=String(name||''),n=normCbmName(raw);const ok=e=>allTypes?['PRG','SEQ','USR'].includes(e.type):e.type==='PRG';if(!n)return entries.find(ok)||null;if(raw.includes('*')){const prefix=normCbmName(raw.split('*')[0]);return entries.find(e=>ok(e)&&normCbmName(e.name).startsWith(prefix))||null}return entries.find(e=>ok(e)&&normCbmName(e.name)===n)||entries.find(e=>ok(e)&&normCbmName(e.name).startsWith(n))||null}
+function hleFindMediaFile(name,allTypes=false){return findMediaFileIn(mediaEntries,name,allTypes)}
+function hleFindAcrossDisks(name,allTypes=false){for(let i=0;i<diskSet.length;i++){if(i===activeDiskIndex)continue;const e=findMediaFileIn(diskSet[i].entries,name,allTypes);if(e)return{i,e}}return null}
+function hleAutoSwapFor(name,allTypes=false){const hit=hleFindAcrossDisks(name,allTypes);if(!hit)return null;mountDisk(hit.i,true);log(`AUTO DISK SWAP · "${name}" trovato su disk ${hit.i+1}: ${diskSet[hit.i].name}`);return hit.e}
+function hleFilename(){return hle.nameBytes.map(v=>String.fromCharCode(v)).join('')}
+function hleSetStatus(v){hle.status=v&255}
+function hleLoad(c){const req=hleFilename();let e=hleFindMediaFile(req);if(!e&&diskSet.length>1)e=hleAutoSwapFor(req,false);if(!e){c.A=4;hleSetStatus(4);hleSetCarry(c,true);log(`HLE LOAD: file non trovato "${req}" su nessun disco montato`);hleRts(c);return}const prg=e.getPrg?.();if(!prg||prg.length<2){c.A=4;hleSetStatus(4);hleSetCarry(c,true);hleRts(c);return}const fileAddr=prg[0]|(prg[1]<<8),addr=hle.secondary===0?((c.Y<<8)|c.X):fileAddr,data=prg.subarray(2);for(let i=0;i<data.length;i++)ram[(addr+i)&0xffff]=data[i];const end=(addr+data.length)&0xffff;c.X=end&255;c.Y=end>>8;c.A=0;hleSetStatus(0);hleSetCarry(c,false);log(`HLE LOAD "${e.name}" D${activeDiskIndex+1} → ${hex(addr)}-${hex((end-1)&0xffff)}`);drivePrimeAfterHleLoad(e);hleRts(c)}
+function hleOpen(c){const logical=hle.logical&255,dev=hle.device&255,sec=hle.secondary&255,req=hleFilename();if(dev===8&&sec===15){const raw=hle.nameBytes.slice();const f={device:8,secondary:15,name:req,data:new Uint8Array(0),pos:0,cmd:raw.slice(),response:[]};hle.openFiles.set(logical,f);if(raw.length){processDriveCommand(raw);if(driveCmdResponse.length){f.response=driveCmdResponse.splice(0)}}hleSetStatus(0);hleSetCarry(c,false);hleRts(c);return}if(dev!==8){hle.openFiles.set(logical,{device:dev,secondary:sec,name:req,data:new Uint8Array(0),pos:0});hleSetStatus(0);hleSetCarry(c,false);hleRts(c);return}
+  if(req.startsWith('$')){const txt=diskDirectoryText()+'\n';const data=new TextEncoder().encode(txt);hle.openFiles.set(logical,{device:8,secondary:sec,name:req,data,pos:0});hleSetStatus(0);hleSetCarry(c,false);hleRts(c);return}
+  let e=hleFindMediaFile(req,true);if(!e&&diskSet.length>1)e=hleAutoSwapFor(req,true);if(!e){hleSetStatus(4);c.A=4;hleSetCarry(c,true);log(`HLE OPEN: file non trovato "${req}"`);hleRts(c);return}
+  const data=e.getData?e.getData():e.getPrg?.();hle.openFiles.set(logical,{device:8,secondary:sec,name:e.name,data:data||new Uint8Array(0),pos:0});hleSetStatus(0);hleSetCarry(c,false);log(`HLE OPEN #${logical} "${e.name}" · ${data?.length||0} byte`);hleRts(c)}
+function hleCiout(c){const f=hle.openFiles.get(hle.outputLogical);if(!f){hleSetStatus(0);hleRts(c);return}if(f.device===8&&f.secondary===15){f.cmd=f.cmd||[];f.cmd.push(c.A&255);processDriveCommand(f.cmd);if(driveCmdResponse.length){f.response=driveCmdResponse.slice();driveCmdResponse=[]}}hleSetStatus(0);hleRts(c)}
+function hleClose(c){const logical=c.A&255;const f=hle.openFiles.get(logical);if(f&&f.cmd)processDriveCommand(f.cmd);hle.openFiles.delete(logical);if(hle.inputLogical===logical)hle.inputLogical=null;if(hle.outputLogical===logical)hle.outputLogical=null;hleSetStatus(0);hleSetCarry(c,false);hleRts(c)}
+function hleChkin(c){const logical=c.X&255;if(!hle.openFiles.has(logical)){hleSetStatus(3);hleSetCarry(c,true)}else{hle.inputLogical=logical;hleSetStatus(0);hleSetCarry(c,false)}hleRts(c)}
+function hleChkout(c){const logical=c.X&255;if(!hle.openFiles.has(logical)){hleSetStatus(3);hleSetCarry(c,true)}else{hle.outputLogical=logical;hleSetStatus(0);hleSetCarry(c,false)}hleRts(c)}
+function hleClrchn(c){const f=hle.openFiles.get(hle.outputLogical);if(f&&f.cmd)processDriveCommand(f.cmd);hle.inputLogical=null;hle.outputLogical=null;hleSetStatus(0);hleSetCarry(c,false);hleRts(c)}
+function hleChrin(c){const f=hle.openFiles.get(hle.inputLogical);if(f&&f.secondary===15&&f.response&&f.response.length){c.A=f.response.shift();hleSetStatus(f.response.length?0:0x40);c.nz(c.A);hleRts(c);return}if(!f){c.A=0;hleSetStatus(0);hleRts(c);return}if(f.pos>=f.data.length){c.A=0;hleSetStatus(0x40);hleRts(c);return}c.A=f.data[f.pos++];hleSetStatus(f.pos>=f.data.length?0x40:0);c.nz(c.A);hleRts(c)}
+function hleReadst(c){c.A=hle.status&255;c.nz(c.A);hleRts(c)}
+function hleClall(c){resetHleChannels();hleSetCarry(c,false);hleRts(c)}
+function hleRestoreVectors(){
+  // STEP 1 ONLY: genuine C64 KERNAL RAM vectors $0314-$0333.
+  const v=[
+    0x31,0xea, // $0314 CINV   -> $EA31
+    0x66,0xfe, // $0316 CBINV  -> $FE66
+    0x47,0xfe, // $0318 NMINV  -> $FE47
+    0x4a,0xf3, // $031A IOPEN  -> $F34A
+    0x91,0xf2, // $031C ICLOSE -> $F291
+    0x0e,0xf2, // $031E ICHKIN -> $F20E
+    0x50,0xf2, // $0320 ICKOUT -> $F250
+    0x33,0xf3, // $0322 ICLRCH -> $F333
+    0x57,0xf1, // $0324 IBASIN -> $F157
+    0xca,0xf1, // $0326 IBSOUT -> $F1CA
+    0xed,0xf6, // $0328 ISTOP  -> $F6ED
+    0x3e,0xf1, // $032A IGETIN -> $F13E
+    0x2f,0xf3, // $032C ICLALL -> $F32F
+    0x66,0xfe, // $032E USRCMD -> $FE66
+    0x9e,0xf4, // $0330 ILOAD  -> $F49E
+    0xdd,0xf5  // $0332 ISAVE  -> $F5DD
+  ];
+  ram.set(v,0x0314);
+}
+function hleScinit(){vic[0x11]=0x1b;vic[0x16]=0x08;vic[0x18]=0x14;vic[0x20]=14;vic[0x21]=6;cia2[0]=3;colorRam.fill(14)}
+function hleIecListen(c){
+  iecCmd.listen=true;iecCmd.talk=false;iecCmd.device=c.A&31;iecCmd.secondary=0;iecCmd.bytes=[];hleSetStatus(0);hleSetCarry(c,false);hleRts(c)
+}
+function hleIecSecond(c){
+  if(iecCmd.listen&&iecCmd.device===8){iecCmd.secondary=c.A&255;hleSetStatus(0);hleSetCarry(c,false);hleRts(c);return true}return false
+}
+function hleIecCiout(c){
+  if(iecCmd.listen&&iecCmd.device===8){iecCmd.bytes.push(c.A&255);hleSetStatus(0);hleSetCarry(c,false);hleRts(c);return true}return false
+}
+function hleIecUnlisten(c){
+  if(iecCmd.listen&&iecCmd.device===8){
+    if((iecCmd.secondary&15)===15&&iecCmd.bytes.length){
+      const cmd=iecCmd.bytes.slice();const ok=processDriveCommand(cmd);
+      if(ok)log(`IEC HLE cmd → 1541: ${cmd.slice(0,3).map(x=>String.fromCharCode(x>=32&&x<127?x:46)).join('')} · ${cmd.length} byte`);
+    }
+    iecCmd.listen=false;iecCmd.bytes=[];hleSetStatus(0);hleSetCarry(c,false);hleRts(c);return true
+  }return false
+}
+function hleIecTalk(c){
+  iecCmd.talk=true;iecCmd.listen=false;iecCmd.device=c.A&31;iecCmd.secondary=0;iecCmd.read=[];hleSetStatus(0);hleSetCarry(c,false);hleRts(c)
+}
+function hleIecTksa(c){
+  if(iecCmd.talk&&iecCmd.device===8){iecCmd.secondary=c.A&255;iecCmd.read=driveCmdResponse.splice(0);hleSetStatus(0);hleSetCarry(c,false);hleRts(c);return true}return false
+}
+function hleIecAcptr(c){
+  if(iecCmd.talk&&iecCmd.device===8){c.A=iecCmd.read.length?iecCmd.read.shift():0;hleSetStatus(iecCmd.read.length?0:0x40);c.nz(c.A);hleSetCarry(c,false);hleRts(c);return true}return false
+}
+function hleIecUntalk(c){
+  if(iecCmd.talk&&iecCmd.device===8){iecCmd.talk=false;iecCmd.read=[];hleSetStatus(0);hleSetCarry(c,false);hleRts(c);return true}return false
+}
+function hleKernelRomBridge(c){
+  if(!activeD64())return false;
+  switch(c.PC){
+    // NOSDOS bootstrap: KERNAL IEC primitives on command channel 15.
+    // This transfers M-W/M-E to the real 1541 CPU; after M-E the uploaded
+    // fastloader runs on driveCpu and can use the cycle-level IEC/GCR core.
+    // Public KERNAL jump table + the matching internal serial entry points.
+    // Some fastloaders (NOSDOS included) call the $EDxx routines directly.
+    case 0xffb1: case 0xed0c: if((c.A&31)===8){hleIecListen(c);return true}return false; // LISTEN
+    case 0xff93: case 0xedb9: if(hleIecSecond(c))return true;return false;             // SECOND
+    case 0xffa8: case 0xeddd: if(hleIecCiout(c))return true;if(hle.outputLogical!==null){hleCiout(c);return true}return false; // CIOUT
+    case 0xffae: case 0xedfe: if(hleIecUnlisten(c))return true;return false;          // UNLSN
+    case 0xffb4: case 0xed09: if((c.A&31)===8){hleIecTalk(c);return true}return false;// TALK
+    case 0xff96: case 0xedc7: if(hleIecTksa(c))return true;return false;              // TKSA
+    case 0xffa5: case 0xee13: if(hleIecAcptr(c))return true;return false;             // ACPTR
+    case 0xffab: case 0xedef: if(hleIecUntalk(c))return true;return false;            // UNTLK
+    // SETNAM / SETLFS / LOAD
+    case 0xffbd:{
+      const ptr=c.X|(c.Y<<8);
+      hle.nameBytes=[];for(let i=0;i<c.A;i++)hle.nameBytes.push(rd((ptr+i)&0xffff));
+      // Mirror the real KERNAL SETNAM workspace: FNLEN=$B7, FNADR=$BB/$BC.
+      // Some fastloaders read these variables directly instead of calling SETNAM again.
+      ram[0x00b7]=c.A&255;ram[0x00bb]=c.X&255;ram[0x00bc]=c.Y&255;
+      hleRts(c);return true
+    }
+    case 0xffba:
+      hle.logical=c.A&255;hle.device=c.X&255;hle.secondary=c.Y&255;
+      // Mirror the real KERNAL SETLFS workspace: LA=$B8, SA=$B9, FA(device)=$BA.
+      // NOSDOS reads $BA directly before TALK; leaving it at 0 made it address device 0.
+      ram[0x00b8]=hle.logical;ram[0x00b9]=hle.secondary;ram[0x00ba]=hle.device;
+      hleRts(c);return true;
+    case 0xffd5:if((hle.device&255)===8){hleLoad(c);return true}return false;
+
+    // STEP multifile: standard KERNAL stream I/O for drive 8.
+    // BASIC OPEN/INPUT#/GET#/CLOSE reaches these jump-table entries; without
+    // a real 1541 DOS ROM the stock KERNAL would otherwise wait on IEC.
+    case 0xffc0:if((hle.device&255)===8){hleOpen(c);return true}return false;     // OPEN
+    case 0xffc3:hleClose(c);return true;                                      // CLOSE
+    case 0xffc6:hleChkin(c);return true;                                      // CHKIN
+    case 0xffc9:hleChkout(c);return true;                                     // CHKOUT
+    case 0xffcc:hleClrchn(c);return true;                                     // CLRCHN
+    case 0xffcf:if(hle.inputLogical!==null){hleChrin(c);return true}return false; // CHRIN
+    case 0xffb7:if(hle.inputLogical!==null||hle.outputLogical!==null){hleReadst(c);return true}return false; // READST
+    default:return false;
+  }
+}
+function hleKernelCall(c){
+  if(driveExecution)return driveHleCall(c);
+  if(!hle.enabled||!kernalRom)return false;
+  // TRUE 1541 MODE: when a D64 is mounted, do not intercept ANY C64 KERNAL
+  // file/IEC primitive. SETNAM, SETLFS, LOAD, OPEN, LISTEN, TALK, SECOND,
+  // CIOUT, ACPTR, UNLSN and UNTLK all execute in the real KERNAL ROM and
+  // reach the drive through CIA2 <-> IEC <-> VIA1. This also means M-W/M-E
+  // are received and parsed by the real 1541 DOS ROM rather than JSD HLE.
+  if(activeD64())return false;
+  return hleKernelRomBridge(c)
+}
+
+let autoKeyQueue=[],autoKeyTimer=0,autoLoadWatch=0;
+function showBiosRequired(){ctx.fillStyle='#07111d';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#9fd3ff';ctx.font='18px monospace';ctx.textAlign='center';ctx.fillText('C64JSD · BIOS C64 REQUIRED',canvas.width/2,112);ctx.font='13px monospace';ctx.fillText('Carica lo ZIP con U3 BASIC · U4 KERNAL · U5 CHAR',canvas.width/2,142);ctx.textAlign='left'}
+function screenHasReady(){const q=[18,5,1,4,25,46];for(let i=0;i<=1000-q.length;i++){let ok=true;for(let j=0;j<q.length;j++)if((ram[0x0400+i+j]&0x7f)!==q[j]){ok=false;break}if(ok)return true}return false}
+function pumpKeyboardQueue(){if(autoKeyTimer)return;const step=()=>{autoKeyTimer=0;if(!autoKeyQueue.length)return;if(!biosReady()||!cpu.running){autoKeyTimer=setTimeout(step,25);return}let n=ram[0x00c6]&0xff;if(n>10)n=0;const room=10-n;if(room>0){const take=Math.min(room,autoKeyQueue.length);for(let i=0;i<take;i++)ram[0x0277+n+i]=autoKeyQueue.shift();ram[0x00c6]=n+take}if(autoKeyQueue.length)autoKeyTimer=setTimeout(step,15)};autoKeyTimer=setTimeout(step,0)}
+function queueKeyboardText(text){for(const ch of String(text)){let v=ch==='\n'||ch==='\r'?13:ch.charCodeAt(0);autoKeyQueue.push(v&255)}pumpKeyboardQueue()}
+function scheduleAutoDiskLoad(reason='D64'){if(!biosReady()||!activeD64())return;if(autoLoadWatch){clearInterval(autoLoadWatch);autoLoadWatch=0}autoKeyQueue.length=0;const t0=performance.now();autoLoadWatch=setInterval(()=>{if(!activeD64()||!biosReady()){clearInterval(autoLoadWatch);autoLoadWatch=0;return}if(screenHasReady()){clearInterval(autoLoadWatch);autoLoadWatch=0;queueKeyboardText('LOAD"*",8,1\rRUN\r');log(`AUTO ${reason} · tastiera: LOAD"*",8,1 + RUN`)}else if(performance.now()-t0>12000){clearInterval(autoLoadWatch);autoLoadWatch=0;log('AUTO LOAD: BASIC non ha ancora mostrato READY. · usa Autostart per riprovare')}} ,50)}
+function coldBoot(){if(!biosReady()){cpu.running=false;updateRunState();log('Boot bloccato: carica il BIOS C64 ZIP completo');showBiosRequired();return}ram.fill(0);colorRam.fill(14);vic.fill(0);sidReset();cia1.fill(0xff);cia2.fill(0);cia1Ta=cia1Tb=cia1TaLatch=cia1TbLatch=0xffff;cia1IcrStatus=cia1IcrMask=0;cia2Ta=cia2Tb=cia2TaLatch=cia2TbLatch=0xffff;cia2IcrStatus=cia2IcrMask=0;nmiPending=cia2NmiLine=false;joy1=joy2=gpJoy1=gpJoy2=0xff;resetRasterTrace();ddr=0x2f;port=0x37;ram[0]=ddr;ram[1]=port;vic[0x20]=14;vic[0x21]=6;vic[0x18]=0x14;vic[0x11]=0x1b;vic[0x16]=0x08;cia2[0]=3;driveReset1541(false);cpu.reset();cpu.running=true;log(`RESET ROM C64 · vector = ${hex(cpu.PC)}`);updateRunState();render();if(activeD64())scheduleAutoDiskLoad('RESET')}
+
+function startCartridge(){
+  driveReset1541(false);
+  if(!cartActive||!cartRomL){log('Autostart: nessuna cartuccia CRT selezionata');return}
+  ram.fill(0);colorRam.fill(14);vic.fill(0);cia1.fill(0xff);cia2.fill(0);cia1Ta=cia1Tb=cia1TaLatch=cia1TbLatch=0xffff;cia1IcrStatus=cia1IcrMask=0;cia2Ta=cia2Tb=cia2TaLatch=cia2TbLatch=0xffff;cia2IcrStatus=cia2IcrMask=0;nmiPending=cia2NmiLine=false;joy1=joy2=gpJoy1=gpJoy2=0xff;resetRasterTrace();
+  ddr=0x2f;port=0x37;ram[0]=ddr;ram[1]=port;hleRestoreVectors();hleScinit();
+  // Standard CBM80 cartridge: cold-start vector at $8000, signature at $8004.
+  const sig=String.fromCharCode(cartRomL[4],cartRomL[5],cartRomL[6],cartRomL[7],cartRomL[8]);
+  const cold=cartRomL[0]|(cartRomL[1]<<8);
+  cpu.reset(cold);cpu.S=0xff;cpu.I=1;cpu.running=true;updateRunState();render();
+  log(`CRT START · ${cartName} · ${cartRomH?'16K':'8K'} · vector ${hex(cold)} · sig ${[...sig].map(ch=>ch.charCodeAt(0).toString(16).padStart(2,'0')).join(' ')}`);
+}
+
+function setBasicProgramPointers(la,end){ram[0x2b]=la&255;ram[0x2c]=la>>8;ram[0x2d]=end&255;ram[0x2e]=end>>8;ram[0x2f]=end&255;ram[0x30]=end>>8;ram[0x31]=end&255;ram[0x32]=end>>8}
+function autostartPrg(forceFast=false){
+  if(!biosReady()){log('Autostart: BIOS C64 richiesto');return}
+  if(activeD64()){scheduleAutoDiskLoad('Autostart');return}
+  if(!forceFast&&mountedMedia?.kind==='T64'&&($('#tapeMode')?.value||tape.mode)==='real'){if(selectedMediaIndex>=0)loadSelectedEntry(true);tape.pendingAutostart=true;tapePlay(true);return}
+  if(!loadedPrg){log('Autostart: carica prima un .PRG');return}
+  const la=loadedPrg[0]|(loadedPrg[1]<<8),data=loadedPrg.subarray(2),end=(la+data.length)&0xffff;
+  ram.set(data,la);log(`PRG in RAM ${hex(la)}-${hex((end-1)&65535)}`);
+  if(la===0x0801){setBasicProgramPointers(la,end);queueKeyboardText('RUN\r');cpu.running=true;updateRunState();log('RUN automatico via BASIC/KERNAL reale');return}
+  cpu.PC=la;cpu.running=true;updateRunState();log(`PRG macchina · entry ${hex(la)} dopo boot ROM`);
+}
+
+// ---- Debug Lab: disassembler / monitor / graphics extractor ---------------
+const debugBreakpoints=new Set();let debugSkipBreakpoint=-1,debugDisasmAddr=0x0800,debugLastRaw=null,debugLastRawName='c64_graphics.bin';
+function phex(v,n=4){return (v>>>0).toString(16).toUpperCase().padStart(n,'0')}
+function parseNum(s,def=0){s=String(s??'').trim().replace(/^\$/,'');if(!s)return def;return parseInt(s,/^[0-9]+$/.test(s)&&s.length<4?16:16)&0xffff}
+function peekIO(a){if(a>=0xd000&&a<=0xd3ff){const r=a&0x3f;if(r===0x12)return raster&255;if(r===0x11)return(vic[r]&0x7f)|((raster&0x100)?0x80:0);return vic[r]}if(a>=0xd400&&a<=0xd7ff)return sidReadReg((a-0xd400)&31);if(a>=0xd800&&a<=0xdbff)return colorRam[a-0xd800]&15;if(a>=0xdc00&&a<=0xdcff)return cia1[a&15];if(a>=0xdd00&&a<=0xddff){const r=a&15;if(r===4)return cia2Ta&255;if(r===5)return cia2Ta>>8;if(r===6)return cia2Tb&255;if(r===7)return cia2Tb>>8;if(r===0x0d)return cia2IcrStatus|((cia2IcrStatus&cia2IcrMask&31)?128:0);return cia2[r];}return 0xff}
+function peekCpu(a){a&=0xffff;if(a===0)return ddr;if(a===1){let ext=0xff;if(tape.playing&&mountedMedia?.kind==='TAP')ext&=~0x10;return ((port&ddr)|(ext&(~ddr&0xff)))&0xff;}if(a>=0x8000&&a<=0x9fff&&cartRomL&&cartLoVisible())return cartRomL[a-0x8000];if(a>=0xa000&&a<=0xbfff&&cartRomH&&cartHiVisible())return cartRomH[a-0xa000];if(a>=0xa000&&a<=0xbfff&&basicVisible())return basicRom[a-0xa000];if(a>=0xd000&&a<=0xdfff){if(ioVisible())return peekIO(a);if(charVisible()&&charRom)return charRom[a-0xd000]}if(a>=0xe000&&kernalVisible())return kernalRom[a-0xe000];return ram[a]}
+const OP={};function ops(m,mode,len,codes){for(const x of codes.trim().split(/\s+/))if(x)OP[parseInt(x,16)]={m,mode,len}}
+ops('BRK','imp',1,'00');ops('ORA','izx',2,'01');ops('ORA','zp',2,'05');ops('ASL','zp',2,'06');ops('PHP','imp',1,'08');ops('ORA','imm',2,'09');ops('ASL','acc',1,'0A');ops('ORA','abs',3,'0D');ops('ASL','abs',3,'0E');
+ops('BPL','rel',2,'10');ops('ORA','izy',2,'11');ops('ORA','zpx',2,'15');ops('ASL','zpx',2,'16');ops('CLC','imp',1,'18');ops('ORA','aby',3,'19');ops('ORA','abx',3,'1D');ops('ASL','abx',3,'1E');
+ops('JSR','abs',3,'20');ops('AND','izx',2,'21');ops('BIT','zp',2,'24');ops('AND','zp',2,'25');ops('ROL','zp',2,'26');ops('PLP','imp',1,'28');ops('AND','imm',2,'29');ops('ROL','acc',1,'2A');ops('BIT','abs',3,'2C');ops('AND','abs',3,'2D');ops('ROL','abs',3,'2E');
+ops('BMI','rel',2,'30');ops('AND','izy',2,'31');ops('AND','zpx',2,'35');ops('ROL','zpx',2,'36');ops('SEC','imp',1,'38');ops('AND','aby',3,'39');ops('AND','abx',3,'3D');ops('ROL','abx',3,'3E');
+ops('RTI','imp',1,'40');ops('EOR','izx',2,'41');ops('EOR','zp',2,'45');ops('LSR','zp',2,'46');ops('PHA','imp',1,'48');ops('EOR','imm',2,'49');ops('LSR','acc',1,'4A');ops('JMP','abs',3,'4C');ops('EOR','abs',3,'4D');ops('LSR','abs',3,'4E');
+ops('BVC','rel',2,'50');ops('EOR','izy',2,'51');ops('EOR','zpx',2,'55');ops('LSR','zpx',2,'56');ops('CLI','imp',1,'58');ops('EOR','aby',3,'59');ops('EOR','abx',3,'5D');ops('LSR','abx',3,'5E');
+ops('RTS','imp',1,'60');ops('ADC','izx',2,'61');ops('ADC','zp',2,'65');ops('ROR','zp',2,'66');ops('PLA','imp',1,'68');ops('ADC','imm',2,'69');ops('ROR','acc',1,'6A');ops('JMP','ind',3,'6C');ops('ADC','abs',3,'6D');ops('ROR','abs',3,'6E');
+ops('BVS','rel',2,'70');ops('ADC','izy',2,'71');ops('ADC','zpx',2,'75');ops('ROR','zpx',2,'76');ops('SEI','imp',1,'78');ops('ADC','aby',3,'79');ops('ADC','abx',3,'7D');ops('ROR','abx',3,'7E');
+ops('STA','izx',2,'81');ops('STY','zp',2,'84');ops('STA','zp',2,'85');ops('STX','zp',2,'86');ops('DEY','imp',1,'88');ops('TXA','imp',1,'8A');ops('STY','abs',3,'8C');ops('STA','abs',3,'8D');ops('STX','abs',3,'8E');
+ops('BCC','rel',2,'90');ops('STA','izy',2,'91');ops('STY','zpx',2,'94');ops('STA','zpx',2,'95');ops('STX','zpy',2,'96');ops('TYA','imp',1,'98');ops('STA','aby',3,'99');ops('TXS','imp',1,'9A');ops('STA','abx',3,'9D');
+ops('LDY','imm',2,'A0');ops('LDA','izx',2,'A1');ops('LDX','imm',2,'A2');ops('LDY','zp',2,'A4');ops('LDA','zp',2,'A5');ops('LDX','zp',2,'A6');ops('TAY','imp',1,'A8');ops('LDA','imm',2,'A9');ops('TAX','imp',1,'AA');ops('LDY','abs',3,'AC');ops('LDA','abs',3,'AD');ops('LDX','abs',3,'AE');
+ops('BCS','rel',2,'B0');ops('LDA','izy',2,'B1');ops('LDY','zpx',2,'B4');ops('LDA','zpx',2,'B5');ops('LDX','zpy',2,'B6');ops('CLV','imp',1,'B8');ops('LDA','aby',3,'B9');ops('TSX','imp',1,'BA');ops('LDY','abx',3,'BC');ops('LDA','abx',3,'BD');ops('LDX','aby',3,'BE');
+ops('CPY','imm',2,'C0');ops('CMP','izx',2,'C1');ops('CPY','zp',2,'C4');ops('CMP','zp',2,'C5');ops('DEC','zp',2,'C6');ops('INY','imp',1,'C8');ops('CMP','imm',2,'C9');ops('DEX','imp',1,'CA');ops('CPY','abs',3,'CC');ops('CMP','abs',3,'CD');ops('DEC','abs',3,'CE');
+ops('BNE','rel',2,'D0');ops('CMP','izy',2,'D1');ops('CMP','zpx',2,'D5');ops('DEC','zpx',2,'D6');ops('CLD','imp',1,'D8');ops('CMP','aby',3,'D9');ops('CMP','abx',3,'DD');ops('DEC','abx',3,'DE');
+ops('CPX','imm',2,'E0');ops('SBC','izx',2,'E1');ops('CPX','zp',2,'E4');ops('SBC','zp',2,'E5');ops('INC','zp',2,'E6');ops('INX','imp',1,'E8');ops('SBC','imm',2,'E9 EB');ops('NOP','imp',1,'EA');ops('CPX','abs',3,'EC');ops('SBC','abs',3,'ED');ops('INC','abs',3,'EE');
+ops('BEQ','rel',2,'F0');ops('SBC','izy',2,'F1');ops('SBC','zpx',2,'F5');ops('INC','zpx',2,'F6');ops('SED','imp',1,'F8');ops('SBC','aby',3,'F9');ops('SBC','abx',3,'FD');ops('INC','abx',3,'FE');
+
+ops('SLO','izx',2,'03');ops('SLO','zp',2,'07');ops('SLO','abs',3,'0F');ops('SLO','izy',2,'13');ops('SLO','zpx',2,'17');ops('SLO','aby',3,'1B');ops('SLO','abx',3,'1F');
+ops('RLA','izx',2,'23');ops('RLA','zp',2,'27');ops('RLA','abs',3,'2F');ops('RLA','izy',2,'33');ops('RLA','zpx',2,'37');ops('RLA','aby',3,'3B');ops('RLA','abx',3,'3F');
+ops('SRE','izx',2,'43');ops('SRE','zp',2,'47');ops('SRE','abs',3,'4F');ops('SRE','izy',2,'53');ops('SRE','zpx',2,'57');ops('SRE','aby',3,'5B');ops('SRE','abx',3,'5F');
+ops('RRA','izx',2,'63');ops('RRA','zp',2,'67');ops('RRA','abs',3,'6F');ops('RRA','izy',2,'73');ops('RRA','zpx',2,'77');ops('RRA','aby',3,'7B');ops('RRA','abx',3,'7F');
+ops('SAX','izx',2,'83');ops('SAX','zp',2,'87');ops('SAX','abs',3,'8F');ops('SAX','zpy',2,'97');
+ops('LAX','izx',2,'A3');ops('LAX','zp',2,'A7');ops('LAX','abs',3,'AF');ops('LAX','izy',2,'B3');ops('LAX','zpy',2,'B7');ops('LAX','aby',3,'BF');
+ops('DCP','izx',2,'C3');ops('DCP','zp',2,'C7');ops('DCP','abs',3,'CF');ops('DCP','izy',2,'D3');ops('DCP','zpx',2,'D7');ops('DCP','aby',3,'DB');ops('DCP','abx',3,'DF');
+ops('ISC','izx',2,'E3');ops('ISC','zp',2,'E7');ops('ISC','abs',3,'EF');ops('ISC','izy',2,'F3');ops('ISC','zpx',2,'F7');ops('ISC','aby',3,'FB');ops('ISC','abx',3,'FF');
+ops('ANC','imm',2,'0B 2B');ops('ALR','imm',2,'4B');ops('AXS','imm',2,'CB');
+function disOne(addr){addr&=0xffff;const op=peekCpu(addr),d=OP[op]||{m:'.DB',mode:'db',len:1},b1=peekCpu(addr+1),b2=peekCpu(addr+2),w=b1|(b2<<8);let arg='';switch(d.mode){case'imm':arg='#$'+phex(b1,2);break;case'zp':arg='$'+phex(b1,2);break;case'zpx':arg='$'+phex(b1,2)+',X';break;case'zpy':arg='$'+phex(b1,2)+',Y';break;case'abs':arg='$'+phex(w);break;case'abx':arg='$'+phex(w)+',X';break;case'aby':arg='$'+phex(w)+',Y';break;case'ind':arg='($'+phex(w)+')';break;case'izx':arg='($'+phex(b1,2)+',X)';break;case'izy':arg='($'+phex(b1,2)+'),Y';break;case'rel':arg='$'+phex((addr+2+((b1<<24)>>24))&0xffff);break;case'acc':arg='A';break;case'db':arg='$'+phex(op,2);break}const bytes=[op,b1,b2].slice(0,d.len).map(x=>phex(x,2)).join(' ');return{addr,len:d.len,text:`${phex(addr)}  ${bytes.padEnd(8)} ${d.m}${arg?' '+arg:''}`}}
+function disassemble(addr=debugDisasmAddr,count=28){let a=addr&0xffff,out=[];for(let i=0;i<count;i++){const z=disOne(a);out.push((a===cpu.PC?'▶ ':'  ')+z.text);a=(a+z.len)&0xffff}return out.join('\n')}
+function driveDisOne(addr){addr&=0xffff;const op=driveRd(addr),d=OP[op]||{m:'.DB',mode:'db',len:1},b1=driveRd(addr+1),b2=driveRd(addr+2),w=b1|(b2<<8);let arg='';switch(d.mode){case'imm':arg='#$'+phex(b1,2);break;case'zp':arg='$'+phex(b1,2);break;case'zpx':arg='$'+phex(b1,2)+',X';break;case'zpy':arg='$'+phex(b1,2)+',Y';break;case'abs':arg='$'+phex(w);break;case'abx':arg='$'+phex(w)+',X';break;case'aby':arg='$'+phex(w)+',Y';break;case'ind':arg='($'+phex(w)+')';break;case'izx':arg='($'+phex(b1,2)+',X)';break;case'izy':arg='($'+phex(b1,2)+'),Y';break;case'rel':arg='$'+phex((addr+2+((b1<<24)>>24))&0xffff);break;case'acc':arg='A';break;case'db':arg='$'+phex(op,2);break}const bytes=[op,b1,b2].slice(0,d.len).map(x=>phex(x,2)).join(' ');return{addr,len:d.len,text:`${phex(addr)}  ${bytes.padEnd(8)} ${d.m}${arg?' '+arg:''}`}}
+function driveDisassemble(start=0x0500,end=0x05e0,maxIns=96){let a=start&0xffff,out=[],n=0;while(a!==(end&0xffff)&&n++<maxIns){const z=driveDisOne(a);out.push((a===driveCpu?.PC?'▶ ':'  ')+z.text);a=(a+z.len)&0xffff;if(start<end&&a>=end)break}return out.join('\n')}
+function flagsText(){return 'NV-BDIZC'.split('').map((c,i)=>{const bit=[7,6,5,4,3,2,1,0][i];return(cpu.P&(1<<bit))?c:'.'}).join('')}
+function updateDebugUI(follow=false){if(follow)debugDisasmAddr=cpu.PC;$('#regBox').innerHTML=`<div class="reg">A ${phex(cpu.A,2)}</div><div class="reg">X ${phex(cpu.X,2)}</div><div class="reg">Y ${phex(cpu.Y,2)}</div><div class="reg">S ${phex(cpu.S,2)}</div><div class="reg">PC ${phex(cpu.PC)}</div><div class="reg">P ${phex(cpu.P,2)}</div><div class="reg">${flagsText()}</div><div class="reg">R ${raster}:${vicCycle}</div>`;$('#disasm').textContent=disassemble(debugDisasmAddr);$('#debugAddr').value=phex(debugDisasmAddr);$('#breakState').textContent='Breakpoint: '+(debugBreakpoints.size?[...debugBreakpoints].map(x=>'$'+phex(x)).join(', '):'nessuno')}
+function hitBreakpoint(){if(!debugBreakpoints.has(cpu.PC)||debugSkipBreakpoint===cpu.PC){debugSkipBreakpoint=-1;return false}cpu.running=false;updateRunState();log(`BREAKPOINT @ ${hex(cpu.PC)}`);debugDisasmAddr=cpu.PC;updateDebugUI();return true}
+function stepN(n){cpu.running=false;for(let i=0;i<n;i++){cpu.step();if(debugBreakpoints.has(cpu.PC))break}render();updateRunState();updateDebugUI(true)}
+function stepFrame(){cpu.running=false;const f=frameCount;let guard=0;while(frameCount===f&&guard++<100000)cpu.step();render();updateRunState();updateDebugUI(true)}
+function downloadBlob(bytes,name,type='application/octet-stream'){const blob=bytes instanceof Blob?bytes:new Blob([bytes],{type});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function memoryDump(addr,len){let lines=[];for(let o=0;o<len;o+=16){let bs=[],as='';for(let i=0;i<16&&o+i<len;i++){const v=peekCpu(addr+o+i);bs.push(phex(v,2));as+=v>=32&&v<127?String.fromCharCode(v):'.'}lines.push(`${phex((addr+o)&0xffff)}  ${bs.join(' ').padEnd(47)}  ${as}`)}return lines.join('\n')}
+function mon(s){const e=$('#monitorOut');e.textContent+=(e.textContent?'\n':'')+s;e.scrollTop=e.scrollHeight}
+function monitorCommand(line){const p=line.trim().split(/\s+/),cmd=(p.shift()||'').toUpperCase();try{if(!cmd)return;if(cmd==='HELP'||cmd==='?')mon('R regs | S [n] step | G addr run | B addr breakpoint | BC [addr|ALL]\nD addr [n] disasm | M addr [len] memory | POKE addr val | FILL start end val\nSAVE start end [name] | PC addr | DIR | DISK [n] | DRIVE | DRESET\nTAPE | PLAY | STOP | REW | FASTTAPE | GFX | CLS');else if(cmd==='R'){updateDebugUI(true);mon(`A=${phex(cpu.A,2)} X=${phex(cpu.X,2)} Y=${phex(cpu.Y,2)} S=${phex(cpu.S,2)} P=${phex(cpu.P,2)} PC=${phex(cpu.PC)} ${flagsText()}`)}else if(cmd==='S'){stepN(Math.max(1,parseInt(p[0]||'1',10)));mon(`PC=${phex(cpu.PC)}`)}else if(cmd==='G'){if(p[0])cpu.PC=parseNum(p[0]);debugSkipBreakpoint=cpu.PC;cpu.running=true;updateRunState();mon(`RUN @ ${phex(cpu.PC)}`)}else if(cmd==='B'){const a=parseNum(p[0]);debugBreakpoints.add(a);updateDebugUI();mon(`BREAK $${phex(a)}`)}else if(cmd==='BC'){if(!p[0]||p[0].toUpperCase()==='ALL')debugBreakpoints.clear();else debugBreakpoints.delete(parseNum(p[0]));updateDebugUI();mon('Breakpoint aggiornati')}else if(cmd==='D'){let a=parseNum(p[0],cpu.PC),n=Math.max(1,Math.min(200,parseInt(p[1]||'24',10)));debugDisasmAddr=a;$('#disasm').textContent=disassemble(a,n);mon(disassemble(a,Math.min(n,16)))}else if(cmd==='M'){let a=parseNum(p[0]),n=Math.max(1,Math.min(2048,parseNum(p[1]||'80')));mon(memoryDump(a,n))}else if(cmd==='POKE'){let a=parseNum(p[0]),v=parseNum(p[1])&255;wr(a,v);mon(`$${phex(a)} <= $${phex(v,2)}`);render()}else if(cmd==='FILL'){let a=parseNum(p[0]),b=parseNum(p[1]),v=parseNum(p[2])&255;for(let q=a;;q=(q+1)&65535){wr(q,v);if(q===b)break}mon(`FILL $${phex(a)}-$${phex(b)} = $${phex(v,2)}`);render()}else if(cmd==='SAVE'){let a=parseNum(p[0]),b=parseNum(p[1]),arr=new Uint8Array(((b-a)&65535)+1);for(let i=0;i<arr.length;i++)arr[i]=peekCpu(a+i);downloadBlob(arr,p[2]||`c64_${phex(a)}_${phex(b)}.bin`);mon(`Salvati ${arr.length} byte`)}else if(cmd==='PC'){cpu.PC=parseNum(p[0]);updateDebugUI(true);mon(`PC=$${phex(cpu.PC)}`)}else if(cmd==='DIR'){mon(diskDirectoryText())}else if(cmd==='DISK'){if(!diskSet.length)mon('Nessun set di dischi');else if(!p[0])mon(diskSet.map((d,i)=>`${i===activeDiskIndex?'*':' '} ${i+1}: ${d.name}`).join('\n'));else{let n=Math.max(1,Math.min(diskSet.length,parseInt(p[0],10)||1));mountDisk(n-1);mon(`Drive 8 ← disk ${n}: ${diskSet[n-1].name}`)}}else if(cmd==='DRIVE'){mon(`1541 PC=${phex(driveCpu.PC)} A=${phex(driveCpu.A,2)} X=${phex(driveCpu.X,2)} Y=${phex(driveCpu.Y,2)} S=${phex(driveCpu.S,2)} P=${phex(driveCpu.P,2)} T=${driveTrack} MOTOR=${driveMotor?1:0} SYNC=${driveSync?1:0} IEC=${iec.atnHigh?1:0}${iec.clkHigh?1:0}${iec.dataHigh?1:0} V0ORB=${phex(via0.r[0],2)} V0DDR=${phex(via0.r[2],2)} V1ORB=${phex(via1.r[0],2)} V1DDR=${phex(via1.r[2],2)} V1IFR=${phex(via1.r[13],2)} V1IER=${phex(via1.r[14],2)} V1ACR=${phex(via1.r[11],2)} V1PCR=${phex(via1.r[12],2)} SOE=${driveSoe?1:0} READ=${driveReadMode?1:0} DENS=${(via1.r[0]>>5)&3} SYNCHITS=${driveSyncHits} BYTES=${driveByteEvents} FASTCYC=${driveCustomActive?(driveCycles-driveFastStartCycles):0} STEP=${driveStepEvents}/PH${driveStepperPhase}/PP${((driveHalfTrack%4)+4)%4} DF=${driveDensityFixes}:${driveLastDensityReason||'-'} SEEKID=${driveSeekIdChecks}/${driveSeekIdMismatch} HDRCMP=${driveHdrCmpCount}/${driveHdrMismatchCount} SF=${driveSyncFirstHeader}/${driveSyncFirstData}/${driveSyncFirstOther} RD=${driveDataReads}/C${driveSyncCleanupReads} BRL=${driveByteReadyLevel?1:0}/E${driveByteReadyEdge?1:0} PAL=${drivePaLatched?1:0}/M${drivePaMissed} BIT=${driveRawBitPos}.${driveShiftBits} LH=${driveRam[0x18]}/${driveRam[0x19]} CUR=${driveRam[0x0a]}/${driveRam[0x0b]} J43=${driveRam[0x43]} DEC=${driveRam[0x53]}/${driveRam[0x54]} ${driveLastHdrMismatch} HLE=${driveHlePrimed?`T${driveHleLastTrack}/S${driveHleLastSector}`:'no'} MEMCMD=${driveMemCmdCount} ${driveLastMemCmd}`)}else if(cmd==='TAPE'){mon(`TAPE ${tape.mode.toUpperCase()} ${tape.playing?'PLAY':'STOP'} ${tapeFmt(tape.pos)}/${tapeFmt(tape.duration)} ${tape.entry?.name||''}`)}else if(cmd==='PLAY'){tapePlay(false);mon('Datasette PLAY')}else if(cmd==='STOP'){tapeStop(true);mon('Datasette STOP')}else if(cmd==='REW'){tapeRewind();mon('Datasette REWIND')}else if(cmd==='FASTTAPE'){tapeFastNow();mon('Fast tape')}else if(cmd==='DRESET'){driveReset1541(true);mon('1541 reset')}else if(cmd==='GFX'){drawGfx();mon('Grafica aggiornata')}else if(cmd==='CLS')$('#monitorOut').textContent='';else mon('Comando sconosciuto. HELP per elenco.')}catch(e){mon('ERR: '+e.message)}}
+function currentVicInfo(){const bank=((~cia2[0])&3)*0x4000,screen=(bank+((vic[0x18]>>4)&15)*0x400)&0xffff,charset=(bank+((vic[0x18]>>1)&7)*0x800)&0xffff,bitmap=(bank+((vic[0x18]&8)?0x2000:0))&0xffff;return{bank,screen,charset,bitmap}}
+function gfxSetSize(w,h){const c=$('#gfxCanvas');c.width=w;c.height=h;const g=c.getContext('2d',{alpha:false});g.imageSmoothingEnabled=false;g.fillStyle='#000';g.fillRect(0,0,w,h);return g}
+function rgbCss(ci){return palette[ci&15]}
+function drawCharset(base){const scale=2,g=gfxSetSize(16*8*scale,16*8*scale);g.fillStyle=rgbCss(vic[0x21]);g.fillRect(0,0,g.canvas.width,g.canvas.height);g.fillStyle=rgbCss(1);for(let ch=0;ch<256;ch++){const ox=(ch&15)*16,oy=(ch>>4)*16;for(let y=0;y<8;y++){const bits=vicByte((base+ch*8+y)&65535);for(let x=0;x<8;x++)if(bits&(0x80>>x))g.fillRect(ox+x*2,oy+y*2,2,2)}}debugLastRaw=new Uint8Array(2048);for(let i=0;i<2048;i++)debugLastRaw[i]=vicByte((base+i)&65535);debugLastRawName=`charset_${phex(base)}.bin`;$('#gfxState').textContent=`Charset $${phex(base)}-$${phex((base+2047)&65535)} · 256 glyph`}
+function drawActiveSprites(){const info=currentVicInfo(),g=gfxSetSize(4*96,2*88);g.fillStyle='#111';g.fillRect(0,0,g.canvas.width,g.canvas.height);let raw=new Uint8Array(8*64);for(let n=0;n<8;n++){const ptr=ram[(info.screen+0x3f8+n)&65535],base=(info.bank+(ptr<<6))&65535,ox=(n&3)*96+12,oy=(n>>2)*88+10,col=vic[0x27+n]&15;g.fillStyle=rgbCss(col);for(let y=0;y<21;y++){const bits=(vicByte(base+y*3)<<16)|(vicByte(base+y*3+1)<<8)|vicByte(base+y*3+2);for(let x=0;x<24;x++)if(bits&(1<<(23-x)))g.fillRect(ox+x*3,oy+y*3,3,3)}for(let i=0;i<64;i++)raw[n*64+i]=vicByte((base+i)&65535);g.fillStyle='#fff';g.font='10px monospace';g.fillText(`${n}:$${phex(base)}`,2+(n&3)*96,9+(n>>2)*88)}debugLastRaw=raw;debugLastRawName='active_sprites.bin';$('#gfxState').textContent=`8 sprite attivi · bank $${phex(info.bank)} · screen $${phex(info.screen)}`}
+function drawSpriteBank(base){const g=gfxSetSize(16*24,16*21);g.fillStyle='#000';g.fillRect(0,0,g.canvas.width,g.canvas.height);for(let n=0;n<256;n++){const ox=(n&15)*24,oy=(n>>4)*21,ba=(base+n*64)&65535;g.fillStyle=rgbCss((n%15)+1);for(let y=0;y<21;y++){const bits=(vicByte(ba+y*3)<<16)|(vicByte(ba+y*3+1)<<8)|vicByte(ba+y*3+2);for(let x=0;x<24;x++)if(bits&(1<<(23-x)))g.fillRect(ox+x,oy+y,1,1)}}debugLastRaw=new Uint8Array(16384);for(let i=0;i<debugLastRaw.length;i++)debugLastRaw[i]=vicByte((base+i)&65535);debugLastRawName=`sprites_${phex(base)}.bin`;$('#gfxState').textContent=`Sprite bank $${phex(base)} · 256 blocchi da 64 byte`}
+function drawBitmap(base){const info=currentVicInfo(),g=gfxSetSize(320,200),screen=info.screen,multi=!!(vic[0x16]&0x10),bg=vic[0x21]&15;for(let row=0;row<25;row++)for(let c=0;c<40;c++){const k=row*40+c,sc=ram[(screen+k)&65535],cr=colorRam[k]&15;for(let ry=0;ry<8;ry++){const bits=vicByte((base+k*8+ry)&65535);if(multi){const cols=[bg,(sc>>4)&15,sc&15,cr];for(let q=0;q<4;q++){g.fillStyle=rgbCss(cols[(bits>>(6-q*2))&3]);g.fillRect(c*8+q*2,row*8+ry,2,1)}}else{for(let x=0;x<8;x++){g.fillStyle=rgbCss(bits&(0x80>>x)?((sc>>4)&15):(sc&15));g.fillRect(c*8+x,row*8+ry,1,1)}}}}debugLastRaw=new Uint8Array(8000);for(let i=0;i<8000;i++)debugLastRaw[i]=vicByte((base+i)&65535);debugLastRawName=`bitmap_${phex(base)}.bin`;$('#gfxState').textContent=`Bitmap $${phex(base)}-$${phex((base+7999)&65535)} · ${multi?'multicolor':'hires'}`}
+function drawGfx(){const mode=$('#gfxMode').value,info=currentVicInfo();let base=parseNum($('#gfxBase').value);if(mode==='charset')drawCharset(base||info.charset);else if(mode==='spritesActive')drawActiveSprites();else if(mode==='spritesBank')drawSpriteBank(base||info.bank);else if(mode==='bitmap')drawBitmap(base||info.bitmap);else if(mode==='screen'){const g=gfxSetSize(384,272);g.drawImage(canvas,0,0);debugLastRaw=null;debugLastRawName='c64_screen.png';$('#gfxState').textContent='Copia della schermata emulata corrente'}}
+function gfxAuto(){const m=$('#gfxMode').value,info=currentVicInfo();let a=m==='charset'?info.charset:m==='bitmap'?info.bitmap:m==='spritesBank'?info.bank:0;$('#gfxBase').value=phex(a);drawGfx()}
+$('#stepBtn').onclick=()=>stepN(1);$('#step100Btn').onclick=()=>stepN(100);$('#stepFrameBtn').onclick=stepFrame;$('#followPcBtn').onclick=()=>{debugDisasmAddr=cpu.PC;updateDebugUI()};$('#gotoBtn').onclick=()=>{debugDisasmAddr=parseNum($('#debugAddr').value);updateDebugUI()};
+$('#breakBtn').onclick=()=>{const a=parseNum($('#breakAddr').value);debugBreakpoints.add(a);updateDebugUI()};$('#clearBreakBtn').onclick=()=>{debugBreakpoints.clear();updateDebugUI()};
+$('#gfxAutoBtn').onclick=gfxAuto;$('#gfxDrawBtn').onclick=drawGfx;$('#gfxMode').onchange=gfxAuto;$('#gfxPngBtn').onclick=()=>$('#gfxCanvas').toBlob(b=>downloadBlob(b,'c64_graphics.png','image/png'),'image/png');$('#gfxRawBtn').onclick=()=>{if(debugLastRaw)downloadBlob(debugLastRaw,debugLastRawName);else log('RAW: modalità corrente senza dati binari')};
+$('#dumpRamBtn').onclick=()=>downloadBlob(new Uint8Array(ram),'c64_ram_64k.bin');$('#screenPngBtn').onclick=()=>canvas.toBlob(b=>downloadBlob(b,'c64_screen.png','image/png'),'image/png');$('#refreshToolsBtn').onclick=()=>{updateDebugUI(true);drawGfx()};
+$('#inputMode').addEventListener('change',e=>{inputMode=e.target.value;clearInputState();$('#screen').focus()});
+$('#screen').addEventListener('pointerdown',()=>$('#screen').focus());
+$('#monitorInput').addEventListener('keydown',e=>{if(e.key==='Enter'){monitorCommand(e.target.value);e.target.value='';e.preventDefault()}});
+
+$('#tapeMode').onchange=e=>{tape.mode=e.target.value;tapeStop(false);tape.pendingAutostart=false;tape.pos=0;if(mountedMedia?.kind==='TAP')tapeLoadTapState();else tape.duration=tapeEstimateDuration((mediaEntries[selectedMediaIndex]?.getPrg?.())||null);updateTapeUI();log(`Modalità Datasette: ${tape.mode==='fast'?'Fast Load immediato':'velocità originale ricostruita + audio'}`)};
+$('#tapePlayBtn').onclick=()=>tapePlay(false);$('#tapeStopBtn').onclick=()=>tapeStop(true);$('#tapeRewindBtn').onclick=tapeRewind;$('#tapeFastNowBtn').onclick=tapeFastNow;
+$('#autoPrgBtn').onclick=()=>{if(!biosReady()){log('Carica prima il BIOS C64 ZIP');return}if(selectedMediaIndex>=0)loadSelectedEntry(true);if(cartActive){log('CRT montata · reset tramite ROM C64');coldBoot()}else autostartPrg()};
+$('#runBtn').onclick=()=>{if(!biosReady()){log('Carica prima il BIOS C64 ZIP');return}ensureSidAudio();if(!cpu.running&&debugBreakpoints?.has(cpu.PC))debugSkipBreakpoint=cpu.PC;cpu.running=!cpu.running;updateRunState();updateDebugUI(true)};$('#resetBtn').onclick=()=>{cpu.running=false;coldBoot();log('Reset ROM')};
+$('#audioBtn').onclick=toggleSidAudio;
+$('#fullBtn').onclick=()=>canvas.requestFullscreen?.();$('#scaleSel').onchange=e=>{canvas.style.width=(384*Number(e.target.value))+'px'};
+canvas.addEventListener('click',()=>canvas.focus());
+cpu.running=false;updateRunState();showBiosRequired();mon('C64JSD MONITOR · HELP per i comandi');log('C64JSD alpha 65 · TRUE 1541 · rotational layout + JAM trace · persistent /BYTE · EVENT/READ trace.');
+// Keep file inputs and controls live immediately. Delay only optional heavy debugger/graphics refresh.
+const idleInit=()=>{try{updateDebugUI(true);gfxAuto()}catch(e){log('Init strumenti: '+e.message)}};
+if(window.requestIdleCallback)requestIdleCallback(idleInit,{timeout:1200});else setTimeout(idleInit,250);
+</script>
+
+<script>
+
+(function(){
+'use strict';
+var JSD_SYS='c64';
+var m=(location.hash||'').match(/(?:^#|&)jsdlaunch=([^&]+)/),JSD_TOKEN=m?decodeURIComponent(m[1]):'',JSD_PARENT=null;
+function postTo(t,type,extra){try{if(t)t.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+function post(type,extra){postTo(JSD_PARENT||window.opener,type,extra)}
+function fileOf(x){return new File([x.bytes],x.name||'game.bin',{type:'application/octet-stream',lastModified:Date.now()})}
+function role(p,r){return (p.files||[]).filter(x=>x.role===r).map(fileOf)}
+function setFiles(sel,fs){var el=document.querySelector(sel);if(!el||!fs.length)return null;var dt=new DataTransfer();fs.forEach(f=>dt.items.add(f));el.files=dt.files;el.dispatchEvent(new Event('change',{bubbles:true}));return el}
+function wait(test,ms,msg){return new Promise((ok,no)=>{var t=Date.now();(function p(){try{if(test())return ok()}catch(_){}if(Date.now()-t>ms)return no(new Error(msg||'caricamento non completato'));setTimeout(p,60)})()})}
+async function inject(p){var bios=role(p,'bios'),games=role(p,'game'),g=games[0];if(bios[0]){setFiles('#biosZipFile',[bios[0]]);await wait(()=>{var e=document.querySelector('#mediaFile');return e&&!e.disabled},12000,'BIOS C64 non caricato')}if(!g)throw new Error('media C64 assente');if(document.querySelector('#mediaFile')?.disabled)throw new Error('BIOS C64 richiesto per il caricamento automatico');setFiles('#mediaFile',[g]);await wait(()=>{var a=document.querySelector('#autoPrgBtn'),m=document.querySelector('#mediaState'),d=document.querySelector('#diskControls');return !!(a&&((m&&m.textContent&&!/Nessun/i.test(m.textContent))||(d&&d.style.display!=='none')))},12000,'media C64 non montato');await new Promise(r=>setTimeout(r,120));document.querySelector('#autoPrgBtn')?.click();;post('jsd-launch-accepted',{files:(p.files||[]).length})}
+window.addEventListener('message',function(ev){if(!JSD_TOKEN||!ev.data||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;if(ev.data.type==='jsd-probe'){JSD_PARENT=ev.source||JSD_PARENT;postTo(JSD_PARENT,'jsd-emulator-ready');return}if(ev.data.type!=='jsd-launch')return;JSD_PARENT=ev.source||JSD_PARENT;inject(ev.data).catch(e=>post('jsd-launch-error',{error:e&&e.message?e.message:String(e)}))});
+})();
+
+</script>
+</body>
+</html>

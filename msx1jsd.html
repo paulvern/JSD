@@ -337,11 +337,12 @@ class Debugger {
     this.makeUI();
     this.install();
     this.timer=setInterval(()=>{this.installDynamic?.();this.render(false)},120);
-    addEventListener('keydown',e=>{
+    this._keyHandler=e=>{
       if(e.code==='F8'){e.preventDefault();this.toggle();}
       if(e.code==='F10'&&this.open){e.preventDefault();this.step();}
       if(e.code==='F5'&&this.open){e.preventDefault();this.continue();}
-    },true);
+    };
+    addEventListener('keydown',this._keyHandler,true);
   }
   pc(){try{return U32(this.cfg.getPC?.()??0)}catch{return 0}}
   paused(){try{return !!this.cfg.isPaused?.()}catch{return true}}
@@ -475,9 +476,20 @@ class Debugger {
     for(let r=0;r<rows;r++){let a=this.normAddr(base+r*words*stride),vals=[];for(let i=0;i<words;i++)vals.push(hex(this.read(a+i*stride),this.valueWidth()));out+=`${hex(a,this.addrWidth())}  ${vals.join(' ')}\n`}
     this.el('.mem').textContent=out;
   }
-  destroy(){clearInterval(this.timer);for(const undo of this._wrapped.reverse())try{undo()}catch{};this.shadow.host.remove()}
+  destroy(){clearInterval(this.timer);if(this._keyHandler)removeEventListener('keydown',this._keyHandler,true);for(const undo of this._wrapped.reverse())try{undo()}catch{};this._wrapped.length=0;this.shadow?.host?.remove()}
 }
-window.JSDUniversalDebugger={attach(cfg){if(window.__jsdUniversalDebugger)try{window.__jsdUniversalDebugger.destroy()}catch{};return window.__jsdUniversalDebugger=new Debugger(cfg)},Debugger};
+window.JSD_DEBUG_ACTIVE=false;
+const JSDDBG_API={
+  Debugger,_cfg:null,_instance:null,_toggle:null,
+  _emit(on){window.JSD_DEBUG_ACTIVE=!!on;try{window.dispatchEvent(new CustomEvent('jsd-debugger-state',{detail:{enabled:!!on}}))}catch{}},
+  _button(){if(this._toggle&&this._toggle.isConnected)return this._toggle;const b=document.createElement('button');b.type='button';b.textContent='DBG OFF';b.title='Attiva/disattiva debugger (OFF = nessun hook sul core)';b.style.cssText='position:fixed;right:76px;bottom:14px;z-index:2147483647;border:1px solid #52605c;background:#151a18;color:#b9c4c0;border-radius:9px;padding:7px 10px;font:700 11px ui-monospace,monospace;cursor:pointer;box-shadow:0 6px 22px #0008';b.onclick=()=>this.setEnabled(!this._instance);document.documentElement.appendChild(b);this._toggle=b;return b},
+  attach(cfg){this._cfg=cfg;this._button();this.setEnabled(false);return null},
+  enable(){if(this._instance||!this._cfg)return this._instance;this._instance=new Debugger(this._cfg);window.__jsdUniversalDebugger=this._instance;this._emit(true);const b=this._button();b.textContent='DBG ON';b.style.color='#72ffd1';b.style.borderColor='#3a806d';return this._instance},
+  disable(){if(this._instance)try{this._instance.destroy()}catch{};this._instance=null;window.__jsdUniversalDebugger=null;this._emit(false);const b=this._button();b.textContent='DBG OFF';b.style.color='#b9c4c0';b.style.borderColor='#52605c';return null},
+  setEnabled(v){return v?this.enable():this.disable()},
+  isEnabled(){return !!this._instance}
+};
+window.JSDUniversalDebugger=JSDDBG_API;
 })();
 
 </script>
@@ -500,31 +512,46 @@ JSDUniversalDebugger.attach({
   var JSD_SYS='msx1';
   var m=(location.hash||'').match(/(?:^#|&)jsdlaunch=([^&]+)/);
   var JSD_TOKEN=m?decodeURIComponent(m[1]):'';
-  function jsdPost(type,extra){try{if(window.opener)window.opener.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+  var JSD_PARENT=null;
+  function jsdPostTo(target,type,extra){try{if(target)target.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+  function jsdPost(type,extra){jsdPostTo(JSD_PARENT||window.opener,type,extra)}
   function jsdFile(x){return new File([x.bytes],x.name||'game.bin',{type:'application/octet-stream',lastModified:Date.now()})}
   function jsdRole(p,r){return (p.files||[]).filter(function(x){return x.role===r})}
   function jsdSet(id,files,fire){var el=document.querySelector(id);if(!el||!files.length)return null;var dt=new DataTransfer();files.forEach(function(f){dt.items.add(f)});el.files=dt.files;if(fire!==false)el.dispatchEvent(new Event('change',{bubbles:true}));return el}
   function jsdSleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  function jsdWaitUntil(test,ms){return new Promise(function(resolve,reject){var t=Date.now();(function poll(){try{if(test())return resolve()}catch(_){}if(Date.now()-t>=ms)return reject(new Error('ROM ricevuta ma non caricata dal core'));setTimeout(poll,50)})()})}
   async function jsdInject(p){
     var games=jsdRole(p,'game').map(jsdFile),bios=jsdRole(p,'bios').map(jsdFile),execs=jsdRole(p,'exec').map(jsdFile),groms=jsdRole(p,'grom').map(jsdFile);
     var game=games[0]||null;
-    if(JSD_SYS==='gameboy'){jsdSet('#romFile',games);await jsdSleep(450);var b=document.querySelector('#powerBtn');if(b)b.click()}
-    else if(JSD_SYS==='sega'){if(bios[0]){var bi=jsdSet('#biosFile',[bios[0]],false);await fileLoad(bi,'bios')}if(game){var ri=jsdSet('#romFile',[game],false);await fileLoad(ri,'rom')}}
-    else if(JSD_SYS==='megadrive'){if(game){await loadFile(game);machine.power(true);refreshUI()}}
+    if(JSD_SYS==='gameboy'){jsdSet('#romFile',games);await jsdWaitUntil(function(){return !!((typeof gba!=='undefined'&&gba&&gba.rom)||(typeof machine!=='undefined'&&machine&&machine.cart&&machine.cart.rom))},5000);var b=document.querySelector('#powerBtn');if(b)b.click()}
+    else if(JSD_SYS==='sega'){if(bios[0]){var bi=jsdSet('#biosFile',[bios[0]],false);await fileLoad(bi,'bios')}if(game){var ri=jsdSet('#romFile',[game],false);await fileLoad(ri,'rom');if(!machine.romInfo)throw new Error('ROM SEGA non caricata')}}
+    else if(JSD_SYS==='megadrive'){if(game){await loadFile(game);if(!machine.rom)throw new Error('ROM Mega Drive non caricata');machine.power(true);refreshUI()}}
     else if(JSD_SYS==='neogeo'){if(bios.length)await loadPackage(bios,'bios');if(games.length)await loadPackage(games,'game');ngPower();if(typeof ngToggleRun==='function')ngToggleRun()}
-    else if(JSD_SYS==='nes'){if(game){await loadFile(game);if(!nes.powered)power()}}
-    else if(JSD_SYS==='snes'){if(game){jsdSet('#romFile',[game],false);await loadSelected();await jsdSleep(80);if(emu&&emu.cart&&!emu.running)document.querySelector('#runBtn')?.click()}}
-    else if(JSD_SYS==='pce'){if(game)await loadROM(game)}
-    else if(JSD_SYS==='coleco'){if(bios[0]){machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);document.querySelector('#biosInfo').textContent=bios[0].name}if(game){machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);document.querySelector('#romInfo').textContent=game.name}if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='nes'){if(game){await loadFile(game);if(!nes.cart)throw new Error('ROM NES non caricata');if(!nes.powered)power()}}
+    else if(JSD_SYS==='snes'){if(game){jsdSet('#romFile',[game],false);await loadSelected();if(!emu||!emu.cart)throw new Error('ROM SNES non caricata');await jsdSleep(80);if(!emu.running)document.querySelector('#runBtn')?.click()}}
+    else if(JSD_SYS==='pce'){if(game){await loadROM(game);if(!(bus.rom&&bus.rom.length)&&!bus.hesMode)throw new Error('ROM PC Engine non caricata')}}
+    else if(JSD_SYS==='coleco'){if(bios[0]){machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);document.querySelector('#biosInfo').textContent=bios[0].name}if(game){machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);document.querySelector('#romInfo').textContent=game.name}if(game&&!machine.cart)throw new Error('ROM Coleco non caricata');if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
     else if(JSD_SYS==='spectrum'){if(bios[0])machine.setROM(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game){var u=new Uint8Array(await game.arrayBuffer()),x=(game.name.split('.').pop()||'').toLowerCase();if(x==='sna'||x==='z80')machine.loadSnapshot(x==='sna'?parseSNA(u):parseZ80(u));else if(x==='tap'){machine.tape=new Tape(parseTAP(u));machine.autoLoad()}else if(x==='scr'){machine.reset();machine.paused=true;machine.mem.set(u,0x4000);machine.drawFull()}document.querySelector('#gameName').textContent=game.name;render();refresh()}}
-    else if(JSD_SYS==='msx1'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='msx1'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(game&&!machine.cart)throw new Error('ROM MSX non caricata');if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
     else if(JSD_SYS==='intellivision'){if(execs[0])await loadFile('exec',execs[0]);if(groms[0])await loadFile('grom',groms[0]);if(game)await loadFile('cart',game);if(!state.power)boot();reset();if(state.paused)togglePause()}
-    else if(JSD_SYS==='vectrex'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.biosLoaded&&machine.cartLoaded){machine.reset();machine.running=true}machine.updateUI();renderMachineText()}
+    else if(JSD_SYS==='vectrex'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(game&&!machine.cartLoaded)throw new Error('ROM Vectrex non caricata');if(machine.biosLoaded&&machine.cartLoaded){machine.reset();machine.running=true}machine.updateUI();renderMachineText()}
     jsdPost('jsd-launch-accepted',{files:(p.files||[]).length});
   }
-  var jsdReadyTimer=0;window.addEventListener('message',function(ev){if(!JSD_TOKEN||ev.source!==window.opener||!ev.data||ev.data.type!=='jsd-launch'||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;if(jsdReadyTimer)clearInterval(jsdReadyTimer);jsdInject(ev.data).catch(function(err){console.error(err);jsdPost('jsd-launch-error',{error:err&&err.message?err.message:String(err)})})});
-  function ready(){if(JSD_TOKEN)jsdPost('jsd-emulator-ready')}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();jsdReadyTimer=setInterval(ready,500);setTimeout(function(){if(jsdReadyTimer)clearInterval(jsdReadyTimer)},30000);
+  window.addEventListener('message',function(ev){
+    if(!JSD_TOKEN||!ev.data||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;
+    if(ev.data.type==='jsd-probe'){
+      JSD_PARENT=ev.source||JSD_PARENT;
+      jsdPostTo(JSD_PARENT,'jsd-emulator-ready');
+      return;
+    }
+    if(ev.data.type!=='jsd-launch')return;
+    JSD_PARENT=ev.source||JSD_PARENT;
+    jsdInject(ev.data).catch(function(err){console.error(err);jsdPost('jsd-launch-error',{error:err&&err.message?err.message:String(err)})});
+  });
+  // Backward-compatible proactive ready signal when opener is available.
+  function ready(){if(JSD_TOKEN&&window.opener)jsdPostTo(window.opener,'jsd-emulator-ready')}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();
+
 })();
 </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PCEJSD · PC Engine / TurboGrafx-16</title>
+<title>PCEJSD · PC Engine / TurboGrafx-16 / CD-ROM²</title>
 <style>
 :root{--bg:#071014;--panel:#0d1b20;--panel2:#10252c;--line:#24434c;--text:#d8f2ed;--muted:#7fa39d;--mint:#67f5bd;--amber:#ffcc66;--red:#ff6b76;--blue:#5cc8ff;--shadow:0 18px 48px #0008}
 *{box-sizing:border-box}html{color-scheme:dark}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 45% -10%,#17404a 0,#071014 42%,#03080a 100%);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
@@ -16,7 +16,7 @@ button,select,input,textarea{font:inherit}select,option{background:#09171c;color
 <body>
 <div class="app">
   <div class="top">
-    <div><div class="brand">PCE<i>JSD</i></div><div class="version">HuC6280 · HuC6270 · HuC6260 · HuCard · COMPAT V5</div></div>
+    <div><div class="brand">PCE<i>JSD</i></div><div class="version">HuC6280 · HuC6270 · HuC6260 · HuCard + CD-ROM² · CD ALPHA 20</div></div>
     <div class="statuses">
       <span class="badge" id="romBadge">ROM —</span><span class="badge" id="cpuBadge">CPU OFF</span><span class="badge" id="videoBadge">VDC —</span><span class="badge" id="fpsBadge">0 FPS</span>
       <div class="lang"><button class="tiny active" id="langIT">IT</button><button class="tiny" id="langEN">EN</button></div>
@@ -57,7 +57,13 @@ button,select,input,textarea{font:inherit}select,option{background:#09171c;color
       </div>
       <div class="pages">
         <div id="machine" class="page active">
-          <div class="drop" id="romDrop"><div class="drop-title"><span>HUCARD ROM / RACCOLTA</span><span id="romState">nessuna</span></div><p>Carica .pce, .bin, .rom, .hes, ZIP singolo oppure un grande ZIP contenente ROM dirette e/o ZIP individuali. Gli header copier da 512 byte vengono rimossi automaticamente.</p><label class="filebtn">Seleziona ROM / raccolta<input type="file" id="romFile" accept=".pce,.bin,.rom,.hes,.zip,application/zip"></label></div>
+          <div class="drop" id="romDrop"><div class="drop-title"><span>ROM / SYSTEM CARD / RACCOLTA</span><span id="romState">nessuna</span></div><p>Carica HuCard, HES o System Card CD-ROM²/Super CD-ROM² come normale ROM (.pce/.bin/.rom). Le System Card vengono riconosciute automaticamente. Sono supportati anche ZIP di ROM.</p><label class="filebtn">Seleziona ROM / System Card<input type="file" id="romFile" accept=".pce,.bin,.rom,.hes,.zip,application/zip"></label></div>
+          <div class="drop" id="cdDrop"><div class="drop-title"><span>DISCO CD-ROM²</span><span id="cdState">nessuno</span></div><p>Carica direttamente uno ZIP contenente il .cue e tutte le tracce, oppure seleziona insieme CUE + BIN. Il parser segue FILE/TRACK/INDEX reali, incluse tracce audio e dati non iniziali.</p><label class="filebtn">Seleziona ZIP o CUE + tracce<input type="file" id="cdFiles" multiple accept=".zip,.cue,.bin,.iso,.img,.wav,application/zip"></label></div>
+          <div id="cdPanel" class="notice" style="display:none">
+            <div class="drop-title"><b>CD-ROM²</b><span id="cdPhase" class="badge">BUS FREE</span></div>
+            <div class="grid3" style="margin-top:8px"><div class="stat"><b id="cdTracks">—</b><small>tracce</small></div><div class="stat"><b id="cdDataTracks">—</b><small>tracce dati</small></div><div class="stat"><b id="cdBoot">—</b><small>boot</small></div></div>
+            <div id="cdInfo" class="mono" style="margin-top:8px;font-size:11px;white-space:pre-wrap"></div>
+          </div>
           <div id="archiveLibrary" class="notice" style="display:none">
             <div class="drop-title"><b id="archiveTitle">Raccolta ZIP</b><span id="archiveCount" class="badge">0 giochi</span></div>
             <div class="memrow" style="margin-top:8px"><input id="archiveFilter" class="grow" style="width:auto" placeholder="Filtra giochi…"><select id="archiveSelect" class="grow" size="7" style="min-width:260px;width:auto"></select><button id="archiveLoad" class="primary">Carica gioco</button></div>
@@ -81,7 +87,7 @@ button,select,input,textarea{font:inherit}select,option{background:#09171c;color
           <div class="sep"></div>
           <div class="section-label">Debugger</div><div class="memrow"><input id="breakAddr" value="" placeholder="PC es. E123"><button id="setBreak">Breakpoint</button><button id="clearBreak">Rimuovi</button><label class="checkrow"><input type="checkbox" id="traceEnable"> trace</label></div>
           <div class="trace" id="trace">Carica una ROM.</div>
-          <div class="notice">Core sperimentale pulito: HuCard standard, singolo VDC e pad 2 pulsanti. CD-ROM², Arcade Card e SuperGrafx non sono inclusi in questa prima versione.</div>
+          <div class="notice">CD ALPHA 20: base CD invariata da Alpha 17; timing HuC6270 rivisto. MARR/VRR pipeline corretta, reset HSR/HDR/VPR/VDW/VCR hardware, stati verticali VSW/VDS/VDW/VCR con RCR $40/$41 corretti, sprite-row SATB reale, MWR non altera più la profondità BG e trasferimenti HuC6280 TII/TIA/TAI/TIN/TDD fanno avanzare VDC/CD durante il blocco, inclusa la wait-state VDC/VCE nel punto esatto del trasferimento. Nessun hack specifico per gioco.</div>
         </div>
 
         <div id="memory" class="page">
@@ -119,7 +125,7 @@ button,select,input,textarea{font:inherit}select,option{background:#09171c;color
       </div>
     </section>
   </div>
-  <div class="footer">PCEJSD COMPAT V8 · emulatore sperimentale indipendente · nessuna ROM o BIOS incluso</div>
+  <div class="footer">PCEJSD CD ALPHA 20 · HuCard + CD-ROM²/Super CD-ROM² · nessuna ROM o BIOS incluso</div>
 </div>
 
 <script>
@@ -164,6 +170,58 @@ async function unzipFirstPCE(bytes){
   if(!entry)throw Error('ZIP interno: nessuna ROM PC Engine trovata');
   return {bytes:await zipExtract(zip,entry),name:entry.name.split('/').pop()};
 }
+
+
+// ZIP CD reader: parse the central directory from the File without loading the
+// complete archive into RAM. Stored entries are random-access; DEFLATE entries
+// are expanded only when a track is actually needed.
+async function zipFileDirectory(file){
+  const tailLen=Math.min(file.size,0x10000+22),tailOff=file.size-tailLen,tail=new Uint8Array(await file.slice(tailOff).arrayBuffer()),dv=new DataView(tail.buffer,tail.byteOffset,tail.byteLength);
+  let eocd=-1;for(let p=tail.length-22;p>=0;p--){if(dv.getUint32(p,true)===0x06054b50){eocd=p;break}}
+  if(eocd<0)throw Error('ZIP CD: directory centrale non trovata');
+  const count=dv.getUint16(eocd+10,true),cdSize=dv.getUint32(eocd+12,true),cdOff=dv.getUint32(eocd+16,true);
+  if(count===0xffff||cdSize===0xffffffff||cdOff===0xffffffff)throw Error('ZIP64 CD non supportato');
+  const cd=new Uint8Array(await file.slice(cdOff,cdOff+cdSize).arrayBuffer()),cv=new DataView(cd.buffer,cd.byteOffset,cd.byteLength),entries=[];let p=0;
+  for(let i=0;i<count;i++){
+    if(p+46>cd.length||cv.getUint32(p,true)!==0x02014b50)throw Error('ZIP CD: directory centrale non valida');
+    const flags=cv.getUint16(p+8,true),method=cv.getUint16(p+10,true),cs=cv.getUint32(p+20,true),us=cv.getUint32(p+24,true),nl=cv.getUint16(p+28,true),xl=cv.getUint16(p+30,true),cl=cv.getUint16(p+32,true),lo=cv.getUint32(p+42,true);
+    if(cs===0xffffffff||us===0xffffffff||lo===0xffffffff)throw Error('ZIP64 CD non supportato');
+    const name=zipDecoder.decode(cd.subarray(p+46,p+46+nl));entries.push({name,flags,method,cs,us,lo,isDir:name.endsWith('/')});p+=46+nl+xl+cl;
+  }
+  return {file,entries,name:file.name};
+}
+async function zipFileEntryStart(z,e){
+  if(e._dataStart!=null)return e._dataStart;if(e.flags&1)throw Error('ZIP CD cifrato non supportato: '+e.name);
+  const h=new Uint8Array(await z.file.slice(e.lo,e.lo+30).arrayBuffer()),dv=new DataView(h.buffer,h.byteOffset,h.byteLength);
+  if(h.length<30||dv.getUint32(0,true)!==0x04034b50)throw Error('ZIP CD: header locale non valido: '+e.name);
+  e._dataStart=e.lo+30+dv.getUint16(26,true)+dv.getUint16(28,true);return e._dataStart;
+}
+function zipVirtualFile(z,e){
+  const vf={name:baseName(e.name),size:e.us,_zipMethod:e.method,_zipEntry:e,_zipArchive:z.name};
+  vf.arrayBuffer=async()=>{
+    const start=await zipFileEntryStart(z,e);
+    if(e.method===0)return z.file.slice(start,start+e.us).arrayBuffer();
+    if(e.method===8){if(typeof DecompressionStream==='undefined')throw Error('Browser senza DecompressionStream per ZIP CD');const ds=new DecompressionStream('deflate-raw');return new Response(z.file.slice(start,start+e.cs).stream().pipeThrough(ds)).arrayBuffer()}
+    throw Error('ZIP CD: metodo '+e.method+' non supportato ('+e.name+')');
+  };
+  vf.text=async()=>new TextDecoder().decode(new Uint8Array(await vf.arrayBuffer()));
+  vf.slice=(a=0,b=e.us)=>({arrayBuffer:async()=>{
+    a=Math.max(0,a|0);b=Math.max(a,Math.min(e.us,b==null?e.us:b));const start=await zipFileEntryStart(z,e);
+    if(e.method===0)return z.file.slice(start+a,start+b).arrayBuffer();
+    const all=new Uint8Array(await vf.arrayBuffer());return all.slice(a,b).buffer;
+  }});
+  return vf;
+}
+async function filesFromCDZip(file){
+  const z=await zipFileDirectory(file),usable=z.entries.filter(e=>!e.isDir&&/\.(cue|bin|iso|img|wav)$/i.test(e.name));
+  const cues=usable.filter(e=>/\.cue$/i.test(e.name)).sort((a,b)=>a.name.split('/').length-b.name.split('/').length||a.name.localeCompare(b.name));
+  if(!cues.length)throw Error('ZIP CD: nessun file .cue trovato');
+  const cue=cues[0];if(cues.length>1)event('ZIP CD: più CUE trovati, uso '+cue.name);
+  const dir=cue.name.replace(/[^/\\]+$/,'').toLowerCase(),sameDir=usable.filter(e=>e===cue||e.name.toLowerCase().startsWith(dir));
+  const files=sameDir.map(e=>zipVirtualFile(z,e));files._sourceArchive=file.name;
+  event(`ZIP CD aperto: ${file.name} · ${sameDir.length} file · CUE ${baseName(cue.name)}`);
+  return files;
+}
 let archiveCollection=null,archiveVisible=[];
 function archiveLabel(name){return name.split('/').pop().replace(/\.(zip|pce|bin|rom|hes)$/i,'').replace(/_/g,' ').trim()||name}
 function archiveEscape(s){return String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
@@ -181,76 +239,149 @@ async function loadArchiveItem(item){
 
 
 class VDC {
-  constructor(bus){this.bus=bus;this.vram=new Uint16Array(0x8000);this.sat=new Uint16Array(256);this.reg=new Uint16Array(20);this.sel=0;this.low=0;this.status=0;this.frame=0;this.scan=0;this.lineClocks=0;this.width=256;this.height=240;this.satPending=false;this.bxrLatched=0;this.byrLatched=0;this.fbW=256;this.fbH=240;this.framebuf=new Uint8ClampedArray(this.fbW*this.fbH*4)}
-  reset(){this.vram.fill(0);this.sat.fill(0);this.reg.fill(0);this.sel=0;this.low=0;this.status=0;this.frame=0;this.scan=0;this.lineClocks=0;this.reg[11]=31;this.reg[13]=239;this.width=256;this.height=240;this.satPending=false;this.bxrLatched=0;this.byrLatched=0;this.ensureFrame(true)}
-  ensureFrame(force=false){let w=clamp(this.width||256,128,512),h=clamp(this.height||240,64,263);if(force||w!==this.fbW||h!==this.fbH){this.fbW=w;this.fbH=h;this.framebuf=new Uint8ClampedArray(w*h*4);for(let i=3;i<this.framebuf.length;i+=4)this.framebuf[i]=255}return [w,h]}
+  constructor(bus){
+    this.bus=bus;this.vram=new Uint16Array(0x8000);this.sat=new Uint16Array(256);this.reg=new Uint16Array(20);this.sel=0;this.low=0;this.status=0;this.readLatch=0;
+    this.frame=0;this.scan=0;this.lineClocks=0;this.width=256;this.height=240;this.satPending=false;this.bxrLatched=0;this.byrLatched=0;
+    this.fbW=256;this.fbH=240;this.framebuf=new Uint8ClampedArray(this.fbW*this.fbH*4);this.vramReads=0;this.vramWrites=0;this.dmaPending=false;this.satbIrqDelay=0;
+    this.irqCounts={vblank:0,raster:0,satb:0,dma:0};this.vState='VSW';this.vRemain=0;this.rasterCount=0x4000;this.displayY=0;this.vblankTriggered=false;
+  }
+  reset(){
+    this.vram.fill(0);this.sat.fill(0);this.reg.fill(0);this.sel=0;this.low=0;this.status=0;this.readLatch=0;this.frame=0;this.scan=0;this.lineClocks=0;
+    // HuC6270 reset defaults used by MAME and observed-compatible cores.
+    this.reg[10]=0x0202; // HSR
+    this.reg[11]=0x041f; // HDR: 32 cells = 256 px
+    this.reg[12]=0x0f02; // VPR
+    this.reg[13]=0x00ef; // VDW: 240 lines
+    this.reg[14]=0x0004; // VCR
+    this.width=256;this.height=240;this.satPending=false;this.bxrLatched=0;this.byrLatched=0;this.vramReads=0;this.vramWrites=0;this.dmaPending=false;this.satbIrqDelay=0;
+    this.irqCounts={vblank:0,raster:0,satb:0,dma:0};this.initFrameTiming();this.ensureFrame(true);
+  }
+  initFrameTiming(){
+    this.vState='VSW';this.vRemain=(this.reg[12]&0x1f)+1;this.rasterCount=0x4000;this.displayY=0;this.vblankTriggered=false;
+    this.byrLatched=this.reg[8]&0x01ff;this.bxrLatched=this.reg[7]&0x03ff;
+  }
+  activeWidth(){return clamp(((this.reg[11]&0x7f)+1)*8,128,512)}
+  activeHeight(){return clamp((this.reg[13]&0x01ff)+1,64,263)}
+  ensureFrame(force=false){let w=this.activeWidth(),h=this.activeHeight();this.width=w;this.height=h;if(force||w!==this.fbW||h!==this.fbH){this.fbW=w;this.fbH=h;this.framebuf=new Uint8ClampedArray(w*h*4);for(let i=3;i<this.framebuf.length;i+=4)this.framebuf[i]=255}return [w,h]}
   inc(){return [1,32,64,128][(this.reg[5]>>11)&3]}
-  read(port){port&=3;if(port===0){let s=this.status;this.status=0;this.bus.irq1=false;return s}if(port===2||port===3){let v;if(this.sel===2){v=this.vram[this.reg[1]&0x7fff];if(port===3)this.reg[1]=(this.reg[1]+this.inc())&0xffff}else v=this.reg[this.sel]||0;return port===2?v&255:v>>8}return 0xff}
-  write(port,v){port&=3;v&=255;if(port===0){this.sel=v&31;return}if(port===2){this.low=v;if(this.sel!==2&&this.sel<20)this.reg[this.sel]=(this.reg[this.sel]&0xff00)|v;return}if(port===3){let w=this.sel===2?(this.low|(v<<8)):(((this.reg[this.sel]||0)&0xff)|(v<<8));this.writeReg(this.sel,w)}}
-  writeReg(r,w){if(r>=20)return;if(r===2){this.vram[this.reg[0]&0x7fff]=w;this.reg[0]=(this.reg[0]+this.inc())&0xffff;return}this.reg[r]=w&0xffff;if(r===7)this.reg[r]&=0x03ff;if(r===8){this.reg[r]&=0x01ff;this.byrLatched=this.reg[r]}if(r===11){let z=((w&0x7f)+1)*8;if(z>=128&&z<=512)this.width=z}if(r===13){let z=(w&0x1ff)+1;if(z>=64&&z<=263)this.height=z}if(r===18)this.dma();if(r===19)this.satPending=true}
-  dma(){let src=this.reg[16]&0x7fff,dst=this.reg[17]&0x7fff,len=(this.reg[18]+1)&0xffff;if(!len)len=65536;const decS=!!(this.reg[15]&4),decD=!!(this.reg[15]&8);for(let i=0;i<len;i++){this.vram[dst]=this.vram[src];src=(src+(decS?-1:1))&0x7fff;dst=(dst+(decD?-1:1))&0x7fff}this.reg[16]=src;this.reg[17]=dst;if(this.reg[15]&2){this.status|=0x10;this.bus.raiseIRQ1()}}
+  loadReadLatch(){let a=this.reg[1]&0xffff;this.readLatch=a<0x8000?this.vram[a]:0}
+  read(port){port&=3;
+    if(port===0){let s=this.status;this.status&=0x40;this.bus.irq1=false;return s}
+    if(port===1)return 0x00;
+    if(port===2||port===3){
+      let v=this.readLatch;
+      if(this.sel===2){this.vramReads++;if(port===3){this.reg[1]=(this.reg[1]+this.inc())&0xffff;this.loadReadLatch()}}
+      return port===2?v&255:(v>>8)&255;
+    }
+    return 0xff;
+  }
+  write(port,v){port&=3;v&=255;
+    if(port===0){this.sel=v&31;return}
+    if(port===2){
+      this.low=v;
+      if(this.sel!==2&&this.sel<20){
+        this.reg[this.sel]=(this.reg[this.sel]&0xff00)|v;
+        if(this.sel===1)this.loadReadLatch();
+        if(this.sel===6)this.reg[6]&=0x03ff;
+        if(this.sel===7)this.reg[7]&=0x03ff;
+        if(this.sel===8){this.reg[8]&=0x01ff;this.byrLatched=this.reg[8]}
+        if(this.sel===11){this.width=this.activeWidth();this.ensureFrame()}
+        if(this.sel===13){this.height=this.activeHeight();this.ensureFrame()}
+        if(this.sel===19)this.satPending=true;
+      }
+      return;
+    }
+    if(port===3){let w=this.sel===2?(this.low|(v<<8)):(((this.reg[this.sel]||0)&0xff)|(v<<8));this.writeReg(this.sel,w)}
+  }
+  writeReg(r,w){if(r>=20||r===3||r===4)return;
+    if(r===2){let a=this.reg[0]&0xffff;if(a<0x8000){this.vram[a]=w;this.vramWrites++}this.reg[0]=(this.reg[0]+this.inc())&0xffff;return}
+    this.reg[r]=w&0xffff;
+    if(r===1){this.loadReadLatch();return}
+    if(r===6)this.reg[r]&=0x03ff;
+    if(r===7)this.reg[r]&=0x03ff;
+    if(r===8){this.reg[r]&=0x01ff;this.byrLatched=this.reg[r]}
+    if(r===11){this.width=this.activeWidth();this.ensureFrame()}
+    if(r===13){this.height=this.activeHeight();this.ensureFrame()}
+    if(r===18){this.dmaPending=true;this.status|=0x40}
+    if(r===19)this.satPending=true;
+  }
+  dma(){
+    let src=this.reg[16]&0xffff,dst=this.reg[17]&0xffff,len=(this.reg[18]+1)&0xffff;if(!len)len=65536;
+    const decS=!!(this.reg[15]&4),decD=!!(this.reg[15]&8);let writes=0;
+    for(let i=0;i<len;i++){let data=src<0x8000?this.vram[src]:0;if(dst<0x8000){this.vram[dst]=data;writes++}src=(src+(decS?-1:1))&0xffff;dst=(dst+(decD?-1:1))&0xffff}
+    this.vramWrites+=writes;this.reg[16]=src;this.reg[17]=dst;this.reg[18]=0xffff;this.dmaPending=false;this.status&=~0x40;
+    if(this.reg[15]&2){this.status|=0x10;this.irqCounts.dma++;this.bus.raiseIRQ1()}
+  }
   copySAT(){let s=this.reg[19]&0x7fff;for(let n=0;n<64;n++){let q=n*4;this.sat[q]=this.vram[(s+q)&0x7fff]&0x03ff;this.sat[q+1]=this.vram[(s+q+1)&0x7fff]&0x03ff;this.sat[q+2]=this.vram[(s+q+2)&0x7fff]&0x07ff;this.sat[q+3]=this.vram[(s+q+3)&0x7fff]}}
-  tick(master){this.lineClocks+=master;while(this.lineClocks>=455){this.lineClocks-=455;let line=this.scan;const rcr=this.reg[6]&0x03ff,cr=this.reg[5];if(line===0){this.byrLatched=this.reg[8]&0x01ff}else if(line<this.fbH){const mask=(this.reg[9]&0x40)?0x01ff:0x00ff;this.byrLatched=(this.byrLatched+1)&mask}this.bxrLatched=this.reg[7]&0x03ff;if(line<this.fbH)this.renderLine(line,this.bxrLatched,this.byrLatched);const raster=(0x40+line)&0x03ff;if((cr&4)&&rcr===raster){this.status|=4;this.bus.raiseIRQ1()}this.scan++;if(this.scan===240){if((cr&4)&&rcr===0x130){this.status|=4;this.bus.raiseIRQ1()}if(this.satPending||(this.reg[15]&0x10)){this.copySAT();this.satPending=false;if(this.reg[15]&1){this.status|=0x08;this.bus.raiseIRQ1()}}this.status|=0x20;if(cr&8)this.bus.raiseIRQ1()}if(this.scan>=263){this.scan=0;this.byrLatched=this.reg[8]&0x01ff;this.frame++;this.bus.frameReady=true}}}
+  triggerVBlank(){
+    if(this.vblankTriggered)return;this.vblankTriggered=true;const cr=this.reg[5];
+    if(this.satPending||(this.reg[15]&0x10)){this.copySAT();this.satPending=false;if(this.reg[15]&1)this.satbIrqDelay=4}
+    this.status|=0x20;if(cr&8){this.irqCounts.vblank++;this.bus.raiseIRQ1()}
+  }
+  advanceVState(){
+    let guard=0;
+    while(this.vRemain<=0&&guard++<8){
+      if(this.vState==='VSW'){this.vState='VDS';this.vRemain=((this.reg[12]>>8)&0xff)+2}
+      else if(this.vState==='VDS'){this.vState='VDW';this.vRemain=(this.reg[13]&0x01ff)+1;this.byrLatched=this.reg[8]&0x01ff;this.displayY=0;this.vblankTriggered=false}
+      else if(this.vState==='VDW'){this.vState='VCR';this.vRemain=this.reg[14]&0xff;this.triggerVBlank()}
+      else {this.vState='VSW';this.vRemain=(this.reg[12]&0x1f)+1}
+    }
+  }
+  tick(master){this.lineClocks+=master;while(this.lineClocks>=455){
+    this.lineClocks-=455;
+    // HSYNC rising edge: DMA work, SATB completion and vertical/raster counters.
+    if(this.dmaPending)this.dma();
+    if(this.satbIrqDelay>0&&--this.satbIrqDelay===0){this.status|=0x08;this.irqCounts.satb++;this.bus.raiseIRQ1()}
+    this.advanceVState();
+    const cr=this.reg[5],rcr=this.reg[6]&0x03ff;
+    if(this.vState==='VDW'&&this.displayY<this.fbH){this.bxrLatched=this.reg[7]&0x03ff;this.renderLine(this.displayY,this.bxrLatched,this.byrLatched);this.displayY++}
+    // RCR is sampled near the end of HDW, using the counter latched for this line.
+    if((cr&4)&&((this.rasterCount&0x03ff)===rcr)){this.status|=4;this.irqCounts.raster++;this.bus.raiseIRQ1()}
+    const mask=(this.reg[9]&0x40)?0x01ff:0x00ff;this.byrLatched=(this.byrLatched+1)&mask;
+    this.rasterCount=(this.rasterCount+1)&0x03ff;
+    // Real hardware resets RCR to $40 one VDS line before active display.  This
+    // makes the first VDW line $41 and the 240th line $130.
+    if(this.vState==='VDS'&&this.vRemain===2)this.rasterCount=0x40;
+    this.vRemain--;if(this.vRemain<=0)this.advanceVState();
+    this.scan++;
+    if(this.scan>=263){this.scan=0;this.frame++;this.bus.frameReady=true;this.initFrameTiming()}
+  }}
   tilePixel(tile,x,y){const base=(tile&0x7ff)*16,bit=7-(x&7),a=this.vram[(base+(y&7))&0x7fff],b=this.vram[(base+8+(y&7))&0x7fff];return ((a>>bit)&1)|(((a>>(bit+8))&1)<<1)|(((b>>bit)&1)<<2)|(((b>>(bit+8))&1)<<3)}
   spritePixel(pattern,line,x,satLsb=0){pattern=(pattern+((line>>4)<<1))&0x3ff;const a=((pattern<<6)+(line&15))&0x7fff,bit=15-(x&15);let p0,p1,p2=0,p3=0;if((this.reg[9]&0x0c)===0x04){if(satLsb){p0=this.vram[(a+32)&0x7fff];p1=this.vram[(a+48)&0x7fff]}else{p0=this.vram[a];p1=this.vram[(a+16)&0x7fff]}}else{p0=this.vram[a];p1=this.vram[(a+16)&0x7fff];p2=this.vram[(a+32)&0x7fff];p3=this.vram[(a+48)&0x7fff]}return ((p0>>bit)&1)|(((p1>>bit)&1)<<1)|(((p2>>bit)&1)<<2)|(((p3>>bit)&1)<<3)}
   spriteInfo(n){const q=n*4,pw=this.sat[q+2]&0x7ff,at=this.sat[q+3],cgy=(at>>12)&3,cgx=!!(at&0x0100);let pattern=pw>>1;if(cgy&1)pattern&=~2;if(cgy&2)pattern&=~6;if(cgx)pattern&=~1;return{x:(this.sat[q+1]&0x3ff)-32,y:(this.sat[q]&0x3ff)-64,pattern,lsb:pw&1,attr:at,hflip:!!(at&0x0800),vflip:!!(at&0x8000),front:!!(at&0x0080),pal:16+(at&15),width:cgx?32:16,height:[16,32,64,64][cgy]}}
-  spriteLinePixel(si,py,px){
-    let srcY=si.vflip?si.height-1-py:py,srcX=si.hflip?si.width-1-px:px;
-    let pat=(si.pattern+(srcX>>4))&0x3ff;
-    return this.spritePixel(pat,srcY,srcX&15,si.lsb);
-  }
-  renderLine(y,bx=this.reg[7]&0x03ff,by=this.reg[8]&0x01ff){const [w,h]=this.ensureFrame();if(y<0||y>=h)return;const d=this.framebuf,cr=this.reg[5],bgOn=!!(cr&0x80),spOn=!!(cr&0x40),mwr=this.reg[9],mw=[32,64,128,128][(mwr>>4)&3],mh=(mwr&0x40)?64:32,bgOpaque=new Uint8Array(w);
-    for(let x=0;x<w;x++){let ci=0,pal=0;if(bgOn){let sx=(x+bx)%(mw*8),sy=by%(mh*8),bat=this.vram[((sy>>3)*mw+(sx>>3))&0x7fff],tile=bat&0xfff;pal=bat>>>12;ci=this.tilePixel(tile,sx&7,sy&7);if(ci)bgOpaque[x]=1}let rgb=this.bus.vceRGB(ci?((pal<<4)|ci):0),o=(y*w+x)*4;d[o]=rgb[0];d[o+1]=rgb[1];d[o+2]=rgb[2];d[o+3]=255}
+  spriteLinePixel(si,py,px){let srcY=si.vflip?si.height-1-py:py,srcX=si.hflip?si.width-1-px:px;let pat=(si.pattern+(srcX>>4))&0x3ff;return this.spritePixel(pat,srcY,srcX&15,si.lsb)}
+  renderLine(y,bx=this.reg[7]&0x03ff,by=this.reg[8]&0x01ff){
+    const [w,h]=this.ensureFrame();if(y<0||y>=h)return;const d=this.framebuf,cr=this.reg[5],bgOn=!!(cr&0x80),spOn=!!(cr&0x40),mwr=this.reg[9],mw=[32,64,128,128][(mwr>>4)&3],mh=(mwr&0x40)?64:32,bgOpaque=new Uint8Array(w);
+    const rowMask=mh-1,colMask=mw-1,batRow=((by>>3)&rowMask)*mw,py=by&7;
+    for(let x=0;x<w;x++){
+      let ci=0,pidx=spOn&&!bgOn?0x100:0;
+      if(bgOn){let sx=(x+bx)&((mw*8)-1),bat=this.vram[(batRow+((sx>>3)&colMask))&0x7fff],tile=bat&0x0fff,pal=bat>>>12;ci=this.tilePixel(tile,sx&7,py);if(ci){bgOpaque[x]=1;pidx=(pal<<4)|ci}else pidx=0}
+      let rgb=this.bus.vceRGB(pidx),o=(y*w+x)*4;d[o]=rgb[0];d[o+1]=rgb[1];d[o+2]=rgb[2];d[o+3]=255;
+    }
     if(!spOn)return;
-
-    // HuC6270 evaluates a maximum of 16 16-pixel sprite units per line.
-    // A 32-pixel wide SATB entry consumes two units. Keep the accepted
-    // portion so the last wide sprite can be clipped exactly at the limit.
-    let active=[],units=0;
+    let active=[],units=0,overflow=false;
     for(let n=0;n<64;n++){
-      let si=this.spriteInfo(n);
-      if(y<si.y||y>=si.y+si.height)continue;
-      let need=si.width>>4,allow=Math.min(need,Math.max(0,16-units));
-      if(allow>0){active.push([n,si,allow]);units+=allow}
-      if(units>=16)break;
+      let si=this.spriteInfo(n);if(y<si.y||y>=si.y+si.height)continue;let need=si.width>>4,remain=16-units;if(remain<=0){overflow=true;break}let allow=Math.min(need,remain);if(allow>0){active.push([n,si,allow]);units+=allow}if(allow<need||units>=16){overflow=true;break}
     }
-    // MAME/HuC6270 behavior: OR is latched only when the corresponding
-    // interrupt-enable bit is active. Some games explicitly depend on this.
-    if(units>=16&&(cr&0x02)){this.status|=0x02;this.bus.raiseIRQ1()}
-
-    // Sprite collision is not a software AABB test. The VDC sets CR only
-    // when a non-transparent pixel of SATB sprite #0 overlaps a non-
-    // transparent pixel of another accepted sprite on the active line.
-    // Priority and background masking do not cancel the collision.
-    if(cr&0x01){
-      let s0mask=new Uint8Array(w),hit=false;
-      for(let ai=0;ai<active.length&&!hit;ai++){
-        let [n,si,halves]=active[ai],py=y-si.y,drawW=halves*16;
-        for(let px=0;px<drawW;px++){
-          let xx=si.x+px;if(xx<0||xx>=w)continue;
-          let ci=this.spriteLinePixel(si,py,px);if(!ci)continue;
-          if(n===0)s0mask[xx]=1;else if(s0mask[xx]){hit=true;break}
-        }
-      }
-      if(hit){this.status|=0x01;this.bus.raiseIRQ1()}
-    }
-
-    // Lower SATB indices have priority over higher ones, hence reverse draw.
-    for(let ai=active.length-1;ai>=0;ai--){
-      let [n,si,halves]=active[ai],py=y-si.y,behind=!si.front,drawW=halves*16;
+    if(overflow&&(cr&0x02)){this.status|=0x02;this.bus.raiseIRQ1()}
+    // Hardware first resolves SATB-vs-SATB priority into one sprite row.  A
+    // higher-priority sprite can occupy a pixel even when BG later hides it;
+    // a lower SATB entry must not then shine through that hidden pixel.
+    const owner=new Int16Array(w);owner.fill(-1);const scol=new Uint16Array(w),sfront=new Uint8Array(w);let hit=false;
+    for(let ai=0;ai<active.length;ai++){
+      let [n,si,halves]=active[ai],spy=y-si.y,drawW=halves*16;
       for(let px=0;px<drawW;px++){
-        let xx=si.x+px;if(xx<0||xx>=w)continue;
-        let ci=this.spriteLinePixel(si,py,px);if(!ci)continue;
-        if(behind&&bgOpaque[xx])continue;
-        let rgb=this.bus.vceRGB((si.pal<<4)|ci),o=(y*w+xx)*4;
-        d[o]=rgb[0];d[o+1]=rgb[1];d[o+2]=rgb[2];d[o+3]=255;
+        let xx=si.x+px;if(xx<0||xx>=w)continue;let ci=this.spriteLinePixel(si,spy,px);if(!ci)continue;
+        if(owner[xx]<0){owner[xx]=n;scol[xx]=(si.pal<<4)|ci;sfront[xx]=si.front?1:0}
+        else if((owner[xx]===0||n===0)&&owner[xx]!==n)hit=true;
       }
     }
+    if(hit&&(cr&0x01)){this.status|=0x01;this.bus.raiseIRQ1()}
+    for(let x=0;x<w;x++)if(owner[x]>=0&&(sfront[x]||!bgOpaque[x])){let rgb=this.bus.vceRGB(scol[x]),o=(y*w+x)*4;d[o]=rgb[0];d[o+1]=rgb[1];d[o+2]=rgb[2];d[o+3]=255}
   }
-  rebuildFrame(){const [w,h]=this.ensureFrame(true);let by=this.reg[8]&0x01ff,mask=(this.reg[9]&0x40)?0x01ff:0x00ff;for(let y=0;y<h;y++){if(y)by=(by+1)&mask;this.renderLine(y,this.reg[7]&0x03ff,by)}}
+  rebuildFrame(){const [w,h]=this.ensureFrame(true);let by=this.reg[8]&0x01ff,mask=(this.reg[9]&0x40)?0x01ff:0x00ff;for(let y=0;y<h;y++){this.renderLine(y,this.reg[7]&0x03ff,by);by=(by+1)&mask}}
   render(canvas){const [w,h]=this.ensureFrame();if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}const ctx=canvas.getContext('2d'),im=new ImageData(new Uint8ClampedArray(this.framebuf),w,h);ctx.putImageData(im,0,0)}
 }
-
 
 class PSG {
   constructor(){this.ch=Array.from({length:6},()=>({freq:0,ctrl:0,bal:0,wave:new Uint8Array(32),wp:0,phase:0,noise:0,lfsr:0x1ffff,dda:16}));this.sel=0;this.master=0;this.lfoFreq=0;this.lfoCtrl=0;this.events=[];this.ctx=null;this.node=null;this.enabled=false}
@@ -269,14 +400,404 @@ class PSG {
         else if(c.ctrl&0x40)raw=(c.dda-16)/16;
         else {let f=c.freq||4096,hz=3579545/(32*f);c.phase=(c.phase+hz/sr)%1;raw=(c.wave[(c.phase*32)&31]-16)/16}
         let vol=(c.ctrl&31)/31, ml=((this.master>>4)&15)/15,mr=(this.master&15)/15,cl=((c.bal>>4)&15)/15,cr=(c.bal&15)/15;l+=raw*vol*ml*cl;r+=raw*vol*mr*cr;
-      }L[i]=clamp(l*.18,-1,1);R[i]=clamp(r*.18,-1,1)
+      }
+      let outL=l*.18,outR=r*.18;
+      if(this.enabled&&typeof bus!=='undefined'&&bus.cd){if(bus.cd.audioState===1){let q=bus.cd.nextCDDASample(sr);outL+=q[0]*.72;outR+=q[1]*.72}let ad=bus.cd.nextADPCMSample(sr);outL+=ad*.50;outR+=ad*.50}
+      L[i]=clamp(outL,-1,1);R[i]=clamp(outR,-1,1)
     }
   }
 }
 
+
+const toBCD=n=>(((Math.floor(n/10)<<4)|(n%10))&255), fromBCD=v=>((v>>4)*10+(v&15));
+function cueFrames(t){let m=/^(\d+):(\d+):(\d+)$/.exec(String(t||''));return m?(+m[1]*60*75)+(+m[2]*75)+(+m[3]):0}
+function lbaToMSF(lba){lba=Math.max(0,lba|0);return {m:Math.floor(lba/(60*75)),s:Math.floor(lba/75)%60,f:lba%75}}
+function baseName(p){return String(p||'').replace(/\\/g,'/').split('/').pop()}
+
+class PCECDMedia {
+  constructor(){this.clear()}
+  clear(){this.cueName='';this.sourceArchive='';this.tracks=[];this.groups=[];this.sectorCount=0;this.boot=null;this.loaded=false;this.audioCache=new Map();this.audioPending=new Set();this.audioCacheOrder=[];this.audioChunkSectors=150;this.audioCacheLimit=8;this.deflateAudioCacheLimit=2}
+  async load(fileList){
+    this.clear();const fs=[...fileList],cue=fs.find(f=>/\.cue$/i.test(f.name));if(!cue)throw Error('CD: seleziona anche il file .cue');
+    this.cueName=cue.name;const byName=new Map(fs.map(f=>[baseName(f.name).toLowerCase(),f])),text=(await cue.text()).replace(/^\uFEFF/,'');
+    let groups=[],g=null,tr=null;
+    for(const raw of text.split(/\r?\n/)){
+      let line=raw.trim(),m;
+      if((m=/^FILE\s+"([^"]+)"\s+(\S+)/i.exec(line))||(m=/^FILE\s+(\S+)\s+(\S+)/i.exec(line))){g={name:baseName(m[1]),type:m[2].toUpperCase(),tracks:[],id:groups.length,audioEndian:m[2].toUpperCase()==='MOTOROLA'?'be':'le'};groups.push(g);tr=null;continue}
+      if((m=/^TRACK\s+(\d+)\s+(\S+)/i.exec(line))){if(!g)throw Error('CUE: TRACK senza FILE');tr={number:+m[1],mode:m[2].toUpperCase(),index00:null,index01:null,group:g};g.tracks.push(tr);this.tracks.push(tr);continue}
+      if(tr&&(m=/^INDEX\s+(\d+)\s+(\d+:\d+:\d+)/i.exec(line))){let n=+m[1],f=cueFrames(m[2]);if(n===0)tr.index00=f;if(n===1)tr.index01=f}
+    }
+    if(!this.tracks.length)throw Error('CUE: nessuna TRACK trovata');
+    let base=0;
+    for(const grp of groups){
+      const f=byName.get(baseName(grp.name).toLowerCase());if(!f)throw Error('CD: manca '+grp.name);
+      grp.file=f;let firstMode=grp.tracks[0]?.mode||'AUDIO';grp.sectorSize=/2048/.test(firstMode)?2048:2352;grp.sectors=Math.floor(f.size/grp.sectorSize);grp.baseLBA=base;
+      const needsData=grp.tracks.some(t=>t.mode!=='AUDIO');if(needsData&&f._zipMethod===8&&f.size>128*1024*1024)event(`ZIP CD: traccia dati DEFLATE ${(f.size/1048576).toFixed(0)} MiB · decompressione unica in RAM (nessuna copia per READ)`);grp.bytes=needsData?new Uint8Array(await f.arrayBuffer()):null;
+      for(let i=0;i<grp.tracks.length;i++){
+        const t=grp.tracks[i];if(t.index01==null)t.index01=t.index00??0;t.fileBaseLBA=base;t.firstSector=base+t.index01;t.pregapSector=base+(t.index00??t.index01);t.sectorSize=/2048/.test(t.mode)?2048:2352;
+        let next=grp.tracks[i+1];t.endSector=next?base+(next.index00??next.index01??0):base+grp.sectors;
+      }
+      base+=grp.sectors;
+    }
+    this.groups=groups;this.sectorCount=base;this.loaded=true;
+    const dt=this.tracks.find(t=>t.mode!=='AUDIO');if(dt){let h=this.readSector(dt.firstSector+1);if(h&&h.length>=128){h=h.subarray(0,128);let magic='';for(let i=32;i<96&&h[i];i++)magic+=String.fromCharCode(h[i]);this.boot={track:dt.number,firstSector:dt.firstSector,index:(h[0]<<16)|(h[1]<<8)|h[2],sectors:h[3],magic,valid:magic.includes('PC Engine CD-ROM SYSTEM')}}}
+    return this
+  }
+  trackAt(lba){for(let i=this.tracks.length-1;i>=0;i--){let t=this.tracks[i];if(lba>=t.pregapSector&&lba<t.endSector)return t}return null}
+  readSector(lba){
+    lba|=0;const g=this.groups.find(x=>lba>=x.baseLBA&&lba<x.baseLBA+x.sectors);if(!g||!g.bytes)return null;const t=this.trackAt(lba);if(!t||t.mode==='AUDIO')return null;
+    let local=lba-g.baseLBA,ss=g.sectorSize,o=local*ss;if(/2352/.test(t.mode)){o+=16;if(o+2048>g.bytes.length)return null;return g.bytes.subarray(o,o+2048)}
+    if(o+2048>g.bytes.length)return null;return g.bytes.subarray(o,o+2048)
+  }
+  groupForLBA(lba){return this.groups.find(x=>lba>=x.baseLBA&&lba<x.baseLBA+x.sectors)||null}
+  prefetchAudio(lba){
+    const g=this.groupForLBA(lba);if(!g||g.bytes)return;let local=Math.max(0,(lba-g.baseLBA)|0);
+    // A DEFLATE entry cannot be random-accessed. Expand only the current audio
+    // track and keep a very small whole-track cache. STORE entries remain sliced.
+    if(g.file?._zipMethod===8){let key=g.id+':full';if(this.audioCache.has(key)||this.audioPending.has(key))return;this.audioPending.add(key);g.file.arrayBuffer().then(ab=>{this.audioCache.set(key,{start:0,data:new Uint8Array(ab),full:true});this.audioCacheOrder.push(key);let fullKeys=()=>this.audioCacheOrder.filter(k=>String(k).endsWith(':full'));while(fullKeys().length>this.deflateAudioCacheLimit){let idx=this.audioCacheOrder.findIndex(k=>String(k).endsWith(':full'));if(idx<0)break;let k=this.audioCacheOrder.splice(idx,1)[0];this.audioCache.delete(k)}this.audioPending.delete(key)}).catch(e=>{this.audioPending.delete(key);console.warn('CDDA ZIP cache',e)});return}
+    let cs=this.audioChunkSectors,start=Math.floor(local/cs)*cs,key=g.id+':'+start;if(this.audioCache.has(key)||this.audioPending.has(key))return;
+    this.audioPending.add(key);let count=Math.min(cs,g.sectors-start),a=start*g.sectorSize,b=(start+count)*g.sectorSize;
+    g.file.slice(a,b).arrayBuffer().then(ab=>{let data=new Uint8Array(ab);this.audioCache.set(key,{start,data});this.audioCacheOrder.push(key);while(this.audioCacheOrder.length>this.audioCacheLimit){let k=this.audioCacheOrder.shift();this.audioCache.delete(k)}this.audioPending.delete(key)}).catch(e=>{this.audioPending.delete(key);console.warn('CDDA cache',e)});
+  }
+  audioReady(lba){
+    const t=this.trackAt(lba);if(!t||t.mode!=='AUDIO')return true;const g=this.groupForLBA(lba);if(!g)return false;if(g.bytes)return true;
+    let local=Math.max(0,(lba-g.baseLBA)|0);if(g.file?._zipMethod===8)return this.audioCache.has(g.id+':full');
+    let cs=this.audioChunkSectors,start=Math.floor(local/cs)*cs;return this.audioCache.has(g.id+':'+start)
+  }
+  audioPendingAt(lba){
+    const t=this.trackAt(lba);if(!t||t.mode!=='AUDIO')return false;const g=this.groupForLBA(lba);if(!g||g.bytes)return false;let local=Math.max(0,(lba-g.baseLBA)|0);
+    if(g.file?._zipMethod===8)return this.audioPending.has(g.id+':full');let cs=this.audioChunkSectors,start=Math.floor(local/cs)*cs;return this.audioPending.has(g.id+':'+start)
+  }
+  readCDDASample(lba,frame){
+    const t=this.trackAt(lba);if(!t||t.mode!=='AUDIO')return null;const g=this.groupForLBA(lba);if(!g)return null;let local=(lba-g.baseLBA)|0,ss=g.sectorSize,o=local*ss+(frame|0)*4,buf=null,base=0;
+    if(g.bytes){buf=g.bytes;base=0}else if(g.file?._zipMethod===8){let key=g.id+':full',c=this.audioCache.get(key);if(!c){this.prefetchAudio(lba);return null}buf=c.data;base=0}else{let cs=this.audioChunkSectors,start=Math.floor(local/cs)*cs,key=g.id+':'+start,c=this.audioCache.get(key);if(!c){this.prefetchAudio(lba);return null}buf=c.data;base=start*ss;if((local-start)>=cs-20)this.prefetchAudio(lba+25)}
+    o-=base;if(o<0||o+3>=buf.length)return null;let le=g.audioEndian!=='be',lv=le?(buf[o]|(buf[o+1]<<8)):((buf[o]<<8)|buf[o+1]),rv=le?(buf[o+2]|(buf[o+3]<<8)):((buf[o+2]<<8)|buf[o+3]);if(lv&0x8000)lv-=0x10000;if(rv&0x8000)rv-=0x10000;return [lv/32768,rv/32768]
+  }
+  trackType(t){return t&&t.mode!=='AUDIO'?'DATA':'AUDIO'}
+}
+
+class PCECD {
+  constructor(bus){
+    this.bus=bus;this.media=null;this.enabled=false;this.superEnabled=true;
+    this.cdRam=new Uint8Array(0x10000);this.superRam=new Uint8Array(0x30000);this.adpcmRam=new Uint8Array(0x10000);
+    this.MASTER=7159090.9090909;this.CD_RATE=126000;this.resetController()
+  }
+  resetController(){
+    // SCSI bus / transfer state.  This follows the event-driven model used by
+    // Mednafen/Beetle: explicit bus phases, a 2048-byte DATA IN FIFO, timed
+    // sector production, and delayed auto-ACK on $1808 reads.
+    this.mirrorHits=0;this.phase='free';this.signals=0;this.ack=false;this.autoAckDelay=0;
+    this.dataLatch=0;this.db=0;this.cmd=[];this.statusSent=false;this.messageSent=false;
+    this.fifo=new Uint8Array(0x80000);this.fifoR=0;this.fifoW=0;this.fifoCount=0;this.dataTransferDone=false;
+    this.readLba=0;this.readRemain=0;this.readTimer=0;this.readSectors=0;this.readWaits=0;
+    this.enabledIrqs=0;this.activeIrqs=0;this.bramEnabled=false;this.resetReg=0;this.lastSense=null;
+
+    // CD-DA.  Keep an emulated-time cursor separate from the WebAudio cursor;
+    // BIOS PCM reads must continue to work even if browser audio is disabled.
+    this.audioState=0;this.audioPlaying=false;this.audioLba=0;this.audioStartLba=0;this.audioEndLba=0;this.audioMode=0;
+    this.cddaEmuPos=0;this.cddaOutPos=0;this.cddaEmuFrac=0;this.cddaLast=[0,0];this.cddaUnderruns=0;
+    this.pcmReads=0;this.pcmNonZero=0;this.rawPCM=[0,0];this.audioWaiting=false;this.sampleToggle=false;
+
+    // ADPCM, modelled after Mednafen's PCE CD implementation.
+    this.adAddr=0;this.adRead=0;this.adWrite=0;this.adLength=0;this.adControl=0;this.adRate=0;this.adDMA=0;
+    this.adReadBuffer=0;this.adReadPending=0;this.adWritePending=0;this.adWritePendingValue=0;
+    this.adHalf=false;this.adEnd=false;this.adPlaying=false;this.adPlayBuffer=0;this.adNibble=0;this.adPlayFrac=0;
+    this.adSignal=0;this.adStep=0;this.adOut=0;this.adDmaCount=0;this.adDmaStartWrite=0;
+    this.adAudio=new Float32Array(65536);this.adAudioR=0;this.adAudioW=0;this.adAudioCount=0;this.adAudioPhase=0;this.adAudioLast=0;
+
+    // PCE fader ($180F): one channel fades at a time; the other stays full.
+    this.fader=0;this.fadeVol=1;this.cddaFade=1;this.adpcmFade=1;
+    this.updateADPCMIRQ();this.updateIRQ()
+  }
+  setEnabled(v){this.enabled=!!v;if(!v){this.media=null;this.resetController()}else this.updateIRQ()}
+  attachMedia(m){this.media=m;this.enabled=true;this.resetController();this.media=m}
+  detachMedia(){this.media=null;this.enabled=false;this.resetController()}
+
+  // ---- FIFO -------------------------------------------------------------
+  fifoClear(){this.fifoR=this.fifoW=this.fifoCount=0}
+  fifoCanWrite(){return this.fifo.length-this.fifoCount}
+  fifoWrite(a){for(let i=0;i<a.length;i++){if(this.fifoCount>=this.fifo.length)break;this.fifo[this.fifoW]=a[i];this.fifoW=(this.fifoW+1)%this.fifo.length;this.fifoCount++}}
+  fifoRead(){if(!this.fifoCount)return 0;let v=this.fifo[this.fifoR];this.fifoR=(this.fifoR+1)%this.fifo.length;this.fifoCount--;return v}
+
+  // ---- IRQ --------------------------------------------------------------
+  setIRQBits(mask,on){if(on)this.activeIrqs|=mask;else this.activeIrqs&=~mask;this.updateIRQ()}
+  updateADPCMIRQ(){this.activeIrqs&=~0x0c;if(this.adHalf)this.activeIrqs|=0x04;if(this.adEnd)this.activeIrqs|=0x08;this.updateIRQ()}
+  updateIRQ(){if(this.bus)this.bus.irq2=!!(this.activeIrqs&this.enabledIrqs&0x7c)}
+
+  // ---- SCSI bus ---------------------------------------------------------
+  setREQ(v){if(v)this.signals|=0x40;else this.signals&=~0x40}
+  setPhase(p){
+    this.phase=p;this.ack=false;this.autoAckDelay=0;this.statusSent=false;this.messageSent=false;
+    if(p==='free'){
+      this.signals=0;this.setIRQBits(0x40,false);this.setIRQBits(0x20,false)
+    }else if(p==='command'){
+      this.signals=0x80|0x10|0x40;this.cmd=[]
+    }else if(p==='data'){
+      this.signals=0x80|0x08;this.serviceDataIn()
+    }else if(p==='status'){
+      this.signals=0x80|0x10|0x08|0x40
+    }else if(p==='message'){
+      this.signals=0x80|0x10|0x08|0x20|0x40
+    }
+    this.updateIRQ()
+  }
+  startSelection(){
+    if(!this.enabled)return;
+    // Selection begins a fresh command transaction.  Do not kill CD-DA, but
+    // abort any unfinished data READ exactly as a new SCSI selection would.
+    this.readTimer=0;this.readRemain=0;this.dataTransferDone=false;this.fifoClear();this.setIRQBits(0x60,false);this.setPhase('command')
+  }
+  commandLength(op){if(op===0xff)return 1;const g=(op>>>4)&15;return [6,6,10,10,10,10,10,10,10,10,12,12,10,10,10,10][g]}
+  getStatus(){return this.signals&0xf8}
+  writeData(v){this.dataLatch=v&255}
+  readData(auto=false){
+    let v=(['data','status','message'].includes(this.phase)?this.db:this.dataLatch)&255;
+    // $1808 is the System Card fast data port. Real hardware has a short
+    // auto-ACK pulse, but our HuC6280 executes block transfers without
+    // interleaving CD ticks. Make the pulse atomic so every CPU read consumes
+    // exactly one byte instead of duplicating bytes or outrunning a sector gap.
+    if(auto&&this.phase==='data'&&(this.signals&0x40)&&!this.ack){this.onAck(true);this.onAck(false)}
+    return v
+  }
+  writeIRQ(v){v&=255;this.enabledIrqs=v&0x7f;const a=!!(v&0x80);if(a!==this.ack)this.onAck(a);this.updateIRQ()}
+  onAck(high){
+    if(high===this.ack)return;this.ack=high;
+    if(high){
+      if(!(this.signals&0x40))return;
+      if(this.phase==='command')this.cmd.push(this.dataLatch&255);
+      else if(this.phase==='status')this.statusSent=true;
+      else if(this.phase==='message')this.messageSent=true;
+      this.setREQ(false);this.updateIRQ();return
+    }
+    if(this.phase==='command'){
+      if(!this.cmd.length){this.setREQ(true);return}
+      let n=this.commandLength(this.cmd[0]);if(this.cmd.length>=n)this.execCommand();else this.setREQ(true)
+    }else if(this.phase==='data')this.serviceDataIn();
+    else if(this.phase==='status'&&this.statusSent){this.db=0;this.setPhase('message')}
+    else if(this.phase==='message'&&this.messageSent)this.setPhase('free');
+    this.updateIRQ()
+  }
+  serviceDataIn(){
+    if(this.phase!=='data'||this.ack)return;
+    if(this.fifoCount>0){this.db=this.fifoRead();this.setREQ(true);this.setIRQBits(0x40,true);return}
+    this.setREQ(false);this.setIRQBits(0x40,false);
+    if(this.dataTransferDone){this.dataTransferDone=false;if(this.adDMA&3){let n=this.adDmaCount;this.adDMA&=~3;this.adDmaCount=0;if(n)this.log('ADPCM DMA '+n+' byte · TRANSFER DONE')}this.setIRQBits(0x20,true);this.startStatus(0)}
+  }
+  startStatus(code=0){this.db=code?1:0;this.setPhase('status')}
+  startSimpleData(a){
+    const u=a instanceof Uint8Array?a:new Uint8Array(a||[]);this.fifoClear();
+    if(u.length>this.fifo.length){this.log('DATA IN troppo grande '+u.length+' byte');this.lastSense={key:5,asc:0x24,ascq:0};this.startStatus(1);return}
+    this.fifoWrite(u);this.dataTransferDone=true;if(u.length){this.setIRQBits(0x40,true);this.setPhase('data')}else{this.setIRQBits(0x20,true);this.startStatus(0)}
+  }
+  scsiReset(){
+    this.readTimer=0;this.readRemain=0;this.dataTransferDone=false;this.fifoClear();this.cmd=[];this.setPhase('free');
+    this.audioState=0;this.audioPlaying=false;this.audioWaiting=false;this.cddaEmuPos=this.cddaOutPos=0;this.cddaLast=[0,0];this.activeIrqs&=~0x70;this.updateIRQ()
+  }
+
+  // ---- CD DATA IN -------------------------------------------------------
+  // Mature PCE emulators can expose real sector timing because their CPU and
+  // SCSI engines are interleaved at fine granularity. This JS core currently
+  // executes some HuC6280 block operations atomically, so exposing an empty
+  // FIFO between sectors makes the BIOS consume stale bytes and then wait
+  // forever for STATUS (the "JUST A MOMENT..." regression in Alpha 16).
+  // We therefore preserve the SCSI phases/handshake but prebuffer the bounded
+  // READ(6) payload (maximum 256 * 2048 = 512 KiB). Host ZIP latency is hidden
+  // from the emulated bus, as it is by image-cache modes in mature emulators.
+  startRead(lba,count){
+    this.audioState=0;this.audioPlaying=false;this.audioWaiting=false;this.cddaEmuPos=this.cddaOutPos=0;
+    this.readLba=lba>>>0;this.readRemain=count>>>0;this.readSectors=0;this.readTimer=0;this.fifoClear();this.dataTransferDone=false;this.setIRQBits(0x60,false);
+    if(!count){this.startStatus(0);return}
+    for(let i=0;i<count;i++){
+      const at=(lba+i)>>>0,q=this.media?.readSector(at);
+      if(!q){let t=this.media?.trackAt(at);this.lastSense={key:0x08,asc:0x64,ascq:0,lba:at};this.log(`READ LBA ${at} fallita · ${t?`T${String(t.number).padStart(2,'0')} ${t.mode}`:'fuori disco'}`);this.readRemain=0;this.fifoClear();this.startStatus(1);return}
+      if(this.fifoCanWrite()<q.length){this.lastSense={key:5,asc:0x24,ascq:0,lba:at};this.log('READ FIFO overflow @ LBA '+at);this.readRemain=0;this.fifoClear();this.startStatus(1);return}
+      this.fifoWrite(q);this.readSectors++;
+    }
+    this.readLba=(lba+count)>>>0;this.readRemain=0;this.dataTransferDone=true;this.log(`READ LBA ${lba} × ${count} · prebuffer ${this.fifoCount} byte`);this.setIRQBits(0x40,true);this.setPhase('data')
+  }
+  runCDRead(master){/* payload already buffered in startRead(); phase/ACK remain event-driven */}
+
+  // ---- CD-DA ------------------------------------------------------------
+  setCDDAPosition(lba){this.audioLba=Math.max(0,lba|0);this.cddaEmuPos=this.audioLba*588;this.cddaOutPos=this.cddaEmuPos;this.cddaLast=[0,0];this.cddaEmuFrac=0;this.media?.prefetchAudio(this.audioLba)}
+  handleCDDAEnd(){
+    if(!this.audioEndLba)return false;const lba=Math.floor(this.cddaEmuPos/588);if(lba<this.audioEndLba)return false;
+    if(this.audioMode===1){this.setCDDAPosition(this.audioStartLba);return true}
+    this.audioState=0;this.audioPlaying=false;this.audioWaiting=false;
+    if(this.audioMode===2)this.setIRQBits(0x20,true);return true
+  }
+  runCDDA(master){
+    if(this.audioState!==1||!this.media)return;
+    let lba=Math.floor(this.cddaEmuPos/588);if(this.audioEndLba&&lba>=this.audioEndLba){this.handleCDDAEnd();return}
+    if(!this.media.audioReady(lba)){this.media.prefetchAudio(lba);this.audioWaiting=true;this.cddaEmuFrac=0;return}
+    this.audioWaiting=false;this.cddaEmuFrac+=master*44100/this.MASTER;let n=Math.min(4096,Math.floor(this.cddaEmuFrac));if(n<=0)return;this.cddaEmuFrac-=n;
+    while(n--&&this.audioState===1){
+      let pos=this.cddaEmuPos,l=Math.floor(pos/588),f=Math.floor(pos-l*588);if(this.audioEndLba&&l>=this.audioEndLba){this.handleCDDAEnd();break}
+      if(!this.media.audioReady(l)){this.media.prefetchAudio(l);this.audioWaiting=true;this.cddaEmuFrac=0;break}
+      let q=this.media.readCDDASample(l,f);if(!q){this.cddaUnderruns++;this.media.prefetchAudio(l);this.audioWaiting=true;break}
+      this.cddaLast=q;this.cddaEmuPos++;this.audioLba=Math.floor(this.cddaEmuPos/588)
+    }
+  }
+  nextCDDASample(outRate){
+    if(this.audioState!==1||!this.media)return [0,0];let pos=this.cddaOutPos,lba=Math.floor(pos/588),frame=Math.floor(pos-lba*588);
+    if(this.audioEndLba&&lba>=this.audioEndLba){if(this.audioMode===1){this.cddaOutPos=this.audioStartLba*588;return this.nextCDDASample(outRate)}return [0,0]}
+    if(!this.media.audioReady(lba)){this.media.prefetchAudio(lba);return [0,0]}
+    let q=this.media.readCDDASample(lba,frame);if(!q){this.cddaUnderruns++;this.media.prefetchAudio(lba);return [0,0]}
+    this.cddaOutPos+=44100/(outRate||44100);return [q[0]*this.cddaFade,q[1]*this.cddaFade]
+  }
+  audioCommandLBA(c){
+    let mode=c[9]&0xc0;
+    if(mode===0)return ((c[3]<<16)|(c[4]<<8)|c[5])>>>0;
+    if(mode===0x40){let m=fromBCD(c[2]),ss=fromBCD(c[3]),f=fromBCD(c[4]);return Math.max(0,(m*60+ss)*75+f-150)}
+    if(mode===0x80){let n=fromBCD(c[2]);if(!n)n=1;let t=this.media?.tracks.find(x=>x.number===n);return t?t.firstSector:(this.media?.sectorCount||0)}
+    return 0
+  }
+
+  // ---- ADPCM ------------------------------------------------------------
+  get adStatus(){return (this.adEnd?1:0)|(this.adPlaying?8:0)|(this.adWritePending>0?4:0)|(this.adReadPending>0?0x80:0)}
+  get adPlayPtr(){return this.adRead&0xffff}
+  get adPlayRemain(){return this.adLength&0xffff}
+  get adRepeat(){return false}
+  adpcmNibbleRate(){return 32087.5/Math.max(1,16-(this.adRate&15))}
+  pushADPCM(v){if(this.adAudioCount>=this.adAudio.length){this.adAudioR=(this.adAudioR+1)%this.adAudio.length;this.adAudioCount--}this.adAudio[this.adAudioW]=v;this.adAudioW=(this.adAudioW+1)%this.adAudio.length;this.adAudioCount++}
+  decodeADPCM(n){const steps=[16,17,19,21,23,25,28,31,34,37,41,45,50,55,60,66,73,80,88,97,107,118,130,143,157,173,190,209,230,253,279,307,337,371,408,449,494,544,598,658,724,796,876,963,1060,1166,1282,1411,1552],shift=[-1,-1,-1,-1,2,4,6,8];let st=steps[this.adStep],d=st>>3;if(n&1)d+=st>>2;if(n&2)d+=st>>1;if(n&4)d+=st;this.adSignal+=n&8?-d:d;this.adSignal=clamp(this.adSignal,-2048,2047);this.adStep=clamp(this.adStep+shift[n&7],0,48);this.adOut=this.adSignal/2048;this.pushADPCM(this.adOut*this.adpcmFade)}
+  resetADPCM(){
+    this.adAddr=this.adRead=this.adWrite=this.adLength=0;this.adControl=0;this.adPlaying=false;this.adHalf=false;this.adEnd=false;this.adNibble=0;
+    this.adReadPending=this.adWritePending=0;this.adReadBuffer=0;this.adSignal=0;this.adStep=0;this.adOut=0;this.adAudioR=this.adAudioW=this.adAudioCount=0;this.adAudioPhase=0;this.adAudioLast=0;this.updateADPCMIRQ()
+  }
+  startADPCM(){
+    this.adPlaying=true;this.adHalf=false;this.adNibble=0;this.adPlayFrac=0;this.adSignal=0;this.adStep=0;this.adOut=0;
+    this.adAudioR=this.adAudioW=this.adAudioCount=0;this.adAudioPhase=0;this.adAudioLast=0;this.updateADPCMIRQ();
+    this.log(`ADPCM PLAY R $${hex(this.adRead,4)} · LEN $${hex(this.adLength,4)} · ${Math.round(this.adpcmNibbleRate())} Hz`)
+  }
+  stopADPCM(){this.adPlaying=false;this.adOut=0;this.updateADPCMIRQ()}
+  stepADPCM(){
+    if(!this.adPlaying)return;
+    if(this.adNibble===0){
+      this.adHalf=this.adLength<32768;
+      if(!this.adLength&&!(this.adControl&0x10)){
+        if(this.adEnd)this.adHalf=false;this.adEnd=true;if(this.adControl&0x40)this.adPlaying=false
+      }
+      this.adPlayBuffer=this.adpcmRam[this.adRead];this.adRead=(this.adRead+1)&0xffff;
+      if(this.adLength&&!(this.adControl&0x10))this.adLength--;
+      this.updateADPCMIRQ();if(!this.adPlaying)return
+    }
+    let n=this.adNibble?this.adPlayBuffer&15:this.adPlayBuffer>>4;this.decodeADPCM(n);this.adNibble^=1
+  }
+  runADPCM(master){
+    // Delayed direct ADPCM RAM writes.
+    if(this.adWritePending>0){this.adWritePending-=master;if(this.adWritePending<=0){this.adHalf=this.adLength<32768;if(!(this.adControl&0x10)&&this.adLength<0xffff)this.adLength++;this.adpcmRam[this.adWrite]=this.adWritePendingValue;this.adWrite=(this.adWrite+1)&0xffff;this.adWritePending=0;this.updateADPCMIRQ()}}
+    // DMA drains SCSI DATA IN through the same REQ/ACK path as CPU reads.
+    if(this.adWritePending<=0&&(this.adDMA&3)&&this.phase==='data'&&(this.signals&0x08)&&!(this.signals&0x10)&&(this.signals&0x40)&&!this.ack){
+      this.adWritePendingValue=this.readData(true);this.adWritePending=30;this.adDmaCount++
+    }
+    // Delayed direct ADPCM RAM reads.
+    if(this.adReadPending>0){this.adReadPending-=master;if(this.adReadPending<=0){this.adReadBuffer=this.adpcmRam[this.adRead];this.adRead=(this.adRead+1)&0xffff;this.adReadPending=0;this.adHalf=this.adLength<32768;if(!(this.adControl&0x10)){if(this.adLength)this.adLength--;else{this.adEnd=true;this.adHalf=false;if(this.adControl&0x40)this.adPlaying=false}}this.updateADPCMIRQ()}}
+    if(this.adPlaying){let rate=this.adpcmNibbleRate(),per=this.MASTER/rate;this.adPlayFrac+=master;let n=Math.min(4096,Math.floor(this.adPlayFrac/per));if(n>0){this.adPlayFrac-=n*per;while(n--&&this.adPlaying)this.stepADPCM()}}
+  }
+  nextADPCMSample(outRate){if(this.adAudioCount<=0){this.adAudioPhase=0;if(!this.adPlaying)this.adAudioLast=0;return 0}let step=this.adpcmNibbleRate()/(outRate||44100);this.adAudioPhase+=step;while(this.adAudioPhase>=1&&this.adAudioCount>0){this.adAudioLast=this.adAudio[this.adAudioR];this.adAudioR=(this.adAudioR+1)%this.adAudio.length;this.adAudioCount--;this.adAudioPhase-=1}if(this.adAudioCount<=0&&this.adAudioPhase>=1)this.adAudioPhase=0;return this.adAudioLast}
+  adReadReg(r){
+    if(r===0x0a){this.adReadPending=57;return this.adReadBuffer}
+    if(r===0x0b)return this.adDMA;
+    if(r===0x0c)return this.adStatus;
+    if(r===0x0d)return this.adControl;
+    if(r===0x0e)return 0xff;
+    return 0
+  }
+  adWriteReg(r,v){
+    if(r===0x08){if(this.adControl&0x80)return;this.adAddr=(this.adAddr&0xff00)|v;if(this.adControl&0x10){this.adLength=this.adAddr;this.adEnd=false;this.updateADPCMIRQ()}return}
+    if(r===0x09){if(this.adControl&0x80)return;this.adAddr=(this.adAddr&255)|(v<<8);if(this.adControl&0x10){this.adLength=this.adAddr;this.adEnd=false;this.updateADPCMIRQ()}return}
+    if(r===0x0a){this.adWritePending=33;this.adWritePendingValue=v;return}
+    if(r===0x0b){this.adDMA=v&255;if(v&3){this.adDmaCount=0;this.adDmaStartWrite=this.adWrite;this.log('ADPCM DMA ARM $'+hex(v)+' · W $'+hex(this.adWrite,4))}return}
+    if(r===0x0d){
+      const old=this.adControl;
+      if(v&0x80){this.resetADPCM();return}
+      if(this.adPlaying&&!(v&0x20))this.stopADPCM();
+      if(!this.adPlaying&&(v&0x20))this.startADPCM();
+      if(v&0x10){this.adLength=this.adAddr;this.adEnd=false}
+      if(!(old&0x08)&&(v&0x08))this.adRead=(v&0x04)?this.adAddr:((this.adAddr-1)&0xffff);
+      if(!(old&0x02)&&(v&0x02)){this.adWrite=this.adAddr;if(!(v&1))this.adWrite=(this.adWrite-1)&0xffff}
+      this.adControl=v;this.updateADPCMIRQ();
+      if(((old^v)&0xfa)||((v&0x1a)!==0))this.log('ADPCM CTRL $'+hex(v)+' · A $'+hex(this.adAddr,4)+' R $'+hex(this.adRead,4)+' W $'+hex(this.adWrite,4)+' LEN $'+hex(this.adLength,4)+' · '+(this.adPlaying?'PLAY':'STOP'));
+      return
+    }
+    if(r===0x0e){this.adRate=v&15;this.log('ADPCM RATE $'+hex(this.adRate)+' · '+Math.round(this.adpcmNibbleRate())+' Hz')}
+  }
+
+  // ---- fader ------------------------------------------------------------
+  writeFader(v){
+    this.fader=v&255;
+    if(!(v&0x08)){this.fadeVol=1;this.cddaFade=1;this.adpcmFade=1;return}
+    this.fadeVol=1;if(v&0x02){this.adpcmFade=1;this.cddaFade=1}else{this.cddaFade=1;this.adpcmFade=1}
+  }
+  runFader(master){
+    if(!(this.fader&0x08))return;const dur=(this.fader&0x04)?2.5:6.0;this.fadeVol=Math.max(0,this.fadeVol-master/(this.MASTER*dur));if(this.fader&0x02){this.adpcmFade=this.fadeVol;this.cddaFade=1}else{this.cddaFade=this.fadeVol;this.adpcmFade=1}
+  }
+
+  // ---- command set ------------------------------------------------------
+  execCommand(){let c=this.cmd.slice(),op=c[0];this.cmd=[];
+    if(op===0x00){this.log('TEST UNIT READY');this.startStatus(this.media?.loaded?0:1);return}
+    if(op===0x03){const alloc=c[4]||18,s=new Uint8Array(18);s[0]=0x70;s[2]=this.lastSense?.key||0;s[7]=10;if(this.lastSense){s[12]=this.lastSense.asc||0;s[13]=this.lastSense.ascq||0;let a=this.lastSense.lba>>>0;s[0]|=0x80;s[3]=(a>>>24)&255;s[4]=(a>>>16)&255;s[5]=(a>>>8)&255;s[6]=a&255}this.log('REQUEST SENSE'+(this.lastSense?` key $${hex(this.lastSense.key)} ASC $${hex(this.lastSense.asc)}`:' · NO SENSE'));this.lastSense=null;this.startSimpleData(s.subarray(0,Math.min(alloc,18)));return}
+    if(op===0xff){this.lastSense={key:5,asc:0x20,ascq:0};this.log('SCSI $FF → CHECK CONDITION');this.startStatus(1);return}
+    if(op===0x08){let lba=((c[1]&31)<<16)|(c[2]<<8)|c[3],count=c[4]||256;this.lastSense=null;this.startRead(lba,count);return}
+    if(op===0xde){let mode=c[1],tracks=this.media?.tracks||[],first=tracks[0]?.number||1,last=tracks[tracks.length-1]?.number||1,buf;
+      if(mode===0)buf=new Uint8Array([toBCD(first),toBCD(last)]);
+      else if(mode===1){let m=lbaToMSF((this.media?.sectorCount||0)+150);buf=new Uint8Array([toBCD(m.m),toBCD(m.s),toBCD(m.f)])}
+      else if(mode===2){let raw=c[2],lead=raw===0xaa,tn=lead?0:Math.max(fromBCD(raw),1),t=lead?null:tracks.find(x=>x.number===tn),l=lead?(this.media?.sectorCount||0):(t?t.firstSector:(this.media?.sectorCount||0)),m=lbaToMSF(l+150);buf=new Uint8Array([toBCD(m.m),toBCD(m.s),toBCD(m.f),lead?4:(t&&t.mode!=='AUDIO'?4:0)])}
+      else buf=new Uint8Array();this.log(`READ TOC mode ${hex(mode)}`);this.startSimpleData(buf);return}
+    if(op===0xdd){let l=this.audioLba||0,t=this.media?.trackAt(l),rel=t?Math.max(0,l-t.firstSector):0,a=lbaToMSF(rel),abs=lbaToMSF(l+150),buf=new Uint8Array(10);buf[0]=this.audioState===2?2:(this.audioState===1?0:3);buf[1]=t&&t.mode!=='AUDIO'?0x41:0x01;buf[2]=toBCD(t?.number||1);buf[3]=1;buf[4]=toBCD(a.m);buf[5]=toBCD(a.s);buf[6]=toBCD(a.f);buf[7]=toBCD(abs.m);buf[8]=toBCD(abs.s);buf[9]=toBCD(abs.f);this.startSimpleData(buf);return}
+    if(op===0xd8){let start=this.audioCommandLBA(c);this.audioStartLba=start;this.audioEndLba=this.media?.sectorCount||start;this.audioMode=0;this.setCDDAPosition(start);if(c[1]){this.audioMode=3;this.audioState=1;this.audioPlaying=true}else{this.audioState=2;this.audioPlaying=false}this.media?.prefetchAudio(start);this.audioWaiting=!!(this.media&&!this.media.audioReady(start));this.log(`CD-DA START ${start} · ${c[1]?'PLAY':'PAUSE'}`);this.startStatus(0);this.setIRQBits(0x20,true);return}
+    if(op===0xd9){let end=this.audioCommandLBA(c),pm=c[1]&3;this.audioEndLba=end;this.audioMode=pm;if(pm){this.audioState=1;this.audioPlaying=true;let a=this.audioStartLba||this.audioLba;this.media?.prefetchAudio(a);this.audioWaiting=!!(this.media&&!this.media.audioReady(a))}else{this.audioState=0;this.audioPlaying=false;this.audioWaiting=false}this.log(`CD-DA END ${end} · mode ${pm}`);this.startStatus(0);return}
+    if(op===0xda){if(this.audioState===0){this.lastSense={key:5,asc:0x64,ascq:0};this.log('CD-DA PAUSE senza playback → CHECK CONDITION');this.startStatus(1)}else{this.audioState=2;this.audioPlaying=false;this.audioWaiting=false;this.log('CD-DA PAUSE');this.startStatus(0)}return}
+    this.lastSense={key:5,asc:0x20,ascq:0};this.log('comando SCSI non implementato $'+hex(op));this.startStatus(1)
+  }
+
+  // ---- register interface ---------------------------------------------
+  cddaLatchPCM(){let l=Math.min(32767,Math.abs(Math.round((this.cddaLast?.[0]||0)*32767*this.cddaFade))),r=Math.min(32767,Math.abs(Math.round((this.cddaLast?.[1]||0)*32767*this.cddaFade)));this.rawPCM[0]=l;this.rawPCM[1]=r}
+  cddaDataRead(port){this.pcmReads++;let v=this.rawPCM[this.sampleToggle?1:0]||0;if(v)this.pcmNonZero++;return port===5?(v&255):((v>>>8)&255)}
+  systemCardId(r){const c=r&~0x330;if(c<0xc0||c>0xc7)return null;const jp=!(this.bus&&this.bus.region==='us');const id=[0x00,0xaa,0x55,0x00,0x00,jp?0xaa:0x55,jp?0x55:0xaa,0x03];return id[c-0xc0]}
+  readMem(bank,off){if(this.superEnabled&&bank>=0x68&&bank<=0x7f)return this.superRam[((bank-0x68)<<13)|off];if(bank>=0x80&&bank<=0x87)return this.cdRam[((bank-0x80)<<13)|off];return null}
+  writeMem(bank,off,v){if(this.superEnabled&&bank>=0x68&&bank<=0x7f){this.superRam[((bank-0x68)<<13)|off]=v;return true}if(bank>=0x80&&bank<=0x87){this.cdRam[((bank-0x80)<<13)|off]=v;return true}return false}
+  readReg(off){
+    const raw=off&0x3ff;if(this.superEnabled){let id=this.systemCardId(raw);if(id!==null)return id}const r=raw&0x0f;if(raw>=0x10)this.mirrorHits++;
+    if(r===0)return this.getStatus();
+    if(r===1)return this.readData(false);
+    if(r===2)return (this.enabledIrqs&0x7f)|(this.ack?0x80:0);
+    if(r===3){this.bramEnabled=false;let ret=(this.activeIrqs&0x7c)|(this.sampleToggle?2:0);this.sampleToggle=!this.sampleToggle;return ret}
+    if(r===4)return this.resetReg;
+    if(r===5||r===6)return this.cddaDataRead(r);
+    if(r===7)return 0;
+    if(r===8)return this.readData(true);
+    if(r>=9&&r<=14)return this.adReadReg(r);
+    if(r===15)return this.fader;return 0xff
+  }
+  writeReg(off,v){
+    const raw=off&0x3ff,r=raw&0x0f;v&=255;if(raw>=0x10)this.mirrorHits++;
+    if(r===0){this.setIRQBits(0x60,false);this.startSelection()}
+    else if(r===1)this.writeData(v);
+    else if(r===2)this.writeIRQ(v);
+    else if(r===4){this.resetReg=v;if(v&2){this.activeIrqs&=~0x70;this.scsiReset()}}
+    else if(r===5||r===6)this.cddaLatchPCM();
+    else if(r===7){if(v&0x80)this.bramEnabled=true}
+    else if(r>=8&&r<=14)this.adWriteReg(r,v);
+    else if(r===15)this.writeFader(v)
+  }
+
+  tick(master){
+    // $1808 auto-ACK is atomic in this core (see readData).
+    this.runCDRead(master);this.runADPCM(master);this.runCDDA(master);this.runFader(master)
+  }
+  log(s){try{event('CD: '+s)}catch(_){} }
+}
+
 class Bus {
-  constructor(){this.rom=new Uint8Array();this.hesMode=false;this.hesMem=null;this.mapper='standard';this.mapperBank=0;this.cartRam=null;this.romName='';this.ram=new Uint8Array(0x2000);this.backup=new Uint8Array(0x800);this.backupDirty=false;this.vce=new Uint16Array(512);this.vceAddr=0;this.vceCtrl=0;this.vdc=new VDC(this);this.psg=new PSG();this.timerLatch=0;this.timerVal=0;this.timerEnable=false;this.timerAccum=0;this.irqMask=0;this.irq1=false;this.irq2=false;this.timerIRQ=false;this.padLatch=0;this.pad={up:false,down:false,left:false,right:false,i:false,ii:false,run:false,select:false};this.frameReady=false;this.events=[];this.region='jp'}
-  reset(){this.ram.fill(0);this.vce.fill(0);this.vceAddr=0;this.vceCtrl=0;this.vdc.reset();this.psg.reset();this.timerLatch=0;this.timerVal=0;this.timerEnable=false;this.timerAccum=0;this.irqMask=0;this.irq1=this.irq2=this.timerIRQ=false;this.padLatch=0;this.frameReady=false}
+  constructor(){this.rom=new Uint8Array();this.hesMode=false;this.hesMem=null;this.mapper='standard';this.mapperBank=0;this.cartRam=null;this.romName='';this.ram=new Uint8Array(0x2000);this.backup=new Uint8Array(0x800);this.backupDirty=false;this.vce=new Uint16Array(512);this.vceAddr=0;this.vceCtrl=0;this.vdc=new VDC(this);this.psg=new PSG();this.timerLatch=0;this.timerVal=0;this.timerEnable=false;this.timerAccum=0;this.irqMask=0;this.irq1=false;this.irq2=false;this.timerIRQ=false;this.padLatch=0;this.pad={up:false,down:false,left:false,right:false,i:false,ii:false,run:false,select:false};this.frameReady=false;this.events=[];this.region='jp';this.cd=new PCECD(this)}
+  reset(){
+    this.ram.fill(0);
+    // HuC6260 cores initialize palette RAM to zero on reset.  Avoid synthetic
+    // startup patterns leaking into titles that only partially initialize it.
+    this.vce.fill(0);
+    this.vceAddr=0;this.vceCtrl=0;this.vdc.reset();this.psg.reset();this.timerLatch=0;this.timerVal=0;this.timerEnable=false;this.timerAccum=0;this.irqMask=0;this.irq1=this.irq2=this.timerIRQ=false;this.padLatch=0;this.frameReady=false;if(this.cd?.enabled){let m=this.cd.media;this.cd.resetController();this.cd.media=m}
+  }
   attachROM(a,name=''){this.rom=new Uint8Array(a);this.hesMode=false;this.hesMem=null;this.romName=name;this.mapperBank=0;this.cartRam=null;this.mapper=this.rom.length>0x100000?'sf2':(/populous/i.test(name)?'populous':'standard');if(this.mapper==='populous')this.cartRam=new Uint8Array(0x8000)}
   attachHES(mem){this.rom=new Uint8Array();this.hesMode=true;this.hesMem=mem;this.mapper='hes';this.mapperBank=0;this.cartRam=null}
   mapROM(p){
@@ -294,23 +815,27 @@ class Bus {
     if(n===0x60000){let x=p&0x7ffff;if(x>=0x40000)x=0x40000+(x&0x1ffff);return this.rom[x]}
     return this.rom[p%n];
   }
-  readPhys(p){p&=0x1fffff;let bank=p>>13,off=p&0x1fff;if(bank<0x80)return this.mapROM(p);
+  readPhys(p){p&=0x1fffff;let bank=p>>13,off=p&0x1fff;
+    if(this.cd?.enabled){let v=this.cd.readMem(bank,off);if(v!==null)return v}
+    if(bank<0x80)return this.mapROM(p);
     if(bank>=0xf8&&bank<=0xfb)return this.ram[off];
-    if(bank===0xf7)return this.backup[off&0x7ff];
+    if(bank===0xf7)return (!this.cd?.enabled||this.cd.bramEnabled)?this.backup[off&0x7ff]:0xff;
     if(bank===0xff)return this.readIO(off);
     return 0xff
   }
-  writePhys(p,v){p&=0x1fffff;v&=255;
+  writePhys(p,v){p&=0x1fffff;v&=255;let bank=p>>13,off=p&0x1fff;
+    if(this.cd?.enabled&&this.cd.writeMem(bank,off,v))return;
     if(this.mapper==='sf2'&&p>=0x1ff0&&p<=0x1ff3){this.mapperBank=p&3;return}
     if(this.mapper==='populous'&&p>=0x80000&&p<0x88000&&this.cartRam){this.cartRam[p-0x80000]=v;return}
-    let bank=p>>13,off=p&0x1fff;if(bank>=0xf8&&bank<=0xfb){this.ram[off]=v;return}if(bank===0xf7){let i=off&0x7ff;if(this.backup[i]!==v){this.backup[i]=v;this.backupDirty=true}else this.backup[i]=v;return}if(bank===0xff)this.writeIO(off,v)}
+    if(bank>=0xf8&&bank<=0xfb){this.ram[off]=v;return}if(bank===0xf7&&(!this.cd?.enabled||this.cd.bramEnabled)){let i=off&0x7ff;if(this.backup[i]!==v){this.backup[i]=v;this.backupDirty=true}else this.backup[i]=v;return}if(bank===0xff)this.writeIO(off,v)}
   readIO(o){
     if(o<0x400)return this.vdc.read(o);
-    if(o<0x800){let r=o&7;if(r===4)return this.vce[this.vceAddr&511]&255;if(r===5){let v=this.vce[this.vceAddr&511]>>8;this.vceAddr=(this.vceAddr+1)&511;return v}return 0xff}
+    if(o<0x800){let r=o&7;if(r===4)return this.vce[this.vceAddr&511]&255;if(r===5){let v=0xfe|((this.vce[this.vceAddr&511]>>8)&1);this.vceAddr=(this.vceAddr+1)&511;return v}return 0xff}
     if(o<0xc00)return 0xff;
     if(o<0x1000)return (o&1)?(this.timerEnable?1:0):(this.timerVal&0x7f);
     if(o<0x1400)return this.readPad();
     if(o<0x1800){let r=o&3;if(r===2)return this.irqMask&7;if(r===3)return (this.irq2?1:0)|(this.irq1?2:0)|(this.timerIRQ?4:0);return 0xff}
+    if(o<0x1c00&&this.cd?.enabled)return this.cd.readReg(o-0x1800);
     return 0xff
   }
   writeIO(o,v){
@@ -320,6 +845,7 @@ class Bus {
     if(o<0x1000){if((o&1)===0){this.timerLatch=v&0x7f;this.timerVal=this.timerLatch}else{let was=this.timerEnable;this.timerEnable=!!(v&1);if(this.timerEnable&&!was)this.timerVal=this.timerLatch}return}
     if(o<0x1400){this.padLatch=v;return}
     if(o<0x1800){let r=o&3;if(r===2)this.irqMask=v&7;else if(r===3)this.timerIRQ=false;return}
+    if(o<0x1c00&&this.cd?.enabled){this.cd.writeReg(o-0x1800,v);return}
   }
   readPad(){
     let sel=!!(this.padLatch&1),clr=!!(this.padLatch&2);if(clr)return 0xf0|(this.region==='us'?0:0x40);
@@ -327,17 +853,17 @@ class Bus {
     else {if(this.pad.i)n&=~1;if(this.pad.ii)n&=~2;if(this.pad.select)n&=~4;if(this.pad.run)n&=~8}
     return (n&15)|0xb0|(this.region==='jp'?0x40:0);
   }
-  vceRGB(i){let v=this.vce[i&511]&0x1ff,b=v&7,r=(v>>3)&7,g=(v>>6)&7;return [Math.round(r*255/7),Math.round(g*255/7),Math.round(b*255/7)]}
+  vceRGB(i){i&=511;if((i&15)===0)i&=0x100;let v=this.vce[i]&0x1ff,b=Math.round((v&7)*255/7),r=Math.round(((v>>3)&7)*255/7),g=Math.round(((v>>6)&7)*255/7);if(this.vceCtrl&0x80){let y=clamp(Math.round(.300*r+.589*g+.111*b),0,255);return [y,y,y]}return [r,g,b]}
   raiseIRQ1(){this.irq1=true}
-  tick(master){this.vdc.tick(master);if(this.timerEnable){this.timerAccum+=master;while(this.timerAccum>=1024){this.timerAccum-=1024;if(this.timerVal===0){this.timerVal=this.timerLatch;this.timerIRQ=true}else this.timerVal=(this.timerVal-1)&0x7f}}}
+  tick(master){this.vdc.tick(master);if(this.cd?.enabled)this.cd.tick(master);if(this.timerEnable){this.timerAccum+=master;while(this.timerAccum>=1024){this.timerAccum-=1024;if(this.timerVal===0){this.timerVal=this.timerLatch;this.timerIRQ=true}else this.timerVal=(this.timerVal-1)&0x7f}}}
 }
 
 class CPU {
-  constructor(bus){this.b=bus;this.A=0;this.X=0;this.Y=0;this.S=0xff;this.P=0x14;this.PC=0;this.M=new Uint8Array(8);this.high=false;this.cycles=0;this.stopped=false;this.breakpoints=new Set();this.trace=[];this.traceOn=false;this.inStep=false;this.busPenalty=0}
+  constructor(bus){this.b=bus;this.A=0;this.X=0;this.Y=0;this.S=0xff;this.P=0x14;this.PC=0;this.M=new Uint8Array(8);this.high=false;this.cycles=0;this.stopped=false;this.breakpoints=new Set();this.trace=[];this.traceOn=false;this.inStep=false;this.busPenalty=0;this.lastRead=0;this.lastReadPhys=0;this.lastWrite=0;this.lastWritePhys=0;this.pcRing=new Uint16Array(64);this.pcRingPos=0}
   reset(){this.A=this.X=this.Y=0;this.S=0xff;this.P=0x14;this.M.fill(0);this.high=false;this.cycles=0;this.stopped=false;this.PC=this.read16(0xfffe);this.trace=[]}
   phys(a){return (this.M[(a>>>13)&7]<<13)|(a&0x1fff)}
-  r(a){let p=this.phys(a&0xffff);if(this.inStep&&(p&0x1ff800)===0x1fe000)this.busPenalty++;return this.b.readPhys(p)}
-  w(a,v){let p=this.phys(a&0xffff);if(this.inStep&&(p&0x1ff800)===0x1fe000)this.busPenalty++;this.b.writePhys(p,v)}
+  r(a){a&=0xffff;let p=this.phys(a);this.lastRead=a;this.lastReadPhys=p;if(this.inStep&&(p&0x1ff800)===0x1fe000)this.busPenalty++;return this.b.readPhys(p)}
+  w(a,v){a&=0xffff;let p=this.phys(a);this.lastWrite=a;this.lastWritePhys=p;if(this.inStep&&(p&0x1ff800)===0x1fe000)this.busPenalty++;this.b.writePhys(p,v)}
   read16(a){let l=this.r(a),h=this.r((a+1)&0xffff);return l|(h<<8)}
   fetch(){let v=this.r(this.PC);this.PC=(this.PC+1)&0xffff;return v}
   fetch16(){let l=this.fetch(),h=this.fetch();return l|(h<<8)}
@@ -382,7 +908,7 @@ class CPU {
   step(){
     let ic=this.serviceIRQ();if(ic){this.tick(ic);return ic}
     if(this.breakpoints.has(this.PC)){this.stopped=true;return 0}
-    this.inStep=true;this.busPenalty=0;let pc0=this.PC,op=this.fetch(),[mn,mode,cy]=OPS[op],extra=0,T=!!(this.P&0x20);
+    this.inStep=true;this.busPenalty=0;let internalTicked=0;let pc0=this.PC;this.pcRing[this.pcRingPos++&63]=pc0;let op=this.fetch(),[mn,mode,cy]=OPS[op],extra=0,T=!!(this.P&0x20);
     if(this.traceOn){this.trace.push(hex(pc0,4)+'  '+hex(op)+'  '+mn+' '+this.previewOperand(pc0,op));if(this.trace.length>500)this.trace.shift()}
     const aluTarget=()=>!T;
     switch(mn){
@@ -419,7 +945,7 @@ class CPU {
       case 'TAM':{let m=this.fetch();for(let i=0;i<8;i++)if(m&(1<<i))this.M[i]=this.A;break}
       case 'TMA':{let m=this.fetch();for(let i=0;i<8;i++)if(m&(1<<i))this.A=this.M[i];this.setNZ(this.A);break}
       case 'ST0':this.b.vdc.write(0,this.fetch());extra++;break;case 'ST1':this.b.vdc.write(2,this.fetch());extra++;break;case 'ST2':this.b.vdc.write(3,this.fetch());extra++;break;
-      case 'TII':case 'TDD':case 'TIN':case 'TIA':case 'TAI':{let s=this.fetch16(),d=this.fetch16(),n=this.fetch16();if(n===0)n=65536;for(let i=0;i<n;i++){this.w(d,this.r(s));if(mn==='TII'){s=(s+1)&65535;d=(d+1)&65535}else if(mn==='TDD'){s=(s-1)&65535;d=(d-1)&65535}else if(mn==='TIN'){s=(s+1)&65535}else if(mn==='TIA'){s=(s+1)&65535;d=(d+(i&1?-1:1))&65535}else{d=(d+1)&65535;s=(s+(i&1?-1:1))&65535}}cy+=6*n;break}
+      case 'TII':case 'TDD':case 'TIN':case 'TIA':case 'TAI':{let s=this.fetch16(),d=this.fetch16(),n=this.fetch16();if(n===0)n=65536;for(let i=0;i<n;i++){let bp=this.busPenalty,v=this.r(s);this.w(d,v);let ioDelay=this.busPenalty-bp;if(mn==='TII'){s=(s+1)&65535;d=(d+1)&65535}else if(mn==='TDD'){s=(s-1)&65535;d=(d-1)&65535}else if(mn==='TIN'){s=(s+1)&65535}else if(mn==='TIA'){s=(s+1)&65535;d=(d+(i&1?-1:1))&65535}else{d=(d+1)&65535;s=(s+(i&1?-1:1))&65535}let tc=6+ioDelay;this.tick(tc);internalTicked+=tc}cy+=6*n;break}
       default:
         if(/^RMB/.test(mn)||/^SMB/.test(mn)){let bit=+mn.slice(3),a=this.addr('ZP'),v=this.r(a);this.w(a,/^RMB/.test(mn)?v&~(1<<bit):v|(1<<bit));break}
         if(/^BBR/.test(mn)||/^BBS/.test(mn)){let bit=+mn.slice(3),z=this.fetch(),d=s8(this.fetch()),v=this.r(this.zp(z)),ok=/^BBR/.test(mn)?!(v&(1<<bit)):!!(v&(1<<bit));if(ok){this.PC=(this.PC+d)&65535;extra+=2}break}
@@ -428,7 +954,7 @@ class CPU {
     // T-mode ALU operations also pay the extra memory read/write cycles.
     if(T && ['ORA','AND','EOR','ADC','SBC'].includes(mn))extra+=3;
     if(mn!=='SET')this.P&=~0x20;
-    cy+=extra+this.busPenalty;this.inStep=false;this.tick(cy);return cy
+    cy+=extra+this.busPenalty;this.inStep=false;let remainTick=cy-internalTicked;if(remainTick>0)this.tick(remainTick);return cy
   }
   tick(c){this.cycles+=c;this.b.tick(c*(this.high?1:4))}
   previewOperand(pc,op){
@@ -448,7 +974,10 @@ class CPU {
 
 const bus=new Bus(),core=new CPU(bus);window.core=core;
 let running=false,paused=false,lastFrame=performance.now(),fpsFrames=0,fps=0,romFilename='',animation=0;
-let hes=null;
+let hes=null,cdMedia=new PCECDMedia(),cdBiosName='';
+let blackFrames=0,lastBlackDiag=0;
+function blackFrameApprox(){let d=bus.vdc.framebuf;if(!d||d.length<4)return false;let lit=0,samples=0,step=Math.max(4,Math.floor(d.length/4/512)*4);for(let i=0;i<d.length;i+=step){samples++;if((d[i]|d[i+1]|d[i+2])>8){lit++;if(lit>4)return false}}return samples>32}
+function blackDiag(){if(!blackFrameApprox()){blackFrames=0;return}blackFrames++;if(blackFrames<90)return;let now=performance.now();if(now-lastBlackDiag<2000)return;lastBlackDiag=now;let r=bus.vdc.reg,c=bus.vdc.irqCounts,h=[...core.pcRing],freq=new Map();for(const p of h)freq.set(p,(freq.get(p)||0)+1);let hot=[...freq.entries()].sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>'$'+hex(x[0],4)+'×'+x[1]).join(' ');event(`BLACKWATCH PC $${hex(core.PC,4)} hot ${hot} · MPR ${[...core.M].map(x=>hex(x)).join(' ')} · CR $${hex(r[5],4)} RCR $${hex(r[6],4)} SR $${hex(bus.vdc.status)} scan ${bus.vdc.scan} · IRQ mask $${hex(bus.irqMask)} I1 ${bus.irq1?1:0} I2 ${bus.irq2?1:0} T ${bus.timerIRQ?1:0} · last R $${hex(core.lastRead,4)}/$${hex(core.lastReadPhys,6)} W $${hex(core.lastWrite,4)}/$${hex(core.lastWritePhys,6)} · VDCirq V${c.vblank} R${c.raster} S${c.satb} D${c.dma} · VRAM R${bus.vdc.vramReads} W${bus.vdc.vramWrites}`)}
 function bootCore(){
   bus.reset();
   if(hes){
@@ -479,7 +1008,7 @@ function frame(t){
     let target=$('#speed').value==='0'?450000:+$('#speed').value*120000,spent=0,guard=0;
     bus.frameReady=false;
     while(spent<target&&!bus.frameReady&&guard++<250000){let c=core.step();if(core.stopped){paused=true;osd('Breakpoint $'+hex(core.PC,4));break}spent+=c||1}
-    bus.vdc.render($('#screen'));fpsFrames++;if(bus.backupDirty&&(bus.vdc.frame%120===0))persistBackup();
+    bus.vdc.render($('#screen'));blackDiag();fpsFrames++;if(bus.backupDirty&&(bus.vdc.frame%120===0))persistBackup();
   }
   if(t-lastFrame>=1000){fps=fpsFrames*1000/(t-lastFrame);fpsFrames=0;lastFrame=t;$('#fpsBadge').textContent=fps.toFixed(1)+' FPS'}
   updateUI();animation=requestAnimationFrame(frame)
@@ -489,7 +1018,7 @@ function updateUI(){
   $('#regs').innerHTML=names.map((n,i)=>`<div class="reg"><span>${n}</span><b>${n==='PC'?hex(vals[i],4):n==='CYC'?String(vals[i]):hex(vals[i],2)}</b></div>`).join('');
   $('#flags').innerHTML=['N','V','T','B','D','I','Z','C'].map((n,i)=>`<div class="flag ${core.P&(1<<(7-i))?'on':''}">${n}</div>`).join('');
   $('#mprs').textContent=[...core.M].map(x=>hex(x)).join(' ');$('#cpuSpeed').textContent=core.high?'7.16 MHz':'1.79 MHz';$('#videoBadge').textContent=hes?'HES AUDIO':`VDC ${bus.vdc.width}×${bus.vdc.height}`;
-  if(core.traceOn)$('#trace').textContent=core.trace.slice(-180).join('\n');refreshAudio(false)
+  if(core.traceOn)$('#trace').textContent=core.trace.slice(-180).join('\n');refreshAudio(false);if(bus.cd.enabled)refreshCDUI()
 }
 function reverseBits8(v){v=((v&0x55)<<1)|((v>>1)&0x55);v=((v&0x33)<<2)|((v>>2)&0x33);return ((v<<4)|(v>>4))&255}
 function romBootScore(a){
@@ -522,9 +1051,17 @@ function applyDetectedRegion(name){
 function loadROMBytes(inputBytes,name){
   let bytes=inputBytes instanceof Uint8Array?new Uint8Array(inputBytes):new Uint8Array(inputBytes);name=name||'game.pce';
   if(bytes.length>=0x20&&bytes[0]===0x48&&bytes[1]===0x45&&bytes[2]===0x53&&bytes[3]===0x4d){
+    bus.cd.detachMedia();cdMedia=new PCECDMedia();cdBiosName='';
     const u16=o=>bytes[o]|(bytes[o+1]<<8),u32=o=>(bytes[o]|(bytes[o+1]<<8)|(bytes[o+2]<<16)|(bytes[o+3]<<24))>>>0,init=u16(6),first=bytes[5],banks=bytes.slice(8,16),size=u32(20),addr=u32(24),dataStart=0x20,dataLen=Math.min(size,Math.max(0,bytes.length-dataStart)),mem=new Uint8Array(0x100000);mem.fill(0xff);if(addr<mem.length)mem.set(bytes.subarray(dataStart,dataStart+Math.min(dataLen,mem.length-addr)),addr);hes={init,first,track:first,banks:new Uint8Array(banks),size:dataLen,addr,name};bus.attachHES(mem);romFilename=name;$('#hesPanel').style.display='block';$('#hesTrack').value=first;$('#hesInfo').textContent=`init $${hex(init,4)} · DATA $${hex(addr,6)} + $${hex(dataLen,6)} · MPR ${[...banks].map(x=>hex(x)).join(' ')}`;$('#romName').textContent=name;$('#romSize').textContent=(bytes.length/1024).toFixed(0)+' KiB';$('#romState').textContent='HES music';$('#romDrop').classList.add('loaded');$('#romBadge').textContent='HES OK';$('#romBadge').className='badge ok';$('#mapperInfo').textContent='HES / PSG';event(`HES caricato: ${name}, init $${hex(init,4)}, prima traccia ${first}`);power(true);refreshAssets();osd('HES · abilita AUDIO per ascoltare');return;
   }
-  hes=null;$('#hesPanel').style.display='none';if((bytes.length&0x1fff)===512){bytes=bytes.slice(512);event('Header 512 byte rimosso')}if(bytes.length<8192)throw Error('ROM troppo piccola');let norm=normalizeHuCard(bytes);bytes=norm.bytes;if(norm.bitReversed)event('Dump TurboGrafx bit-reversed rilevato: D0↔D7 normalizzato');applyDetectedRegion(name);bus.attachROM(bytes,name);romFilename=name;restoreBackup();$('#romName').textContent=name;$('#romSize').textContent=(bytes.length/1024).toFixed(0)+' KiB';$('#romState').textContent='caricata';$('#romDrop').classList.add('loaded');$('#romBadge').textContent='ROM OK';$('#romBadge').className='badge ok';let m=bus.mapper==='sf2'?'SF2 2.5M mapper':bus.mapper==='populous'?'Populous + 32K RAM':bytes.length===0x60000?'384K split mirror':'HuCard mirror';$('#mapperInfo').textContent=m;event(`ROM caricata: ${name}, ${bytes.length} byte`);power(true);refreshAssets()
+  hes=null;$('#hesPanel').style.display='none';if((bytes.length&0x1fff)===512){bytes=bytes.slice(512);event('Header 512 byte rimosso')}if(bytes.length<8192)throw Error('ROM troppo piccola');let norm=normalizeHuCard(bytes);bytes=norm.bytes;if(norm.bitReversed)event('Dump TurboGrafx bit-reversed rilevato: D0↔D7 normalizzato');
+  const info=inspectSystemCard(bytes,name);
+  if(info.isSystemCard){
+    bus.attachROM(bytes,name);bus.cd.enabled=true;bus.cd.superEnabled=info.superCard;if(cdMedia.loaded)bus.cd.attachMedia(cdMedia);cdBiosName=name;romFilename=cdMedia.loaded?cdMedia.cueName:name;bus.region=info.region;$('#region').value=info.region;
+    $('#romName').textContent=name;$('#romSize').textContent=(bytes.length/1024).toFixed(0)+' KiB';$('#romState').textContent='System Card '+info.version;$('#romDrop').classList.add('loaded');$('#mapperInfo').textContent=info.superCard?'Super System Card 3.0 + CD':'System Card '+info.version+' + CD';$('#romBadge').textContent=info.superCard?'SUPER CD OK':'CD SYSTEM OK';$('#romBadge').className='badge ok';
+    event(`System Card rilevata come ROM: ${name}, ${bytes.length} byte · versione ${info.version} · ${info.region.toUpperCase()}`);if(info.superCard)event('Super System Card ID: 00 AA 55 00 00 '+(info.region==='us'?'55 AA':'AA 55')+' 03 @ $18C0-$18C7');refreshCDUI();restoreBackup();power(true);refreshAssets();if(!cdMedia.loaded)osd('System Card pronta · carica ZIP/CUE del disco');return;
+  }
+  bus.cd.detachMedia();cdMedia=new PCECDMedia();cdBiosName='';applyDetectedRegion(name);bus.attachROM(bytes,name);romFilename=name;restoreBackup();$('#romName').textContent=name;$('#romSize').textContent=(bytes.length/1024).toFixed(0)+' KiB';$('#romState').textContent='caricata';$('#romDrop').classList.add('loaded');$('#romBadge').textContent='ROM OK';$('#romBadge').className='badge ok';let m=bus.mapper==='sf2'?'SF2 2.5M mapper':bus.mapper==='populous'?'Populous + 32K RAM':bytes.length===0x60000?'384K split mirror':'HuCard mirror';$('#mapperInfo').textContent=m;event(`ROM caricata: ${name}, ${bytes.length} byte`);power(true);refreshAssets()
 }
 async function loadROM(file){
   let u=new Uint8Array(await file.arrayBuffer()),name=file.name;archiveCollection=null;renderArchiveLibrary();
@@ -535,6 +1072,28 @@ async function loadROM(file){
     if(items.length===1){await loadArchiveItem(items[0]);return}$('#romBadge').textContent='RACCOLTA OK';$('#romBadge').className='badge ok';$('#romName').textContent=name;$('#romState').textContent=items.length+' giochi';event(`Raccolta ZIP: ${name} · ${items.length} elementi`);osd(items.length+' giochi trovati');return;
   }
   await loadROMBytes(u,name);
+}
+
+
+function bytesContainASCII(bytes,text){
+  const q=[...text].map(c=>c.charCodeAt(0));outer:for(let i=0;i+q.length<=bytes.length;i++){for(let j=0;j<q.length;j++)if(bytes[i+j]!==q[j])continue outer;return true}return false
+}
+function inspectSystemCard(bytes,name){
+  let version=bytesContainASCII(bytes,'VER. 3.00')?'3.0':bytesContainASCII(bytes,'VER. 2.10')?'2.1':bytesContainASCII(bytes,'VER. 2.00')?'2.0':bytesContainASCII(bytes,'VER. 1.00')?'1.0':'?';
+  let region=/(usa|\(u\)|\[u\]|turbografx)/i.test(name)?'us':'jp';
+  let named=/(system|syscard|cd.?rom)/i.test(String(name||'')),typical=bytes.length===0x20000||bytes.length===0x40000;
+  return {version,region,superCard:version==='3.0',isSystemCard:version!=='?'&&(named||typical)}
+}
+async function loadCDSet(fileList){
+  let fs=[...fileList];if(!fs.length)return;let sourceArchive='';
+  if(fs.length===1&&/\.zip$/i.test(fs[0].name)){sourceArchive=fs[0].name;$('#cdState').textContent='apro ZIP…';osd('Apro ZIP CD…');fs=await filesFromCDZip(fs[0])}
+  const m=new PCECDMedia();await m.load(fs);m.sourceArchive=sourceArchive;cdMedia=m;bus.cd.attachMedia(m);romFilename=m.cueName;restoreBackup();$('#cdState').textContent=sourceArchive?'ZIP caricato':'caricato';$('#cdDrop').classList.add('loaded');$('#cdPanel').style.display='block';
+  const d=m.tracks.filter(t=>t.mode!=='AUDIO');event(`CD caricato${sourceArchive?' da '+sourceArchive:''}: ${m.cueName} · ${m.tracks.length} tracce · dati ${d.map(t=>t.number).join(',')}`);if(sourceArchive){let def=m.groups.filter(g=>g.file?._zipMethod===8).length,sto=m.groups.filter(g=>g.file?._zipMethod===0).length;event(`ZIP/CUE verificato: ${m.groups.length} file traccia associati · nessun FILE mancante · DEFLATE ${def} · STORE ${sto}`);if(def)event('ZIP CD: tracce compresse rilevate · clock CD-DA sospeso durante il buffering host per evitare salti')};if(m.boot)event(`CD boot: track ${m.boot.track} · sector +${m.boot.index} × ${m.boot.sectors} · ${m.boot.magic||'firma assente'}`);refreshCDUI();
+  if(cdBiosName&&bus.rom.length){power(true)}else osd('Disco pronto · carica la System Card come ROM')
+}
+function refreshCDUI(){
+  if(!bus.cd.enabled&&!cdMedia.loaded)return;$('#cdPanel').style.display='block';$('#cdPhase').textContent=(bus.cd.phase||'free').toUpperCase();const ts=cdMedia.tracks||[],ds=ts.filter(t=>t.mode!=='AUDIO');$('#cdTracks').textContent=ts.length||'—';$('#cdDataTracks').textContent=ds.length?ds.map(t=>t.number).join(', '):'—';$('#cdBoot').textContent=cdMedia.boot?(cdMedia.boot.valid?'PCE OK':'firma ?'):'—';
+  let lines=[];if(cdBiosName){lines.push('BIOS: '+cdBiosName);if(bus.cd.superEnabled){let ids=[];for(let r=0xc0;r<=0xc7;r++)ids.push(hex(bus.cd.systemCardId(r)));lines.push('SCD ID $18C0-$18C7: '+ids.join(' '))}}if(cdMedia.loaded){if(cdMedia.sourceArchive)lines.push(`ZIP: ${cdMedia.sourceArchive}`);lines.push(`CUE: ${cdMedia.cueName} · ${cdMedia.sectorCount} settori`);lines.push(ts.map(t=>`T${String(t.number).padStart(2,'0')} ${t.mode} @ LBA ${t.firstSector}`).join(' · '));if(cdMedia.boot)lines.push(`BOOT: track ${cdMedia.boot.track}, indice ${cdMedia.boot.index}, ${cdMedia.boot.sectors} settore/i · ${cdMedia.boot.magic}`);if(bus.cd.audioState){let at=cdMedia.trackAt(bus.cd.audioLba);lines.push(`CD-DA: ${bus.cd.audioState===1?(bus.cd.audioWaiting?'BUFFER ZIP':'PLAY'):'PAUSE'} · T${at?.number||'?'} · LBA ${bus.cd.audioLba} · underrun ${bus.cd.cddaUnderruns}`)}if(bus.cd.adPlaying||bus.cd.adDMA)lines.push(`ADPCM: ${bus.cd.adPlaying?'PLAY':'DMA'} · ptr $${hex(bus.cd.adPlayPtr,4)} · remain ${bus.cd.adPlayRemain} · buffer ${bus.cd.adAudioCount} · status $${hex(bus.cd.adStatus)}`);if(cdMedia.loaded)lines.push(`ADPCM regs: A $${hex(bus.cd.adAddr,4)} · R $${hex(bus.cd.adRead,4)} · W $${hex(bus.cd.adWrite,4)} · LEN $${hex(bus.cd.adLength,4)} · CTRL $${hex(bus.cd.adControl)} · HALF ${bus.cd.adHalf?1:0} END ${bus.cd.adEnd?1:0} · DMA $${hex(bus.cd.adDMA)}`);lines.push(`SCSI: ${bus.cd.phase.toUpperCase()} · FIFO ${bus.cd.fifoCount}/${bus.cd.fifo.length} · READ ${bus.cd.readRemain} settori · IRQ $${hex(bus.cd.activeIrqs)}`);lines.push(`CD I/O mirror: ${bus.cd.mirrorHits||0} accessi`);lines.push(`CD_PCMRD: ${bus.cd.pcmReads||0} letture · ${bus.cd.pcmNonZero||0} non-zero`)}$('#cdInfo').textContent=lines.join('\n')
 }
 
 
@@ -588,9 +1147,11 @@ function restoreState(o){if(!o||o.app!=='PCEJSD')throw Error('Stato non valido')
 function setup(){
   $$('.tabbtn').forEach(b=>b.onclick=()=>{$$('.tabbtn').forEach(x=>x.classList.remove('active'));$$('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.tab).classList.add('active');if(b.dataset.tab==='resources')refreshAssets();if(b.dataset.tab==='audio')refreshAudio()});
   $('#romFile').onchange=e=>e.target.files[0]&&loadROM(e.target.files[0]).catch(x=>{event('ERRORE ROM: '+x.message);alert(x.message)});
+  $('#cdFiles').onchange=e=>e.target.files.length&&loadCDSet(e.target.files).catch(x=>{event('ERRORE CD: '+x.message);alert(x.message)});
   $('#archiveFilter').oninput=renderArchiveLibrary;$('#archiveLoad').onclick=()=>{let i=+$('#archiveSelect').value;if(Number.isInteger(i)&&archiveVisible[i])loadArchiveItem(archiveVisible[i])};$('#archiveSelect').ondblclick=()=>$('#archiveLoad').click();
   $('#romDrop').ondragover=e=>{e.preventDefault()};$('#romDrop').ondrop=e=>{e.preventDefault();let f=e.dataTransfer.files[0];if(f)loadROM(f).catch(x=>alert(x.message))};
-  $('#power').onclick=()=>power(true);$('#reset').onclick=()=>{if(bus.rom.length||hes){bootCore();event((hes?'HES RESTART':'RESET')+' → $'+hex(core.PC,4));osd(hes?'HES RESTART':'RESET')}};$('#pause').onclick=()=>{paused=!paused;$('#pause').textContent=paused?'Riprendi':'Pausa';osd(paused?'PAUSA':'RUN')};$('#step').onclick=()=>{paused=true;core.stopped=false;core.step();bus.vdc.render($('#screen'));updateUI()};
+  $('#cdDrop').ondragover=e=>{e.preventDefault()};$('#cdDrop').ondrop=e=>{e.preventDefault();if(e.dataTransfer.files.length)loadCDSet(e.dataTransfer.files).catch(x=>alert(x.message))};
+  $('#power').onclick=()=>power(true);$('#reset').onclick=()=>{if(bus.rom.length||hes){bootCore();event((hes?'HES RESTART':bus.cd.enabled?'CD RESET':'RESET')+' → $'+hex(core.PC,4));osd(hes?'HES RESTART':bus.cd.enabled?'CD RESET':'RESET')}};$('#pause').onclick=()=>{paused=!paused;$('#pause').textContent=paused?'Riprendi':'Pausa';osd(paused?'PAUSA':'RUN')};$('#step').onclick=()=>{paused=true;core.stopped=false;core.step();bus.vdc.render($('#screen'));updateUI()};
   $('#fullscreen').onclick=()=>$('#screenShell').requestFullscreen?.();$('#audioBtn').onclick=async()=>{if(!bus.psg.enabled){await bus.psg.enable();$('#audioBtn').textContent='Disattiva audio';osd('AUDIO ON')}else{bus.psg.disable();$('#audioBtn').textContent='Attiva audio ♪';osd('AUDIO OFF')}};
   $('#gfx').onchange=e=>{let s=$('#screenShell');s.classList.remove('crt','soft');if(e.target.value==='crt')s.classList.add('crt');if(e.target.value==='soft')s.classList.add('soft')};$('#region').onchange=e=>bus.region=e.target.value;
   $$('.dkey,[data-key]').forEach(b=>{if(!b.dataset.key)return;let k=b.dataset.key;for(const ev of ['pointerdown','pointerenter'])b.addEventListener(ev,e=>{if(ev==='pointerenter'&&!(e.buttons&1))return;bus.pad[k]=true;b.classList.add('held')});for(const ev of ['pointerup','pointerleave','pointercancel'])b.addEventListener(ev,()=>{bus.pad[k]=false;b.classList.remove('held')})});
@@ -606,7 +1167,7 @@ function setup(){
   $('#hesPrev').onclick=()=>{if(hes){hes.track=(clamp(parseInt($('#hesTrack').value)||0,0,255)+255)&255;$('#hesTrack').value=hes.track;$('#hesRestart').click()}};
   $('#hesNext').onclick=()=>{if(hes){hes.track=(clamp(parseInt($('#hesTrack').value)||0,0,255)+1)&255;$('#hesTrack').value=hes.track;$('#hesRestart').click()}};
   $('#langIT').onclick=()=>{$('#langIT').classList.add('active');$('#langEN').classList.remove('active');osd('Italiano')};$('#langEN').onclick=()=>{$('#langEN').classList.add('active');$('#langIT').classList.remove('active');osd('English UI: core labels remain technical')};
-  bus.vdc.rebuildFrame();refreshAudio();updateUI();drawPalette();drawTiles();drawSprites();event('PCEJSD COMPAT V8 core pronto')
+  bus.vdc.rebuildFrame();refreshAudio();updateUI();drawPalette();drawTiles();drawSprites();event('PCEJSD CD ALPHA 20 · timing HuC6270 + block-transfer sync attivi')
 }
 setup();
 window.addEventListener('beforeunload',()=>persistBackup(true));
@@ -620,32 +1181,84 @@ window.addEventListener('beforeunload',()=>persistBackup(true));
   var JSD_SYS='pce';
   var m=(location.hash||'').match(/(?:^#|&)jsdlaunch=([^&]+)/);
   var JSD_TOKEN=m?decodeURIComponent(m[1]):'';
-  function jsdPost(type,extra){try{if(window.opener)window.opener.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+  var JSD_PARENT=null;
+  function jsdPostTo(target,type,extra){try{if(target)target.postMessage(Object.assign({type:type,token:JSD_TOKEN,system:JSD_SYS},extra||{}),'*')}catch(_){}}
+  function jsdPost(type,extra){jsdPostTo(JSD_PARENT||window.opener,type,extra)}
   function jsdFile(x){return new File([x.bytes],x.name||'game.bin',{type:'application/octet-stream',lastModified:Date.now()})}
   function jsdRole(p,r){return (p.files||[]).filter(function(x){return x.role===r})}
   function jsdSet(id,files,fire){var el=document.querySelector(id);if(!el||!files.length)return null;var dt=new DataTransfer();files.forEach(function(f){dt.items.add(f)});el.files=dt.files;if(fire!==false)el.dispatchEvent(new Event('change',{bubbles:true}));return el}
   function jsdSleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  function jsdWaitUntil(test,ms){return new Promise(function(resolve,reject){var t=Date.now();(function poll(){try{if(test())return resolve()}catch(_){}if(Date.now()-t>=ms)return reject(new Error('ROM ricevuta ma non caricata dal core'));setTimeout(poll,50)})()})}
   async function jsdInject(p){
     var games=jsdRole(p,'game').map(jsdFile),bios=jsdRole(p,'bios').map(jsdFile),execs=jsdRole(p,'exec').map(jsdFile),groms=jsdRole(p,'grom').map(jsdFile);
     var game=games[0]||null;
-    if(JSD_SYS==='gameboy'){jsdSet('#romFile',games);await jsdSleep(450);var b=document.querySelector('#powerBtn');if(b)b.click()}
-    else if(JSD_SYS==='sega'){if(bios[0]){var bi=jsdSet('#biosFile',[bios[0]],false);await fileLoad(bi,'bios')}if(game){var ri=jsdSet('#romFile',[game],false);await fileLoad(ri,'rom')}}
-    else if(JSD_SYS==='megadrive'){if(game){await loadFile(game);machine.power(true);refreshUI()}}
+    if(JSD_SYS==='gameboy'){jsdSet('#romFile',games);await jsdWaitUntil(function(){return !!((typeof gba!=='undefined'&&gba&&gba.rom)||(typeof machine!=='undefined'&&machine&&machine.cart&&machine.cart.rom))},5000);var b=document.querySelector('#powerBtn');if(b)b.click()}
+    else if(JSD_SYS==='sega'){if(bios[0]){var bi=jsdSet('#biosFile',[bios[0]],false);await fileLoad(bi,'bios')}if(game){var ri=jsdSet('#romFile',[game],false);await fileLoad(ri,'rom');if(!machine.romInfo)throw new Error('ROM SEGA non caricata')}}
+    else if(JSD_SYS==='megadrive'){if(game){await loadFile(game);if(!machine.rom)throw new Error('ROM Mega Drive non caricata');machine.power(true);refreshUI()}}
     else if(JSD_SYS==='neogeo'){if(bios.length)await loadPackage(bios,'bios');if(games.length)await loadPackage(games,'game');ngPower();if(typeof ngToggleRun==='function')ngToggleRun()}
-    else if(JSD_SYS==='nes'){if(game){await loadFile(game);if(!nes.powered)power()}}
-    else if(JSD_SYS==='snes'){if(game){jsdSet('#romFile',[game],false);await loadSelected();await jsdSleep(80);if(emu&&emu.cart&&!emu.running)document.querySelector('#runBtn')?.click()}}
-    else if(JSD_SYS==='pce'){if(game)await loadROM(game)}
-    else if(JSD_SYS==='coleco'){if(bios[0]){machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);document.querySelector('#biosInfo').textContent=bios[0].name}if(game){machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);document.querySelector('#romInfo').textContent=game.name}if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='nes'){if(game){await loadFile(game);if(!nes.cart)throw new Error('ROM NES non caricata');if(!nes.powered)power()}}
+    else if(JSD_SYS==='snes'){if(game){jsdSet('#romFile',[game],false);await loadSelected();if(!emu||!emu.cart)throw new Error('ROM SNES non caricata');await jsdSleep(80);if(!emu.running)document.querySelector('#runBtn')?.click()}}
+    else if(JSD_SYS==='pce'){var pcerom=game||bios[0];if(pcerom){await loadROM(pcerom);if(!(bus.rom&&bus.rom.length)&&!bus.hesMode)throw new Error('ROM/System Card PC Engine non caricata')}}
+    else if(JSD_SYS==='coleco'){if(bios[0]){machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);document.querySelector('#biosInfo').textContent=bios[0].name}if(game){machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);document.querySelector('#romInfo').textContent=game.name}if(game&&!machine.cart)throw new Error('ROM Coleco non caricata');if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
     else if(JSD_SYS==='spectrum'){if(bios[0])machine.setROM(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game){var u=new Uint8Array(await game.arrayBuffer()),x=(game.name.split('.').pop()||'').toLowerCase();if(x==='sna'||x==='z80')machine.loadSnapshot(x==='sna'?parseSNA(u):parseZ80(u));else if(x==='tap'){machine.tape=new Tape(parseTAP(u));machine.autoLoad()}else if(x==='scr'){machine.reset();machine.paused=true;machine.mem.set(u,0x4000);machine.drawFull()}document.querySelector('#gameName').textContent=game.name;render();refresh()}}
-    else if(JSD_SYS==='msx1'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
+    else if(JSD_SYS==='msx1'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(game&&!machine.cart)throw new Error('ROM MSX non caricata');if(machine.bios&&machine.cart&&!machine.powered){machine.power(true);running=true}refreshStatus()}
     else if(JSD_SYS==='intellivision'){if(execs[0])await loadFile('exec',execs[0]);if(groms[0])await loadFile('grom',groms[0]);if(game)await loadFile('cart',game);if(!state.power)boot();reset();if(state.paused)togglePause()}
-    else if(JSD_SYS==='vectrex'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(machine.biosLoaded&&machine.cartLoaded){machine.reset();machine.running=true}machine.updateUI();renderMachineText()}
+    else if(JSD_SYS==='vectrex'){if(bios[0])machine.loadBios(new Uint8Array(await bios[0].arrayBuffer()),bios[0].name);if(game)machine.loadCart(new Uint8Array(await game.arrayBuffer()),game.name);if(game&&!machine.cartLoaded)throw new Error('ROM Vectrex non caricata');if(machine.biosLoaded&&machine.cartLoaded){machine.reset();machine.running=true}machine.updateUI();renderMachineText()}
     jsdPost('jsd-launch-accepted',{files:(p.files||[]).length});
   }
-  var jsdReadyTimer=0;window.addEventListener('message',function(ev){if(!JSD_TOKEN||ev.source!==window.opener||!ev.data||ev.data.type!=='jsd-launch'||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;if(jsdReadyTimer)clearInterval(jsdReadyTimer);jsdInject(ev.data).catch(function(err){console.error(err);jsdPost('jsd-launch-error',{error:err&&err.message?err.message:String(err)})})});
-  function ready(){if(JSD_TOKEN)jsdPost('jsd-emulator-ready')}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();jsdReadyTimer=setInterval(ready,500);setTimeout(function(){if(jsdReadyTimer)clearInterval(jsdReadyTimer)},30000);
+  window.addEventListener('message',function(ev){
+    if(!JSD_TOKEN||!ev.data||ev.data.token!==JSD_TOKEN||ev.data.system!==JSD_SYS)return;
+    if(ev.data.type==='jsd-probe'){
+      JSD_PARENT=ev.source||JSD_PARENT;
+      jsdPostTo(JSD_PARENT,'jsd-emulator-ready');
+      return;
+    }
+    if(ev.data.type!=='jsd-launch')return;
+    JSD_PARENT=ev.source||JSD_PARENT;
+    jsdInject(ev.data).catch(function(err){console.error(err);jsdPost('jsd-launch-error',{error:err&&err.message?err.message:String(err)})});
+  });
+  // Backward-compatible proactive ready signal when opener is available.
+  function ready(){if(JSD_TOKEN&&window.opener)jsdPostTo(window.opener,'jsd-emulator-ready')}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready();
+
 })();
+</script>
+
+<script>
+
+(function(){
+'use strict';
+var JSD_SAVE_SYS='pce';
+function metaFor(k){try{return JSON.parse(localStorage.getItem('jsd-save-meta:'+k)||'null')||{}}catch(_){return{}}}
+function allowed(k){
+  if(!k||k.indexOf('jsd-save-meta:')===0||k.indexOf('jsd-save-bank:')===0||/_rtc$/.test(k))return false;
+  if(JSD_SAVE_SYS==='gameboy')return /^gbjsd_[0-9a-f]+_/i.test(k)||/^gbxjsd_clean_gba_/i.test(k);
+  if(JSD_SAVE_SYS==='sega')return /^segajsd:sram:/i.test(k);
+  if(JSD_SAVE_SYS==='megadrive')return /^mdjsd:sram:/i.test(k);
+  if(JSD_SAVE_SYS==='nes')return /^nesjsd:sram:/i.test(k)||/^nesjsd_sram_/i.test(k);
+  if(JSD_SAVE_SYS==='pce')return /^pcejsd:bram:/i.test(k);
+  if(JSD_SAVE_SYS==='neogeo')return k==='neogeojsd.mvs.backup.v137';
+  return false;
+}
+function defaultMeta(k,v){
+  var m=metaFor(k);if(m&&Object.keys(m).length)return m;
+  if(JSD_SAVE_SYS==='neogeo')return{system:'neogeo',name:'Neo Geo MVS Backup RAM',format:'brm',size:65536,updated:0};
+  if(JSD_SAVE_SYS==='sega')return{system:'sega',name:'Master System / Game Gear SRAM',format:'sav',size:32768,updated:0};
+  return{system:JSD_SAVE_SYS,name:k,format:JSD_SAVE_SYS==='megadrive'?'srm':'sav',size:0,updated:0};
+}
+function list(){var out=[];try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(!allowed(k))continue;var v=localStorage.getItem(k);if(!v)continue;out.push({key:k,data_base64:v,meta:defaultMeta(k,v),rtc:localStorage.getItem(k+'_rtc')||null})}}catch(_){}return out}
+function reply(ev,type,extra){try{if(ev.source)ev.source.postMessage(Object.assign({type:type,token:ev.data.token,system:JSD_SAVE_SYS},extra||{}),'*')}catch(_){}}
+window.addEventListener('message',function(ev){var d=ev.data;if(!d||!d.token||d.system!==JSD_SAVE_SYS)return;
+  if(d.type==='jsd-save-probe'){reply(ev,'jsd-save-list',{entries:list()});return}
+  if(d.type==='jsd-save-write'){
+    try{if(!allowed(d.key))throw new Error('save key non consentita');localStorage.setItem(d.key,String(d.data_base64||''));if(d.meta)localStorage.setItem('jsd-save-meta:'+d.key,JSON.stringify(d.meta));if(d.rtc!==undefined&&d.rtc!==null)localStorage.setItem(d.key+'_rtc',String(d.rtc));else if(d.clearRtc)localStorage.removeItem(d.key+'_rtc');reply(ev,'jsd-save-write-ok',{key:d.key})}catch(e){reply(ev,'jsd-save-error',{error:e.message||String(e)})}return
+  }
+  if(d.type==='jsd-save-delete'){
+    try{if(!allowed(d.key))throw new Error('save key non consentita');localStorage.removeItem(d.key);localStorage.removeItem('jsd-save-meta:'+d.key);localStorage.removeItem(d.key+'_rtc');reply(ev,'jsd-save-delete-ok',{key:d.key})}catch(e){reply(ev,'jsd-save-error',{error:e.message||String(e)})}
+  }
+});
+})();
+
 </script>
 </body>
 </html>

@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><body><div id="out">START</div><script>
+const out=document.getElementById('out');
+const token='testtoken';
+const w=window.open('nesjsd.html#jsdlaunch='+token,'_blank');
+let sent=false;
+window.addEventListener('message',e=>{
+  if(e.source!==w||!e.data||e.data.token!==token)return;
+  out.textContent+='|'+e.data.type;
+  if(e.data.type==='jsd-emulator-ready'&&!sent){
+    sent=true;
+    const u=new Uint8Array(16+16384+8192);u.set([0x4e,0x45,0x53,0x1a,1,1,0,0],0);
+    // simple infinite JMP $8000, vectors to $8000
+    u[16]=0x4c;u[17]=0x00;u[18]=0x80;
+    const v=16+16384-6;u[v]=0;u[v+1]=0x80;u[v+2]=0;u[v+3]=0x80;u[v+4]=0;u[v+5]=0x80;
+    const ab=u.buffer;
+    w.postMessage({type:'jsd-launch',token,system:'nes',files:[{role:'game',name:'test.nes',bytes:ab}]},'*',[ab]);
+  }
+});
+setInterval(()=>{try{w.postMessage({type:'jsd-probe',token,system:'nes'},'*')}catch(e){}},200);
+setTimeout(()=>{document.title=out.textContent.includes('jsd-launch-accepted')?'PASS':'FAIL';out.textContent+='|DONE'},5000);
+</script>

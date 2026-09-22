@@ -1,412 +1,145 @@
-# JSD Emulator Hub — TODO ragionato
-
-Questo documento ordina il lavoro per **impatto tecnico**, non per facilità di implementazione.
-
-## Priorità
-
-- **P0 — necessario:** bug che bloccano giochi, persistenza dati, regressioni, dipendenze o architettura che impediscono di far crescere il progetto in modo affidabile.
-- **P1 — importante:** accuratezza, compatibilità, strumenti e usabilità che aumentano molto il valore reale dell'emulatore.
-- **P2 — evolutivo:** analisi avanzata, rifiniture, feature di laboratorio e comodità non essenziali.
-
----
-
-# Interfaccia generale / Hub
-
-## P0
-
-### 1. Test di regressione automatici per ogni core
-**Perché:** oggi una correzione su grafica, timing o debugger può far regredire un gioco che prima funzionava.
-
-Creare una piccola suite per sistema con:
-- ROM homebrew/test ROM quando disponibili;
-- hash della ROM;
-- boot atteso;
-- PC/registri dopo N frame;
-- checksum framebuffer o screenshot di riferimento;
-- eventuale checksum RAM/audio events.
-
-Il test non deve richiedere input manuale.
-
-### 2. Rendere vincolante il formato single-file
-**Perché:** il valore del progetto è poter usare ogni core anche fuori dall'Hub.
-
-Regola di release:
-- ogni emulatore deve funzionare copiando **solo il suo `.html`**;
-- niente `<script src=...>` necessario al core;
-- niente CDN o moduli remoti obbligatori;
-- ROM, BIOS, save e media vengono caricati dall'emulatore stesso;
-- un test automatico deve aprire ogni HTML senza gli altri file dell'Hub e verificare che non produca errori di dipendenze mancanti.
-
-Il launcher deve restare leggero: riconosce/suggerisce una piattaforma, apre il file corretto e può consegnare ROM/BIOS tramite il ricevitore JSD Hub opzionale incorporato. Il core non deve mai dipendere dal launcher.
-
-### 3. Debugger universale come sorgente comune, ma inlined
-**Perché:** serve coerenza fra i debugger senza sacrificare l'autonomia dei file.
-
-Mantenere un sorgente comune di sviluppo con adapter per:
-- PC;
-- registri;
-- step;
-- read/write memory;
-- pausa/ripresa;
-- disassembly opzionale.
-
-Durante la preparazione della release il debugger viene incorporato nell'HTML dei core che lo usano. **Nessun `universal-debugger.js` deve essere richiesto a runtime.**
-
-### 4. Rendere esplicita la compatibilità per build
-**Perché:** “funziona” è troppo ambiguo.
-
-Aggiungere un piccolo database JSON locale:
-- sistema;
-- ROM/hash;
-- stato: boot / intro / playable / complete;
-- grafica;
-- audio;
-- input;
-- note;
-- versione core testata.
-
-## P1
-
-### 5. Libreria giochi
-Mostrare nel launcher:
-- titolo;
-- piattaforma;
-- ultimo avvio;
-- save presente;
-- compatibilità nota;
-- screenshot facoltativo;
-- BIOS richiesto/presente.
-
-### 6. Save Manager v2
-Unificare:
-- SRAM/BRAM/Flash;
-- RTC quando presente;
-- import/export singolo;
-- backup totale;
-- metadati con hash ROM;
-- migrazione chiavi localStorage vecchie.
-
-Tenere i **save-state** in una sezione distinta.
-
-### 7. Performance HUD comune
-Per ogni core:
-- fps;
-- emulated cycles/s;
-- tempo CPU;
-- tempo video;
-- tempo audio;
-- debugger overhead;
-- dropped frames.
-
-Serve soprattutto per SNES, Neo Geo, GBA e Mega Drive.
-
-### 8. Gestione errori comune
-Errore strutturato con:
-- sistema;
-- ROM;
-- PC;
-- opcode;
-- frame;
-- stack/register dump;
-- download report JSON.
-
-## P2
-
-### 9. Workspace `.jsd`
-Salvare un progetto di reverse engineering con:
-- ROM hash;
-- label;
-- commenti;
-- breakpoint;
-- regioni code/data;
-- patch;
-- screenshot/capture;
-- note.
-
-### 10. ROM map e call graph
-Visualizzazione comune di:
-- code/data;
-- bank;
-- entry point;
-- call edges;
-- IRQ/NMI vectors;
-- hot paths runtime.
-
-### 11. Live patching
-Editor esadecimale con patch temporanee, diff e export IPS/BPS dove sensato.
-
-### 12. UI coerente
-Uniformare gradualmente:
-- lingua IT/EN;
-- fullscreen;
-- CRT/scanline;
-- controlli;
-- import/export;
-- shortcut debugger;
-- naming dei pulsanti.
-
-Non riscrivere tutti gli emulatori con un framework: mantenere HTML separati e autosufficienti. Eventuali convenzioni comuni devono essere incorporate nel file finale, non richieste come runtime condiviso.
-
----
-
-# Game Boy / GBC / GBA
-
-## P0
-- **GBA: timing IRQ/DMA/timer più deterministico.** Molti giochi dipendono più dal timing che da nuovi opcode.
-- **GBA: Flash/EEPROM/RTC per cartucce reali.** È necessario per save affidabili su una parte importante della libreria.
-
-## P1
-- DirectSound FIFO + DMA audio più accurati.
-- Window/blending e affine OBJ completi.
-- Migliorare PPU edge cases GB/GBC e sincronizzazione audio.
-- Aggiungere test ROM CPU/PPU/APU al regression runner.
-
-## P2
-- Call graph ARM/Thumb misto.
-- Riconoscimento automatico dati grafici non ancora caricati in VRAM.
-- Editor/patched asset con export patch ROM.
-
----
-
-# Master System / Game Gear
-
-## P0
-- Verificare IRQ line/frame e timing VDP con test ROM.
-- Consolidare mapper Sega/Codemasters e bank switching.
-
-## P1
-- Raster effects e scroll per-linea più accurati.
-- PSG noise/envelope timing e mixing.
-- Portare SRAM, se presente, nel Save Manager comune.
-
-## P2
-- Tilemap editor live.
-- Profilo Game Gear LCD separato dal CRT SMS.
-
----
-
-# Mega Drive / Genesis
-
-## P0
-- Regressione su DMA, HBlank/VBlank e interrupt VDP.
-- Validare collisioni/sprite overflow e raster timing su una suite ampia.
-
-## P1
-- YM2612: envelope, timer, DAC e comportamento busy più accurati.
-- Z80 bus arbitration e handoff 68000/Z80 più fedele.
-- Migliorare shadow/highlight e priorità VDP.
-
-## P2
-- Viewer plane A/B/window con tilemap interattiva.
-- Trace sincronizzato 68000 + Z80 + VDP events.
-
----
-
-# Neo Geo AES / MVS
-
-## P0
-- Riprodurre e correggere i blocchi di giochi complessi, in particolare la famiglia Metal Slug.
-- Correggere raster IRQ / scanline effects che influenzano personaggi, ombre e layer.
-- Rendere robusti read/write non allineati e accessi di protezione/cart edge cases.
-
-## P1
-- YM2610: ADPCM-A/B, timers, IRQ e mixing più accurati.
-- Priorità LSPC, shadow e sprite chaining.
-- Test sistematici MVS/AES e BIOS diversi.
-
-## P2
-- Trace cross-CPU 68000 ↔ Z80.
-- Viewer sprite animation/chaining e palette usage.
-- Analisi automatica P-ROM con call graph e regioni dati.
-
----
-
-# NES / Famicom
-
-## P0
-- Aumentare la copertura mapper in modo guidato dalla libreria reale.
-- Validare IRQ mapper e timing PPU/A12 sui mapper sensibili.
-
-## P1
-- Sprite 0 hit, overflow e race condition PPU più accurati.
-- APU frame counter/DMC timing.
-- Test automatici CPU/PPU/APU e mapper.
-
-## P2
-- CHR/nametable editor live.
-- Debugger mapper-aware e visualizzazione bank corrente.
-
----
-
-# SNES / Super Famicom
-
-## P0
-- **SRAM batterizzata:** localStorage + import/export `.srm` + Save Manager centrale.
-- Stabilizzare DMA/HDMA, IRQ/NMI e timing scanline.
-- Creare regressioni specifiche per Modes 0–7 e sprite.
-
-## P1
-- SPC700/S-DSP: timer, BRR, envelope, echo e mixing più accurati.
-- Super FX: ampliare opcode/timing/accesso memoria.
-- DSP-1: copertura comandi e timing.
-- SA-1, S-DD1 e altri chip: dichiarare esplicitamente unsupported finché non esiste un core reale, evitando false compatibilità.
-- Hires/interlace, windows, color math e mosaic edge cases.
-
-## P2
-- Viewer CGRAM/OAM/tilemap per layer.
-- Trace 65C816 + SPC700 sincronizzato.
-- Profilo per-frame di HDMA e registri PPU.
-
-Nota: nella build Hub il supporto `.7z` remoto è stato rimosso per mantenere l'esecuzione offline. ZIP resta supportato.
-
----
-
-# PC Engine / TurboGrafx-16
-
-## P0
-- Continuare la verifica di collisioni sprite, overflow e priorità VDC.
-- Stabilizzare timer/IRQ HuC6280 e raster compare.
-
-## P1
-- PSG più fedele: noise, LFO, livelli e mixing.
-- Mapper HuCard e cart RAM speciali.
-- SuperGrafx come estensione separata solo dopo stabilità VDC singolo.
-
-## P2
-- CD-ROM² + ADPCM come sottoprogetto separato, non come patch rapida al core HuCard.
-- Viewer BAT/SATB temporale per frame.
-
----
-
-# ColecoVision
-
-## P0
-- Suite regressione Z80/TMS9918 con ROM note.
-- Sistemare eventuali titoli che si fermano dopo schermata iniziale/input.
-
-## P1
-- Accuratezza VDP status/IRQ e sprite collision/overflow.
-- SN76489 timing e rumore.
-- Supporto controller/keypad completo e coerente.
-
-## P2
-- Mapper/espansioni meno comuni.
-- Asset browser più uniforme con SMS/MSX.
-
----
-
-# ZX Spectrum 48K
-
-## P0
-- Timing ULA/frame/interrupt verificato con test noti.
-- Caricamento TAP robusto con fast-load opzionale senza rompere la modalità reale.
-
-## P1
-- Border timing e contention 48K.
-- Beeper/tape audio più fedele.
-- Snapshot compatibilità più ampia.
-
-## P2
-- Estensione 128K come core/configurazione separata.
-- Visualizzazione attributi/screen editor.
-
----
-
-# MSX1
-
-## P0
-- Mapper cartridge più comuni e bank switching verificato.
-- Timing VDP IRQ/status e input.
-
-## P1
-- AY audio più accurato.
-- Supporto cassette/dischi solo con architettura dedicata, senza simulazioni incomplete.
-- Espansioni RAM/slot più fedeli.
-
-## P2
-- MSX2 come macchina distinta che riusa Z80 e infrastruttura, non come flag cosmetico.
-- Asset browser VDP condivisibile con Coleco/SMS dove possibile.
-
----
-
-# Intellivision
-
-## P0
-- Regression test CP1610/STIC con giochi già noti funzionanti.
-- Consolidare keypad/controller e mapping input.
-
-## P1
-- Timing STIC, collisioni e bus contention.
-- AY audio più accurato.
-- Migliorare distinzione code/data nel disassembler.
-
-## P2
-- Call graph CP1610.
-- Editor pattern/card/sprite con patch temporanea.
-
----
-
-# Vectrex
-
-## P0
-- Verificare il nuovo core JavaScript originale su un set di ROM commerciali/homebrew già usato nello sviluppo.
-- Correggere eventuali differenze rispetto alla build VecX precedente senza reintrodurre codice third-party.
-- Validare VIA 6522: T1/T2, shift register, IFR/IER e timing IRQ.
-
-## P1
-- Modello analogico DAC/integratori: scala, zero, ramp e beam timing.
-- AY-3-8912 audio più accurato.
-- Rotazione/orientamento e coordinate vettori con test riproducibili.
-
-## P2
-- Save-state versionato e reimportabile.
-- Analisi delle forme per routine/funzione anziché solo frame.
-- Breakpoint su accessi VIA/AY.
-
----
-
-# LaserDiscJSD (standalone)
-
-## P0
-- Se LaserDisc viene aggiunto al launcher, gestire un handoff dedicato ROM + video/timeline senza cambiare il requisito standalone del file HTML.
-- Riconoscimento Dragon's Lair / Space Ace senza confondere ZIP ROM e video.
-- Persistenza delle impostazioni di offset/timeline per hash del media.
-
-## P1
-- Verificare handshake LD-V1000/PR-7820 su più revisioni ROM.
-- Gestione errori video codec/browser con diagnosi chiara.
-- Save-state che includa CPU + stato player + timestamp video.
-
-## P2
-- Libreria di profili framefile Daphne importabili.
-- Strumenti di timeline visuale e marker eventi/decisioni del gioco.
-
----
-
-# Ordine di lavoro consigliato
-
-Se l'obiettivo è aumentare rapidamente il numero di giochi realmente giocabili senza perdere stabilità:
-
-1. Regression runner comune.
-2. Garanzia single-file + debugger universale adapter-based **inlined** nei core.
-3. SNES SRAM + timing DMA/HDMA.
-4. Neo Geo raster/audio/blocchi Metal Slug.
-5. GBA save hardware + DMA/audio.
-6. Mapper NES e SMS/GG.
-7. Timing VDP/PPU dei core intermedi.
-8. Solo dopo: nuovi sistemi o coprocessori molto complessi.
-
-La regola proposta è: **prima chiudere i buchi che rompono giochi già quasi funzionanti, poi aumentare l'ampiezza del progetto**.
-
-
-## Launcher v0.1.8 — follow-up
-
-### P0
-- testare il protocollo di handoff su tutti i 12 core con almeno una ROM reale per sistema;
-- aggiungere feedback “ROM caricata / errore core” più preciso invece del solo ACK di consegna;
-- rendere la cache multipla per più cartelle recenti, mantenendo un limite di spazio.
-
-### P1
-- cache con invalidazione per singolo ZIP invece di invalidare tutta la cartella;
-- mostrare tempo risparmiato dal cache hit e data dell’ultima scansione;
-- ricordare l’ultimo gioco scelto per cartella/sistema.
+# JSD Emulator Hub — TODO
+
+> English: [TODO_EN.md](TODO_EN.md)
+
+Questo TODO sostituisce le liste storiche accumulate nelle release precedenti. Riporta solo attività ancora utili o verifiche che vale la pena mantenere.
+
+## Priorità 0 — non rompere ciò che funziona
+
+- [ ] Ogni modifica a un core deve avere un caso di regressione riproducibile.
+- [ ] Evitare fix globali di timing, palette, banking o memoria se il problema è specifico di un gioco/board.
+- [ ] Conservare gli HTML standalone: nessun core deve dipendere da `index.html`.
+- [ ] Debugger/trace pesanti OFF di default e senza hook permanenti sul percorso CPU/memoria.
+- [ ] Prima di sostituire un core nell'Hub, confrontare la revisione proposta con quella già inclusa e annotare eventuali regressioni note.
+
+## Priorità 1 — test end-to-end dell'Hub
+
+- [ ] Test browser reale dei 16 pulsanti “Apri emulatore” senza ROM.
+- [ ] Test `jsd-probe → jsd-emulator-ready → jsd-launch → jsd-launch-accepted` sui 16 sistemi.
+- [ ] Test caricamento automatico con ZIP, nested ZIP, BIOS multipli e set MAME.
+- [ ] Verificare comportamento da `file://` su Chrome/Chromium, Firefox e Edge.
+- [ ] Verificare che la cache analisi cartella venga invalidata quando cambia la tabella dei sistemi o il riconoscitore.
+
+## Priorità 2 — salvataggi
+
+- [x] Save Bridge per GB/GBC/GBA, SMS/GG, Mega Drive, Neo Geo, NES e PC Engine.
+- [x] Backup JSON in grado di ricreare chiavi di salvataggio inesistenti.
+- [x] NES: flush SRAM anche su `pagehide`/chiusura.
+- [x] Neo Geo: mantenere compatibilità con `neogeojsd.mvs.backup.v137`.
+- [ ] **SNES: implementare SRAM cartuccia reale**, mapping + persistenza + import/export.
+- [ ] Aggiungere persistenza standardizzata ai core che in futuro implementeranno RAM batteria ma non hanno ancora il bridge.
+- [ ] Aggiungere al Save Manager una verifica opzionale post-import: rilettura dello slot e confronto dimensione/hash.
+- [ ] Testare export → cancellazione → import → rilettura su browser reale per tutti i sistemi collegati.
+- [ ] Valutare export/import dei settori DOS IndexedDB in un formato portabile, senza confonderli con save-state.
+
+## Priorità 3 — Neo Geo
+
+Core corrente: `neogeojsd_v1425_dynamic_scb_trace`.
+
+- [ ] Uniformare **solo in una futura revisione del core** le stringhe versione interne (nome file v1425, log/report v1.4.24, footer v1.4.6).
+- [ ] Verificare Garou/GarouH: personaggi, SCB dinamici, C1-C8, palette e priorità.
+- [ ] Verificare KOF '99, Metal Slug 3 e KOF 2000 sui profili NEO-SMA.
+- [ ] Verificare Metal Slug X sulla finestra ALTERA `$2FFFE0-$2FFFEF`.
+- [ ] Verificare Metal Slug 5 e KOF 2003 sul percorso NEO-PVC/CMC50/PCM2.
+- [ ] Confrontare sprite zoom/SCB, catene short/tall e active-sprite buffers con riferimenti hardware/MAME/FBNeo senza sostituire il renderer funzionante in blocco.
+- [ ] Migliorare audio YM2610 solo con test A/B su giochi noti; evitare regressioni su M1/Z80 command handoff.
+- [ ] Aggiungere export strutturato audio: registri YM2610, command log Z80, eventualmente WAV/capture diagnostica.
+- [ ] Mantenere backup RAM MVS e RTC indipendenti dai reset watchdog.
+
+## Priorità 4 — SNES
+
+- [ ] SRAM cartuccia persistente.
+- [ ] OAM/OBJ extractor con PNG + JSON.
+- [ ] Export CGRAM/palette.
+- [ ] Export tilemap/background per Mode 0-7 quando ricostruibile.
+- [ ] Risorse SPC700/S-DSP: BRR sample extraction, directory DSP e metadata ADSR/GAIN.
+- [ ] Verificare timing e performance senza riattivare debugger continuo.
+- [ ] Re-test titoli storicamente critici: Rampart, Dracula X, Art of Fighting, Mortal Kombat, Mario Kart.
+
+## Priorità 5 — DOS
+
+È il sistema più scoperto sul lato strumenti.
+
+- [ ] Disassembler x86 16/32 bit statico, almeno 8086/286/386 reale/protected mode.
+- [ ] Vista segment:offset + indirizzo lineare/fisico.
+- [ ] Export testo/VGA text mode.
+- [ ] Export framebuffer CGA/EGA/VGA e palette DAC.
+- [ ] Cattura font VGA e plane data.
+- [ ] Cattura Sound Blaster/OPL come log registri e WAV diagnostico.
+- [ ] Export/import portabile delle modifiche HDD IndexedDB.
+- [ ] Continuare test protected mode/IDT senza introdurre scorciatoie game-specific nel core CPU.
+
+## Priorità 6 — CPS-1
+
+- [ ] Trasformare il viewer grafico in un vero extractor: tile/sprite PNG, palette e metadata.
+- [ ] Disassembler Z80 audio.
+- [ ] Export registri CPS-A/CPS-B rilevanti per priorità/layer.
+- [ ] Verificare sprite priority/layer sui titoli già quasi corretti senza cambiare il timing 30 FPS di default.
+- [ ] Re-test Captain Commando, Cadillacs and Dinosaurs, Pang/Pang3, Varth e Street Fighter II.
+
+## Priorità 7 — Mega Drive e System 16
+
+### Mega Drive
+- [ ] Disassembler Z80 audio.
+- [ ] Export sprite VDP reale, non solo viewer.
+- [ ] Export tilemap/plane A/B/window + CRAM/VSRAM.
+- [ ] Migliorare YM2612/PSG senza impattare raster timing e DMA.
+
+### System 16
+- [ ] Disassembler Z80 audio.
+- [ ] Export sprite e tilemap con attributi/priorità.
+- [ ] Export/capture YM2151/uPD7759.
+- [ ] Ampliare profili mapper solo con set verificati.
+
+## Priorità 8 — PC Engine CD ALPHA 20
+
+- [ ] Mantenere **CD ALPHA 20** come riferimento, non tornare a COMPAT V8/Alpha 19.
+- [ ] Test HuCard e CD-ROM²/Super CD-ROM² nello stesso core.
+- [ ] Verificare CUE + BIN/ISO/WAV, CD-DA e ADPCM.
+- [ ] Export sprite dedicato oltre al viewer.
+- [ ] Migliorare estrazione audio PSG/CD/ADPCM in formato diagnostico.
+- [ ] Conservare BRAM/Backup RAM nel Save Bridge.
+
+## Priorità 9 — NES
+
+Core corrente: versione nested ZIP caricata in v0.2.7.
+
+- [ ] Re-test mapper 0/1/2/3/4/7/66 con SRAM.
+- [ ] Aggiungere mapper solo con test ROM mirati.
+- [ ] DMC APU.
+- [ ] Timing PPU più accurato per titoli sensibili a sprite-0/MMC3 IRQ.
+- [ ] Migliorare raccolte ZIP senza caricare in memoria file inutili.
+- [x] CHR PNG, OAM JSON, frame PNG e disassembler 6502/2A03 già presenti.
+
+## Priorità 10 — C64
+
+- [ ] Migliorare qualità SID e timing senza rompere TRUE 1541.
+- [ ] Cattura SID strutturata: registri per frame/ciclo e WAV diagnostico.
+- [ ] Re-test giochi con calcoli/timing problematici (es. punteggi, raster, loader multi-file).
+- [ ] Ottimizzare 1541 mantenendo il percorso fisico completo per D64.
+
+## Priorità 11 — GB/GBC/GBA
+
+- [ ] Conservare la build GBA AUDIO AUTO FIX / UI FAST.
+- [ ] Test audio GBA DMA/FIFO e sincronizzazione video/audio.
+- [ ] Ridurre ogni costo residuo di debugger/trace nel percorso normale.
+- [ ] Ampliare extractor GBA quando necessario senza modificare GB/GBC funzionanti.
+
+## Priorità 12 — SMS/GG, Coleco, MSX, Spectrum, Intellivision, Vectrex
+
+- [ ] SMS/GG: export sprite e audio strutturato.
+- [ ] Coleco M1.4: mantenere sprite/audio extractor e verificare compatibilità input.
+- [ ] MSX1: espandere mapper/cart solo con ROM di test.
+- [ ] Spectrum: migliorare TAP/loader mantenendo target 48K.
+- [ ] Intellivision: continuare miglioramenti controller senza cambiare CPU/STIC stabile.
+- [ ] Vectrex: timing analogico/VIA/AY e compatibilità cart, preservando export SVG/WAV/AY JSON.
+
+## Priorità 13 — documentazione e release
+
+- [ ] Aggiornare README/TODO a ogni sostituzione canonica di core.
+- [ ] Tenere una sola versione “canonica” per sistema nel pacchetto release.
+- [ ] Registrare nel README il nome sorgente esatto quando le stringhe versione interne sono ambigue.
+- [ ] `node --check` su tutti gli script inline prima di ogni ZIP.
+- [ ] Controllare che non esistano `<script src>` obbligatori.
+- [ ] Verificare 16/16 target del launcher.
+- [ ] `unzip -t` sul pacchetto finale.
